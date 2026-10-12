@@ -1,0 +1,33 @@
+# RigMY price sources: which retailer page to read for which catalog product.
+#
+# Ships EMPTY. All prices in RigMY come from these pages via `rigmy-api ingest`.
+# Please check each site's terms and robots.txt before adding it, and keep delay_ms polite.
+#
+# [settings]                       all optional
+# user_agent       = "RigMYBot/0.1 (price comparison; contact: you@example.com)"
+# delay_ms         = 5000          minimum gap between requests to the same host
+# timeout_s        = 20            per-request timeout
+# retries          = 2             retries on timeouts / HTTP 429 / 5xx (with backoff, honours Retry-After)
+# overpass_url     = "https://overpass-api.de/api/interpreter"   used by `ingest --stores-osm`
+# stale_after_days = 7             offers not refreshed for this long are hidden from /api/bootstrap
+#
+# One [[source]] per (product, retailer) pair:
+#
+#   product     required  product id from catalog.json (e.g. "cpu-9800x3d")
+#   retailer    required  retailer id from retailers.toml
+#   url         required  the product page URL (also the "buy" link shown to users)
+#   adapter     required  how to read it:
+#                 "jsonld"      schema.org Product JSON-LD embedded in the page (most shops)
+#                 "shopify"     Shopify store: reads <url>.js (falls back to <url>.json)
+#                 "woocommerce" WooCommerce Store API (/wp-json/wc/store/v1/products?slug=<last path segment>)
+#   variant     optional  shopify: pin one variant id instead of the cheapest available
+#   sku         optional  jsonld: choose the Product whose sku/mpn/gtin equals this
+#   product_id  optional  woocommerce: Store API product id instead of slug lookup
+#
+# Example (commented out):
+#
+# [[source]]
+# product = "cpu-9800x3d"
+# retailer = "example-shop"
+# url = "https://www.example-pc-store.my/products/amd-ryzen-7-9800x3d"
+# adapter = "shopify"

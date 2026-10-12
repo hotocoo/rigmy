@@ -1,0 +1,14 @@
+/* Save & share popover. Token-only. */
+.wrap { position: relative; display: inline-flex; }
+.scrim { position: fixed; inset: 0; z-index: 38; }
+.pop {
+  position: absolute; top: calc(100% + 8px); z-index: 39; width: min(380px, calc(100vw - 32px));
+  display: flex; flex-direction: column; gap: 14px; padding: 18px; text-align: left;
+  background: var(--surface-overlay); border: 1px solid var(--line-mid); border-radius: var(--radius); box-shadow: var(--shadow-pop);
+}
+.left { left: 0; }
+.right { right: 0; }
+.head { display: flex; justify-content: space-between; align-items: center; }
+.text { font: 400 13px/1.5 var(--sans); color: var(--fg-3); }
+.urlRow { display: flex; align-items: flex-end; gap: 6px; }
+.url { flex: 1; }

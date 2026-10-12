@@ -1,0 +1,23 @@
+# Optional manually-maintained store branches (in addition to `ingest --stores-osm`).
+# Ships EMPTY.
+#
+#   id        required  unique id
+#   retailer  required  retailer id from retailers.toml
+#   name      required  branch name
+#   addr      optional  street address
+#   lat, lon  required  coordinates (WGS84)
+#   phone     optional
+#   hours     optional  OSM opening_hours syntax, e.g. "Mo-Su 10:00-22:00",
+#                       "Mo-Fr 09:00-18:00; Sa 10:00-16:00", "Mo-Sa 10:00-21:00; Su off", "24/7".
+#                       Unparseable values are shown as "Hours not listed" with the raw text kept.
+#   services  optional  list of strings, e.g. ["Pickup counter", "Walk-in warranty"]
+#
+# [[branch]]
+# id = "example-shop-kl"
+# retailer = "example-shop"
+# name = "Kuala Lumpur"
+# addr = "Lot 1, Jalan Contoh, 50000 Kuala Lumpur"
+# lat = 3.1478
+# lon = 101.6953
+# hours = "Mo-Su 10:00-22:00"
+# services = ["Pickup counter"]

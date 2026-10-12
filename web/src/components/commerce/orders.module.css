@@ -1,0 +1,32 @@
+/* Order placed + orders tracking. Token-only. */
+
+/* ---------- order placed ---------- */
+.shop { display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; }
+.shopHead { display: flex; justify-content: space-between; gap: 12px; }
+.shopName { font: 650 15px/1.2 var(--sans); }
+.shopEta { font: 500 12px/1.2 var(--mono); color: var(--blue-soft); text-align: right; }
+.itemList { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.itemLine { display: flex; justify-content: space-between; gap: 12px; font: 400 12px/1.5 var(--mono); color: var(--muted); }
+.itemLine > :last-child { flex: none; }
+.itemLink { min-width: 0; color: var(--fg-3); transition: color var(--dur-fast); }
+.itemLink:hover { color: var(--fg); }
+.shopFoot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.note { font: 400 11.5px/1.5 var(--mono); color: var(--muted); }
+.noLinks { font: 400 11.5px/1.3 var(--mono); color: var(--dim); }
+
+/* ---------- orders ---------- */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ship { display: flex; flex-direction: column; gap: 20px; padding: 22px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.shipHead { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+.shipText { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.shipSide { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.shipStatus { font: 600 13px/1.2 var(--mono); }
+.shipFoot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding-top: 14px; border-top: 1px solid var(--line-hair); }
+.shipEta { font: 500 13px/1.4 var(--sans); color: var(--fg-2); }
+.shipActions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+/* courier / tracking form */
+.trackForm { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; }
+.trackForm > :nth-child(1) { flex: 1 1 160px; }
+.trackForm > :nth-child(2) { flex: 2 1 200px; }
+.arrow { color: var(--blue-soft); }

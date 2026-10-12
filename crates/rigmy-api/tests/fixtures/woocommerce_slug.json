@@ -1,0 +1,7 @@
+[{"id":1234,"name":"Gigabyte B650M Aorus Elite AX","slug":"gigabyte-b650m-aorus-elite-ax",
+  "permalink":"https://pc.test/product/gigabyte-b650m-aorus-elite-ax/",
+  "prices":{"price":"74900","regular_price":"79900","sale_price":"74900","price_range":null,
+            "currency_code":"MYR","currency_symbol":"RM","currency_minor_unit":2,
+            "currency_decimal_separator":".","currency_thousand_separator":",","currency_prefix":"RM","currency_suffix":""},
+  "is_purchasable":true,"is_in_stock":true,"is_on_backorder":false,"low_stock_remaining":2,
+  "stock_availability":{"text":"Only 2 left in stock","class":"in-stock"}}]

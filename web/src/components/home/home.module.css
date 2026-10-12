@@ -1,0 +1,95 @@
+/* Home sections below the scroll story: ticker, movers, stores, presets, footer. Token-only. */
+.home { display: flex; flex-direction: column; }
+
+/* ---------- shared section heading ---------- */
+.sectionHead { display: flex; flex-direction: column; gap: 12px; }
+.balance { text-wrap: balance; }
+.sectionLead { margin: 0; max-width: 620px; text-wrap: pretty; }
+.spanAll { grid-column: 1 / -1; }
+
+/* ---------- ticker ---------- */
+.ticker { position: relative; overflow: hidden; border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); background: var(--surface-band); }
+.tickerTrack { display: flex; width: max-content; }
+.tickerItem, .tickerEmpty { display: flex; align-items: center; gap: 12px; padding: 16px 26px; font: 500 12px/1 var(--mono); white-space: nowrap; }
+.tickerItem { border-right: 1px solid var(--line-hair); color: var(--fg-2); transition: background var(--dur-fast); }
+.tickerItem:hover { background: var(--fill-mid); color: var(--fg-2); }
+.tickerItem:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+.tickerEmpty { justify-content: center; color: var(--muted); }
+.tickerCat { color: var(--dim); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+.tickerName { color: var(--fg); font: 600 13px/1 var(--sans); }
+.tickerEdgeL, .tickerEdgeR { position: absolute; top: 0; bottom: 0; width: 80px; pointer-events: none; }
+.tickerEdgeL { left: 0; background: linear-gradient(90deg, var(--surface-band), transparent); }
+.tickerEdgeR { right: 0; background: linear-gradient(270deg, var(--surface-band), transparent); }
+@media (prefers-reduced-motion: reduce) {
+  .ticker { overflow-x: auto; }
+  .tickerEdgeL, .tickerEdgeR { display: none; }
+}
+
+/* ---------- price movers ---------- */
+.movers { position: relative; display: flex; flex-direction: column; gap: 30px; padding: 96px clamp(20px, 5vw, 72px) 80px; overflow: hidden; }
+.gridBg {
+  position: absolute; inset: 0; pointer-events: none; background-size: 64px 64px;
+  background-image: linear-gradient(var(--fill-soft) 1px, transparent 1px), linear-gradient(90deg, var(--fill-soft) 1px, transparent 1px);
+  /* masks use alpha only, so any opaque token works as the solid stop */
+  -webkit-mask-image: radial-gradient(ellipse 70% 90% at 20% 0%, var(--bg) 0%, transparent 75%);
+  mask-image: radial-gradient(ellipse 70% 90% at 20% 0%, var(--bg) 0%, transparent 75%);
+}
+.moversHead { position: relative; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.moversGrid { position: relative; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; }
+.mover {
+  display: flex; flex-direction: column; gap: 16px; padding: 22px; text-align: left; color: var(--fg);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  transition: border-color var(--dur-base), background var(--dur-base);
+}
+.mover:hover { color: var(--fg); background: var(--surface-hover); border-color: color-mix(in srgb, var(--blue) 55%, transparent); }
+.mover:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.moverHead { display: flex; justify-content: space-between; gap: 10px; font: 500 10.5px/1.2 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.moverName { min-height: 42px; font: 600 16px/1.3 var(--sans); text-wrap: pretty; }
+.moverFoot { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line-hair); }
+.moverPrice { font: 600 19px/1 var(--mono); white-space: nowrap; }
+.moverNote { font: 400 11px/1.35 var(--mono); color: var(--muted); text-align: right; }
+
+/* ---------- stores near you ---------- */
+.stores { display: flex; flex-wrap: wrap; border-top: 1px solid var(--line-soft); }
+.storesCopy { flex: 1 1 380px; max-width: 640px; display: flex; flex-direction: column; gap: 22px; padding: 80px clamp(20px, 5vw, 72px); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.storeList { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line-soft); }
+.storeRow {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; padding: 16px 0; color: var(--fg); text-align: left;
+  border-bottom: 1px solid var(--line-hair); transition: padding var(--dur-base) var(--ease-out);
+}
+.storeRow:hover { color: var(--fg); padding-left: 8px; }
+.storeRow:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.storeMain { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.storeName { font: 600 15px/1.2 var(--sans); }
+.storeSide { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.storeKm { font: 600 14px/1 var(--mono); }
+.storeOpen { font: 500 11px/1.2 var(--mono); text-align: right; }
+.storeEmpty { display: flex; align-items: center; gap: 10px; padding: 16px 0; border-bottom: 1px solid var(--line-hair); font: 400 12px/1.45 var(--mono); color: var(--muted); }
+.mapPane { flex: 999 1 480px; position: relative; min-height: 560px; background: var(--bg-raised); }
+.mapPane .map { position: absolute; inset: 0; }
+
+/* ---------- presets ---------- */
+.presets { display: flex; flex-direction: column; gap: 24px; padding: 80px clamp(20px, 5vw, 72px) 96px; border-top: 1px solid var(--line-soft); }
+.presetsHead { display: flex; flex-direction: column; gap: 10px; }
+.presetGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.preset { display: flex; flex-direction: column; gap: 18px; padding: 24px; transition: border-color var(--dur-base); }
+.presetGrid .preset:hover { border-color: var(--line-3); }
+.presetTop { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.presetNote { margin: 0; text-wrap: pretty; }
+.presetLines { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; font: 400 12px/1.4 var(--mono); color: var(--fg-2); }
+.presetFoot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line-soft); }
+.presetTotal { display: flex; flex-direction: column; gap: 4px; }
+.presetLabel { font: 500 10px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.presetPrice { font: 600 18px/1 var(--mono); }
+
+/* ---------- footer ---------- */
+.footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 32px; padding: 44px clamp(20px, 5vw, 72px) 56px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.footerAbout { display: flex; flex-direction: column; gap: 12px; max-width: 440px; }
+.brand span { color: var(--blue); }
+.footerNote { margin: 0; font: 400 12.5px/1.55 var(--sans); color: var(--muted); }
+.footerCols { display: flex; gap: 48px; flex-wrap: wrap; }
+.footerCol { display: flex; flex-direction: column; gap: 10px; }
+.footerLink { color: var(--fg-2); font: 500 13.5px/1.2 var(--sans); transition: color var(--dur-fast); }
+.footerLink:hover { color: var(--fg-max); }
+.footerLink:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }

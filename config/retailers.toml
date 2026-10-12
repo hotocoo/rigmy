@@ -1,0 +1,54 @@
+# RigMY retailers.
+#
+# Ships with NO retailers. Add the shops you want to compare, then list their product pages in
+# sources.toml and run `rigmy-api ingest`. Every field shown to users comes from here; RigMY never
+# invents retailer data. Only add shops whose details (website, delivery terms) you have verified.
+#
+# Schema (one [[retailer]] block per shop):
+#
+#   id          required  short slug, [a-z0-9_-]; referenced by sources.toml / stores.toml
+#   name        required  display name
+#   city        required  head-office city shown on cards
+#   website     required  https URL of the shop
+#   pay         optional  free-text payment methods, e.g. "FPX · card · 0% instalment 12 mo"
+#   pickup      optional  e.g. "Pickup · <area>" or "Online only"
+#   courier     optional  default courier name; must be a [[courier]] name in content.toml
+#   enabled     optional  default true; false hides the shop and its offers without deleting history
+#   osm_match   optional  case-insensitive substrings matched against OpenStreetMap shop
+#                         name/brand/operator when running `ingest --stores-osm`
+#   [retailer.delivery.<region>]   one table per region the shop delivers to
+#                         (regions: kv, pen, jhr, east). A missing region = does not deliver there.
+#       fee     number, RM per order; multiplied per category by [delivery] size_multiplier in
+#               content.toml for bulky parts (cases x2 as shipped)
+#       eta     a label from the [[eta]] table in content.toml: "Same day", "Next day", "1–2 days",
+#               "2–3 days", "3–5 days", "5–7 days"
+#               (note the en dash – in ranges)
+#
+# Example (commented out; replace every value with the real shop's details):
+#
+# [[retailer]]
+# id = "example-shop"
+# name = "Example PC Store"
+# city = "Kuala Lumpur"
+# website = "https://www.example-pc-store.my"
+# pay = "FPX · card"
+# pickup = "Pickup · Kuala Lumpur"
+# courier = "Example Courier"
+# enabled = true
+# osm_match = ["Example PC Store"]
+#
+# [retailer.delivery.kv]
+# fee = 10
+# eta = "1–2 days"
+#
+# [retailer.delivery.pen]
+# fee = 15
+# eta = "2–3 days"
+#
+# [retailer.delivery.jhr]
+# fee = 15
+# eta = "2–3 days"
+#
+# [retailer.delivery.east]
+# fee = 35
+# eta = "5–7 days"

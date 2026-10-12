@@ -1,0 +1,94 @@
+/* Home scroll story. Token-only; geometry mirrors the prototype's hero (project/RigMY.dc.html). */
+.story { position: relative; height: 820vh; }
+.stage { position: sticky; top: var(--nav); height: calc(100vh - var(--nav)); overflow: hidden; background: var(--bg); }
+.studio { position: absolute; inset: 0; }
+.canvas { width: 100%; height: 100%; display: block; }
+
+/* big outlined chapter number; the driver sets data-side and the vertical drift */
+.bigNum {
+  position: absolute; left: clamp(8px, 2vw, 32px); right: auto; bottom: -0.12em; pointer-events: none; user-select: none; will-change: transform;
+  font: 800 clamp(150px, 23vw, 360px)/1 var(--sans); font-stretch: 125%; letter-spacing: -0.05em;
+  color: transparent; -webkit-text-stroke: 1px var(--line);
+}
+.bigNum[data-side='right'] { left: auto; right: clamp(80px, 9vw, 150px); }
+.fade { position: absolute; left: 0; right: 0; bottom: 0; height: 140px; background: linear-gradient(transparent, var(--bg)); pointer-events: none; }
+
+/* chapter chip (top left) */
+.chip {
+  position: absolute; left: clamp(20px, 6vw, 96px); top: 22px; display: flex; align-items: center; gap: 10px; pointer-events: none;
+}
+.chipDot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 12px var(--blue); transition: background var(--dur-glide), box-shadow var(--dur-glide); }
+
+/* progress rail (right) */
+.rail { position: absolute; right: clamp(14px, 2.4vw, 32px); top: 50%; transform: translateY(-50%); display: flex; gap: 14px; align-items: stretch; pointer-events: none; }
+.railLabels { display: flex; flex-direction: column; justify-content: space-between; gap: 16px; text-align: right; }
+.railLabel { font: 500 10px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); transition: color var(--dur-base); }
+.railLabel[data-state='on'] { color: var(--fg); }
+.railLabel[data-state='past'] { color: var(--muted); }
+.railLabel[data-state='next'] { color: var(--faint); }
+.railTrack { position: relative; width: 1px; background: var(--line-mid); }
+.railFill { position: absolute; inset: 0; background: var(--blue); transform-origin: top; transform: scaleY(0); }
+
+/* chapter columns */
+.col { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; pointer-events: none; }
+.colLeft { left: clamp(20px, 6vw, 96px); }
+.colRight { right: clamp(90px, 10vw, 160px); }
+.md { width: min(440px, calc(100% - 40px)); }
+.lg { width: min(500px, calc(100% - 40px)); }
+.xl { width: min(580px, calc(100% - 40px)); }
+
+.card {
+  display: flex; flex-direction: column; gap: 16px; padding: 28px; opacity: 0; will-change: transform, opacity;
+  background: color-mix(in srgb, var(--bg) 55%, transparent); border: 1px solid var(--line-soft);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.gapLg { gap: 18px; }
+.cardDense { background: color-mix(in srgb, var(--bg) 60%, transparent); }
+.full { width: 100%; }
+.kicker { font: 500 10.5px/1.2 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue-soft); }
+.kickerRow { display: flex; justify-content: space-between; gap: 12px; }
+.balance { text-wrap: balance; }
+.spec { font: 400 12.5px/1.4 var(--mono); color: var(--fg-3); }
+.checkBox { display: flex; flex-direction: column; gap: 6px; padding-top: 14px; border-top: 1px solid var(--line); }
+.checkLine { display: flex; align-items: center; gap: 8px; }
+.pretty { text-wrap: pretty; }
+.nowrap { white-space: nowrap; }
+
+/* 00 · intro */
+.intro { display: flex; flex-direction: column; gap: 26px; will-change: transform, opacity; }
+.heroCopy { margin: 0; max-width: 500px; font: 400 17px/1.55 var(--sans); color: var(--fg-soft); text-wrap: pretty; }
+.scrollHint {
+  display: flex; align-items: center; gap: 12px; margin-top: 18px;
+}
+.scrollLine { width: 36px; height: 1px; background: var(--blue); }
+
+/* story calls to action; --veil is the kit veil button's wash strength */
+.ctas { display: flex; flex-wrap: wrap; gap: 10px; }
+.ctasDense { --veil: 60%; }
+
+/* 01 · parts */
+.partsCopy { margin: 0; font: 400 15.5px/1.55 var(--sans); color: var(--fg-soft); text-wrap: pretty; }
+.partList { display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; margin: 0; font: 400 12px/1.35 var(--mono); }
+.partRow { display: contents; }
+.partIdx { color: var(--dim); }
+.partName { margin: 0; color: var(--fg-2); }
+
+/* 06 · prices */
+.bars { display: flex; flex-direction: column; gap: 12px; }
+.barRow { display: flex; flex-direction: column; gap: 6px; }
+.barText { display: flex; justify-content: space-between; gap: 12px; font: 400 12px/1.2 var(--mono); }
+.barName { color: var(--fg-2); }
+.barEmpty { color: var(--dim); }
+.barTrack { height: 3px; background: var(--line-hair); }
+.barFill { height: 100%; transform-origin: left; transform: scaleX(0); }
+.moreShops { font: 400 11.5px/1.2 var(--mono); color: var(--dim); }
+.splitRow { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; padding-top: 14px; border-top: 1px solid var(--line); }
+.splitNote { max-width: 260px; font: 400 13.5px/1.45 var(--sans); color: var(--fg-soft); text-wrap: pretty; }
+
+/* 07 · start */
+.startCol { position: absolute; left: 0; right: 0; bottom: clamp(40px, 10vh, 110px); display: flex; justify-content: center; pointer-events: none; padding: 0 20px; }
+.start { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; opacity: 0; will-change: transform, opacity; }
+.start .ctas { justify-content: center; }
+
+/* Narrow screens: the copy spans the full width, so the chapter rail would collide with it. */
+@media (max-width: 860px) { .rail { display: none; } }

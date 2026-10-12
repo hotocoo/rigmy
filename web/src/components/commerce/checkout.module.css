@@ -1,0 +1,67 @@
+/* Checkout: details form, retailer hand-off, review and the processing overlay. Token-only. */
+
+/* ---------- summary ---------- */
+.missingNote { font: 500 11.5px/1.4 var(--mono); color: var(--warn); }
+
+/* ---------- details ---------- */
+.shipModes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.shipMode { --chip-pad: 16px; }
+.optTitle { font: 600 14.5px/1.2 var(--sans); }
+.optNote { font: 400 12.5px/1.4 var(--sans); color: var(--fg-3); }
+.contactGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 12px; }
+.addrGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 12px; }
+.addrGrid > :first-child { grid-column: 1 / -1; }
+.regionField { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.regionBox {
+  height: 46px; display: flex; align-items: center; padding: 0 14px; border: 1px solid var(--line); border-radius: var(--radius);
+  color: var(--fg-3); font: 400 14px/1 var(--sans); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.group { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.group > legend { padding: 0; margin-bottom: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.dayChip { --chip-pad: 11px 13px; min-width: 96px; }
+.dayDow { font: 500 10px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.dayDate { font: 600 16px/1 var(--sans); }
+
+/* ---------- pickup ---------- */
+.pickList { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius); }
+.pickGroup { display: flex; flex-direction: column; gap: 10px; min-width: 0; margin: 0; padding: 14px 16px; border: 0; border-bottom: 1px solid var(--line-faint); }
+.pickName { font: 600 14.5px/1.3 var(--sans); }
+.noBranch { font: 400 12px/1.4 var(--mono); color: var(--muted); }
+.pickHead { display: flex; justify-content: space-between; gap: 12px; }
+.branchChip { --chip-pad: 10px 12px; --chip-gap: 5px; }
+.branchName { font: 600 13px/1.2 var(--sans); }
+
+/* ---------- hand-off ---------- */
+.itemLink { align-self: flex-start; font: 500 11.5px/1.3 var(--mono); }
+.noLink { font: 400 11.5px/1.3 var(--mono); color: var(--dim); }
+.pays { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font: 400 13px/18px var(--sans); color: var(--fg-2); }
+.site { font: 500 11.5px/18px var(--mono); }
+
+/* ---------- review ---------- */
+.shopLine { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line-hair); }
+.shopName { font: 600 14px/1.2 var(--sans); }
+.shopSub { font: 500 13px/1.2 var(--mono); }
+
+/* ---------- processing overlay ---------- */
+.overlay {
+  position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; background: var(--scrim-strong);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+.dialog {
+  width: min(460px, calc(100% - 32px)); display: flex; flex-direction: column; gap: 22px; padding: 30px; background: var(--surface);
+  border: 1px solid var(--line-light); border-radius: var(--radius); box-shadow: var(--shadow-modal);
+}
+.dialogHead { display: flex; justify-content: space-between; gap: 12px; }
+.dialogNote { font: 500 10.5px/1.2 var(--mono); color: var(--muted); }
+.procSteps { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.procStep { display: flex; align-items: center; gap: 12px; font: 500 13.5px/1.3 var(--sans); color: var(--dim); transition: color var(--dur-mid); }
+.procDot {
+  width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--line-3); background: transparent;
+  box-shadow: 0 0 0 4px transparent; transition: all var(--dur-mid);
+}
+.procDone, .procActive { color: var(--fg); }
+.procDone .procDot { border-color: var(--ok); background: var(--ok); }
+.procActive .procDot { border-color: var(--blue); background: var(--blue); box-shadow: 0 0 0 4px color-mix(in srgb, var(--blue) 22%, transparent); }
+.dialogFoot { display: flex; justify-content: space-between; padding-top: 14px; border-top: 1px solid var(--line-soft); font: 500 12px/1 var(--mono); color: var(--fg-3); }
+.dialogFoot > :last-child { color: var(--fg); }

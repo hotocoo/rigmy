@@ -1,0 +1,18 @@
+/* Compare (/compare): side-by-side spec table. Token-only. */
+.head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
+
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+.table { width: 100%; min-width: 640px; border-collapse: collapse; table-layout: fixed; }
+.labelCol { width: 200px; }
+
+.corner { border-bottom: 1px solid var(--line); }
+.item { padding: 20px; border-left: 1px solid var(--line-hair); border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; font-weight: inherit; }
+.card { display: flex; flex-direction: column; gap: 12px; }
+.cardTop { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.name { font: 600 15.5px/1.3 var(--sans); color: var(--fg); text-wrap: pretty; }
+.actions { display: flex; gap: 6px; }
+
+.rowLabel, .cell { padding: 13px 20px; border-bottom: 1px solid var(--line-faint); vertical-align: top; text-align: left; }
+.rowLabel { font: 500 10.5px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.cell { border-left: 1px solid var(--line-hair); font: 400 13px/1.4 var(--mono); color: var(--fg); }
+.best { color: var(--blue-soft); font-weight: 600; }

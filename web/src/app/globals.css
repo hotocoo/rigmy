@@ -1,0 +1,129 @@
+/* RigMY design tokens. Single source of truth for colour, type, shape and motion; TS mirrors these names in src/lib/tokens.ts. */
+:root {
+  /* Surfaces */
+  --bg: #07080b;
+  --bg-raised: #0b0d12;
+  --bg-deep: #06070a;
+  --surface: #0c0e13;
+  --surface-hover: #0e1118;
+  --surface-glyph: #0f1218;
+  --surface-tip: rgba(9, 11, 15, 0.95);
+  --surface-sunken: #0a0b0f;
+  --surface-band: #090a0e;
+  --surface-overlay: rgba(12, 14, 19, 0.98);
+  --surface-glass: rgba(9, 11, 15, 0.86);
+  --surface-glass-soft: rgba(9, 11, 15, 0.8);
+  --scrim: rgba(5, 6, 8, 0.4);
+  --scrim-strong: rgba(5, 6, 8, 0.84);
+
+  /* Text */
+  --fg: #edf0f5;
+  --fg-2: #c9d0db;
+  --fg-glyph: #b9c2d0;
+  --fg-3: #9aa3b2;
+  --fg-4: #8b94a3;
+  --fg-soft: #a3abb8;
+  --fg-bright: #dfe5ee;
+  /* Pure white: the prototype's hover state for mini controls, close buttons and footer/menu links. */
+  --fg-max: #fff;
+  --muted: #7d8797;
+  --dim: #5d6573;
+  --faint: #4a515e;
+
+  /* Accent */
+  --blue: #3d8bff;
+  --blue-hi: #62a1ff;
+  --blue-soft: #7fb4ff;
+  --blue-pale: #b5d3ff;
+  --blue-text: #cfe1ff;
+  --ink: #03060c;
+
+  /* Status */
+  --ok: #4fd18b;
+  --warn: #f2b14c;
+  --warn-soft: #f6cf8e;
+  --error: #ff6b6b;
+  --error-soft: #ffb3b3;
+  --info: var(--blue-soft);
+  --pending: var(--dim);
+
+  /* Lines (white at increasing strength) */
+  --line-ghost: rgba(255, 255, 255, 0.04);
+  --line-faint: rgba(255, 255, 255, 0.05);
+  --line-hair: rgba(255, 255, 255, 0.06);
+  --line-soft: rgba(255, 255, 255, 0.07);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-light: rgba(255, 255, 255, 0.1);
+  --line-mid: rgba(255, 255, 255, 0.12);
+  --line-2: rgba(255, 255, 255, 0.14);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --line-firm: rgba(255, 255, 255, 0.18);
+  --line-20: rgba(255, 255, 255, 0.2);
+  --line-22: rgba(255, 255, 255, 0.22);
+  --line-3: rgba(255, 255, 255, 0.24);
+  --line-28: rgba(255, 255, 255, 0.28);
+  --line-bold: rgba(255, 255, 255, 0.3);
+  --line-32: rgba(255, 255, 255, 0.32);
+  --line-hover: rgba(255, 255, 255, 0.4);
+  --scrollbar: #2a2f38;
+
+  /* Fills (white washes for hover rows and grids) */
+  --fill-ghost: rgba(255, 255, 255, 0.02);
+  --fill-whisper: rgba(255, 255, 255, 0.025);
+  --fill-faint: rgba(255, 255, 255, 0.03);
+  --fill-soft: rgba(255, 255, 255, 0.035);
+  --fill-mid: rgba(255, 255, 255, 0.04);
+
+  /* Type */
+  --sans: Archivo, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Shape & depth */
+  --radius: 2px;
+  --shadow-pop: 0 30px 80px rgba(0, 0, 0, 0.6);
+  --shadow-toast: 0 20px 60px rgba(0, 0, 0, 0.6);
+  --shadow-modal: 0 40px 120px rgba(0, 0, 0, 0.7);
+  --glow-blue: 0 0 14px var(--blue);
+
+  /* Motion */
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --ease-io: cubic-bezier(.76, 0, .24, 1);
+  --ease-draw: cubic-bezier(.65, 0, .35, 1);
+  --ease-scan: cubic-bezier(.45, 0, .2, 1);
+  --dur-quick: 150ms;
+  --dur-fast: 200ms;
+  --dur-base: 300ms;
+  --dur-mid: 400ms;
+  --dur-glide: 600ms;
+  --dur-bar: 800ms;
+  --dur-slow: 840ms;
+  --dur-rail: 1.2s;
+  /* Periods of looping indicators: loading pulse, selected map pin ring, "you are here" beacon (two rings, half a period apart). */
+  --loop-pulse: 1.4s;
+  --loop-ring: 1.8s;
+  --loop-beacon: 2.4s;
+
+  /* Layout */
+  --nav: 61px;
+  --gutter: clamp(16px, 3vw, 40px);
+  color-scheme: dark;
+}
+
+html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+* { box-sizing: border-box; }
+a { color: var(--blue-soft); text-decoration: none; }
+a:hover { color: var(--blue-pale); }
+button, input, select { font-family: inherit; }
+::selection { background: color-mix(in srgb, var(--blue) 35%, transparent); }
+input::placeholder { color: var(--dim); }
+* { scrollbar-color: var(--scrollbar) transparent; scrollbar-width: thin; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Visually hidden but available to assistive tech. */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+}

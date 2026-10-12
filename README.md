@@ -1,25 +1,44 @@
-# CODING AGENTS: READ THIS FIRST
+# RigMY
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+A PC part picker and price-comparison site for Malaysia. You build in an interactive 3D studio, compatibility is checked live, and every price, stock state and price history comes from real retailer listings in ringgit.
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+```
+web/          Next.js 16 + React 19 + TypeScript app (UI, 3D studio, maps)
+crates/
+  rigmy-core  Rust domain logic: compatibility, power, purchase plans, history/stats, geo
+  rigmy-wasm  rigmy-core compiled to WebAssembly for the browser  → web/src/wasm/
+  rigmy-api   Axum + SQLite API, config seeding, price ingester, OpenStreetMap store import
+config/       catalog, reference content, postcodes, retailers, price sources, stores, sale events
+docs/         BACKEND.md, FRONTEND.md (standards)
+project/      original Claude Design prototype + handoff notes (reference only)
+```
 
-## What you should do — IMPORTANT
+## Data
 
-**Read the chat transcripts first.** There are 4 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+There is no mock data. A fresh install has product specs and reference content only. Prices appear once you add retailers to `config/retailers.toml`, list product pages in `config/sources.toml` and run `rigmy-api ingest`. Run the ingest on a schedule to build up price history. Until then the app shows empty states. See [docs/BACKEND.md](docs/BACKEND.md).
 
-**Read `project/RigMY.dc.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+Checkout hands off to the retailers. RigMY saves the order and your delivery or pickup preferences, then links to each shop's product pages to buy. You record courier and tracking numbers on the Orders page.
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+## Run locally
 
-## About the design files
+```bash
+# API (port 8787)
+cargo build --release -p rigmy-api
+export RIGMY_DB=$PWD/rigmy.db RIGMY_CONFIG=$PWD/config
+./target/release/rigmy-api seed
+./target/release/rigmy-api serve
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+# Web (port 3000; /api is proxied to RIGMY_API_URL, default http://localhost:8787)
+cd web && npm install && npm run dev
+```
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+Rebuild the WebAssembly engine after changing `crates/rigmy-core`: `./scripts/build-wasm.sh`.
 
-## Bundle contents
+## Quality gates
 
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `RigMY PC Builder Rebuild` project files (HTML prototypes, assets, components)
+```bash
+cargo fmt --check && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace
+cd web && npx tsc --noEmit && npm run lint && npx next build
+```
+
+Frontend rules (tokens, UI kit, no hardcoding) are in [docs/FRONTEND.md](docs/FRONTEND.md).

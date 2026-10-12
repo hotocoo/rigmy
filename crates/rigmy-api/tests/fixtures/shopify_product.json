@@ -1,0 +1,5 @@
+{"product":{"id":7012345678901,"title":"Corsair RM850e","vendor":"Corsair",
+ "variants":[
+   {"id":50000000000001,"title":"Default Title","price":"529.00","compare_at_price":"599.00","sku":"CP-9020296"},
+   {"id":50000000000002,"title":"With cable kit","price":"579.00","sku":"CP-9020296-K"}
+ ]}}

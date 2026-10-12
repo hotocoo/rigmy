@@ -1,0 +1,6 @@
+/* Location bar (parts, stores, checkout pickup). Token-only. */
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; }
+.text { flex: 1 1 170px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.label { font: 600 14px/1.25 var(--sans); color: var(--fg); }
+.pc { display: flex; gap: 4px; }
+.pcField { width: 92px; }
