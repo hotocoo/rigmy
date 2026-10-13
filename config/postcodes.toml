@@ -1,0 +1,85 @@
+# Malaysian postcode areas: 2-digit postcode prefix -> town centroid.
+#
+# Used to place a user who types a postcode instead of sharing their location (the engine's
+# `postcode()` and the location picker). Each entry is the approximate centre of the main town of
+# the area whose postcodes start with `prefix`, so the position is only roughly right (reported
+# with a 3 km accuracy radius). The delivery region is derived from the coordinates.
+# Served to the web app as `Bootstrap.postcodes`. This file is required.
+#
+#   prefix  required  exactly 2 digits, unique
+#   town    required  town name shown to the user
+#   lat     required  latitude (WGS84)
+#   lon     required  longitude (WGS84)
+#
+# Source: the RigMY prototype's postcode table (town centroids, about 2-3 decimal places).
+# Prefixes with no entry are not recognised.
+
+postcode = [
+  { prefix = "01", town = "Kangar", lat = 6.44, lon = 100.2 },
+  { prefix = "02", town = "Kangar", lat = 6.44, lon = 100.2 },
+  { prefix = "05", town = "Alor Setar", lat = 6.12, lon = 100.37 },
+  { prefix = "06", town = "Alor Setar", lat = 6.12, lon = 100.37 },
+  { prefix = "08", town = "Sungai Petani", lat = 5.65, lon = 100.49 },
+  { prefix = "09", town = "Kulim", lat = 5.37, lon = 100.56 },
+  { prefix = "10", town = "George Town", lat = 5.414, lon = 100.329 },
+  { prefix = "11", town = "Bayan Lepas", lat = 5.33, lon = 100.29 },
+  { prefix = "12", town = "Butterworth", lat = 5.4, lon = 100.37 },
+  { prefix = "13", town = "Seberang Perai", lat = 5.39, lon = 100.4 },
+  { prefix = "14", town = "Bukit Mertajam", lat = 5.36, lon = 100.46 },
+  { prefix = "15", town = "Kota Bharu", lat = 6.125, lon = 102.238 },
+  { prefix = "16", town = "Kota Bharu", lat = 6.125, lon = 102.238 },
+  { prefix = "20", town = "Kuala Terengganu", lat = 5.33, lon = 103.14 },
+  { prefix = "21", town = "Kuala Terengganu", lat = 5.33, lon = 103.14 },
+  { prefix = "25", town = "Kuantan", lat = 3.81, lon = 103.33 },
+  { prefix = "26", town = "Kuantan", lat = 3.81, lon = 103.33 },
+  { prefix = "28", town = "Temerloh", lat = 3.45, lon = 102.42 },
+  { prefix = "30", town = "Ipoh", lat = 4.6, lon = 101.09 },
+  { prefix = "31", town = "Ipoh", lat = 4.6, lon = 101.09 },
+  { prefix = "34", town = "Taiping", lat = 4.85, lon = 100.74 },
+  { prefix = "35", town = "Tapah", lat = 4.2, lon = 101.26 },
+  { prefix = "36", town = "Teluk Intan", lat = 4.02, lon = 101.02 },
+  { prefix = "40", town = "Shah Alam", lat = 3.073, lon = 101.518 },
+  { prefix = "41", town = "Klang", lat = 3.04, lon = 101.45 },
+  { prefix = "42", town = "Port Klang", lat = 3.0, lon = 101.39 },
+  { prefix = "43", town = "Kajang", lat = 2.99, lon = 101.79 },
+  { prefix = "45", town = "Kuala Selangor", lat = 3.34, lon = 101.25 },
+  { prefix = "46", town = "Petaling Jaya", lat = 3.1, lon = 101.64 },
+  { prefix = "47", town = "Petaling Jaya", lat = 3.107, lon = 101.607 },
+  { prefix = "48", town = "Rawang", lat = 3.32, lon = 101.58 },
+  { prefix = "50", town = "Kuala Lumpur", lat = 3.147, lon = 101.695 },
+  { prefix = "51", town = "Kuala Lumpur", lat = 3.17, lon = 101.69 },
+  { prefix = "52", town = "Kepong", lat = 3.21, lon = 101.64 },
+  { prefix = "53", town = "Setapak", lat = 3.2, lon = 101.72 },
+  { prefix = "54", town = "Kuala Lumpur", lat = 3.16, lon = 101.71 },
+  { prefix = "55", town = "Bukit Bintang", lat = 3.14, lon = 101.71 },
+  { prefix = "56", town = "Cheras", lat = 3.09, lon = 101.74 },
+  { prefix = "57", town = "Bukit Jalil", lat = 3.06, lon = 101.69 },
+  { prefix = "58", town = "Old Klang Road", lat = 3.1, lon = 101.67 },
+  { prefix = "59", town = "Bangsar", lat = 3.12, lon = 101.67 },
+  { prefix = "60", town = "Taman Tun Dr Ismail", lat = 3.14, lon = 101.63 },
+  { prefix = "62", town = "Putrajaya", lat = 2.926, lon = 101.696 },
+  { prefix = "63", town = "Cyberjaya", lat = 2.922, lon = 101.656 },
+  { prefix = "64", town = "Sepang", lat = 2.69, lon = 101.75 },
+  { prefix = "68", town = "Ampang", lat = 3.15, lon = 101.76 },
+  { prefix = "70", town = "Seremban", lat = 2.726, lon = 101.938 },
+  { prefix = "71", town = "Nilai", lat = 2.82, lon = 101.8 },
+  { prefix = "75", town = "Melaka", lat = 2.189, lon = 102.25 },
+  { prefix = "76", town = "Melaka", lat = 2.22, lon = 102.24 },
+  { prefix = "78", town = "Alor Gajah", lat = 2.38, lon = 102.21 },
+  { prefix = "79", town = "Iskandar Puteri", lat = 1.43, lon = 103.62 },
+  { prefix = "80", town = "Johor Bahru", lat = 1.492, lon = 103.741 },
+  { prefix = "81", town = "Skudai", lat = 1.536, lon = 103.66 },
+  { prefix = "83", town = "Batu Pahat", lat = 1.85, lon = 102.93 },
+  { prefix = "84", town = "Muar", lat = 2.04, lon = 102.57 },
+  { prefix = "86", town = "Kluang", lat = 2.03, lon = 103.32 },
+  { prefix = "87", town = "Labuan", lat = 5.28, lon = 115.24 },
+  { prefix = "88", town = "Kota Kinabalu", lat = 5.98, lon = 116.073 },
+  { prefix = "89", town = "Penampang", lat = 5.92, lon = 116.11 },
+  { prefix = "90", town = "Sandakan", lat = 5.84, lon = 118.12 },
+  { prefix = "91", town = "Tawau", lat = 4.24, lon = 117.89 },
+  { prefix = "93", town = "Kuching", lat = 1.553, lon = 110.359 },
+  { prefix = "94", town = "Kota Samarahan", lat = 1.46, lon = 110.49 },
+  { prefix = "96", town = "Sibu", lat = 2.29, lon = 111.83 },
+  { prefix = "97", town = "Bintulu", lat = 3.17, lon = 113.04 },
+  { prefix = "98", town = "Miri", lat = 4.399, lon = 113.991 },
+]

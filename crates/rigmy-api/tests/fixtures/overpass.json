@@ -1,0 +1,15 @@
+{"version":0.6,"generator":"Overpass API","osm3s":{"copyright":"The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."},
+ "elements":[
+  {"type":"node","id":1001,"lat":3.1442,"lon":101.7104,
+   "tags":{"shop":"computer","name":"Test Computer Mall Branch","brand":"Test Computer",
+           "addr:housenumber":"3-12","addr:street":"Jalan Contoh","addr:postcode":"55100","addr:city":"Kuala Lumpur",
+           "opening_hours":"Mo-Su 10:00-22:00","phone":"+60 3-0000 0000"}},
+  {"type":"way","id":2002,"center":{"lat":5.329,"lon":100.2865},
+   "tags":{"shop":"electronics","name":"TEST COMPUTER Bayan","opening_hours":"Mo-Fr 09:00-18:00; Sa 10:00-16:00"}},
+  {"type":"node","id":3003,"lat":1.54,"lon":103.63,
+   "tags":{"shop":"computer","name":"Other Gadget Shop","opening_hours":"24/7"}},
+  {"type":"node","id":4004,"lat":2.92,"lon":101.65,
+   "tags":{"shop":"computer","operator":"Second Shop Sdn Bhd","name":"Second Shop","opening_hours":"by appointment"}},
+  {"type":"node","id":5005,
+   "tags":{"shop":"computer","name":"Test Computer no coords"}}
+ ]}

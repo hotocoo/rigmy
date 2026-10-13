@@ -1,0 +1,14 @@
+[package]
+name = "rigmy-core"
+description = "RigMY business logic: compatibility, power, plan optimisation, history stats, geo helpers. No IO."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+toml.workspace = true

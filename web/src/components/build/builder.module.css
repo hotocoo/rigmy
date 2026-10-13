@@ -1,0 +1,53 @@
+/* Builder page: part rows, totals and the studio overlay. Token-only. */
+
+.head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 26px 24px 18px; }
+.headText { display: flex; flex-direction: column; gap: 8px; min-width: 0; flex: 1 1 auto; }
+.headText > :last-child { white-space: nowrap; }
+.headTools { display: flex; gap: 6px; flex: none; }
+
+.rows { margin: 0; padding: 0; list-style: none; }
+.row {
+  display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 4px 12px; align-items: start; padding: 14px 24px;
+  border-top: 1px solid var(--line-hair); cursor: pointer; transition: background var(--dur-fast);
+}
+.row:hover { background: var(--fill-faint); }
+.rowOn { background: color-mix(in srgb, var(--blue) 8%, transparent); }
+.idx { font: 500 10.5px/18px var(--mono); color: var(--dim); }
+.rowOn .idx { color: var(--blue); }
+.pick {
+  display: flex; flex-direction: column; gap: 5px; min-width: 0; padding: 0; background: none; border: 0;
+  color: inherit; text-align: left; cursor: pointer; font: inherit;
+}
+.pick:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+.cat { font: 500 10px/18px var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.name { font: 550 14.5px/1.3 var(--sans); color: var(--muted); text-wrap: pretty; }
+.nameSet { color: var(--fg); }
+.flag { display: flex; align-items: center; gap: 6px; font: 500 11.5px/1.3 var(--mono); }
+.end { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.price { font: 600 14px/18px var(--mono); white-space: nowrap; }
+.priceNone { color: var(--muted); }
+.acts { display: flex; gap: 6px; }
+
+.power { display: flex; flex-direction: column; gap: 10px; padding: 18px 24px; border-top: 1px solid var(--line-hair); }
+
+.foot { display: flex; flex-direction: column; gap: 14px; padding: 20px 24px 28px; border-top: 1px solid var(--line-hair); margin-top: auto; }
+.totals { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.totalBlock { display: flex; flex-direction: column; gap: 6px; }
+.note { text-align: right; }
+.ctas { display: flex; gap: 8px; flex-wrap: wrap; }
+.ctaMain { flex: 1 1 160px; }
+.ctaAlt { flex: 1 1 110px; }
+
+/* ---------- studio overlay ---------- */
+.intro { position: absolute; left: 20px; top: 18px; max-width: calc(30% - 24px); display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+.hint { font: 400 12px/1.4 var(--sans); color: var(--muted); }
+.checks { position: absolute; left: 16px; right: 16px; bottom: 16px; display: flex; flex-wrap: wrap; gap: 6px; }
+.check {
+  display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px; background: var(--surface-glass);
+  border: 1px solid var(--line-light); border-radius: var(--radius); color: var(--fg-bright); font: 500 11px/1 var(--mono);
+  cursor: pointer; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); transition: border-color var(--dur-fast);
+}
+.check:hover { border-color: var(--line-bold); }
+.check:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.checkValue { color: var(--muted); }
+

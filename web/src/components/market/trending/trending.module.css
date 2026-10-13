@@ -1,0 +1,35 @@
+/* Trending page sections. Token-only. */
+.split { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+.main { flex: 1 1 560px; }
+.side { flex: 1 1 380px; display: flex; flex-direction: column; gap: 32px; min-width: 0; }
+
+/* ---------- price index ---------- */
+.index { display: flex; flex-direction: column; gap: 18px; padding: 24px; background: var(--surface-sunken); border: 1px solid var(--line); border-radius: var(--radius); }
+.indexHead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; }
+
+/* ---------- biggest drops ---------- */
+.drop { --row-hover: var(--fill-whisper); display: grid; grid-template-columns: 30px minmax(0, 1fr) minmax(70px, 120px) 104px; gap: 16px; align-items: center; padding: 14px 6px; }
+.rank { font: 500 11px/1 var(--mono); color: var(--dim); }
+@media (max-width: 480px) {
+  .drop { grid-template-columns: 24px minmax(0, 1fr) auto; gap: 12px; }
+  .dropSpark { display: none; }
+}
+
+/* ---------- most added ---------- */
+.built { display: flex; flex-direction: column; gap: 9px; padding: 13px 0; }
+.builtHead { display: flex; justify-content: space-between; gap: 12px; width: 100%; }
+
+/* ---------- upcoming sales ---------- */
+.sale { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 14px 16px; }
+.saleLabel { font: 700 22px/1 var(--sans); font-stretch: 118%; color: var(--warn); }
+.saleText { display: flex; flex-direction: column; gap: 4px; }
+.saleDate { font: 500 13.5px/1.3 var(--sans); }
+.saleNote { font: 400 12px/1.4 var(--sans); color: var(--muted); }
+.saleIn { font: 600 13px/1 var(--mono); color: var(--fg-bright); white-space: nowrap; }
+
+/* ---------- closest to low ---------- */
+.lows { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 12px; }
+.lowHead { display: flex; justify-content: space-between; gap: 10px; }
+.lowName { min-height: 40px; text-wrap: pretty; }
+.lowPrices { display: flex; justify-content: space-between; gap: 10px; font: 500 12px/1 var(--mono); }
+.lowRef { color: var(--muted); }

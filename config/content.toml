@@ -1,0 +1,237 @@
+# RigMY reference and editorial content, served to the web app as `Bootstrap.content`
+# (GET /api/bootstrap). This file is required. It is parsed strictly: unknown keys are rejected,
+# and `rigmy-api seed` / `serve` refuse to start if any rule below is broken.
+#
+# Sections:
+#
+#   [checkout]       delivery-slot picker at checkout
+#   [delivery]       delivery-fee rules
+#   [[eta]]          the delivery-time table (one block per ETA label)
+#   [[guide]]        assembly guide steps, in build order
+#   [[cable_run]]    cable runs drawn and described in the cable studio
+#   [[courier]]      couriers users can pick for tracking links
+
+# ---------------------------------------------------------------------------------------------
+# [checkout]
+#
+#   delivery_windows  required  non-empty list of unique time-window labels the user can ask for.
+#                               POST /api/orders only accepts a `slot.window` from this list.
+#   slot_days         required  how many consecutive days the delivery-day picker offers (1–31)
+
+[checkout]
+delivery_windows = ["9 am – 12 pm", "12 – 3 pm", "3 – 6 pm", "6 – 9 pm"]
+slot_days = 5
+
+# ---------------------------------------------------------------------------------------------
+# [delivery]
+#
+#   size_multiplier  optional  table of category id (from catalog.json) -> multiplier (> 0) applied
+#                              to a retailer's per-region delivery fee for an offer of that
+#                              category. Bulky parts ship as oversize parcels. Unlisted categories
+#                              use 1.0.
+
+[delivery]
+size_multiplier = { case = 2.0 }
+
+# ---------------------------------------------------------------------------------------------
+# [[eta]]  delivery-time buckets. Retailer delivery terms (retailers.toml) use these labels.
+#
+#   label  required  exactly one block per label: "Same day", "Next day", "1–2 days", "2–3 days",
+#                    "3–5 days", "5–7 days" (ranges use an en dash –). A missing, duplicate or
+#                    unknown label is an error.
+#   rank   required  speed order, 0 = fastest. Ranks must be unique. Used by the "fastest
+#                    delivery" plan and to find a build's slowest shop (`maxEta`).
+#   days   required  worst-case working days until delivery; schedules the earliest delivery
+#                    slot. Must not decrease as rank increases.
+#
+# Pre-orders are always shown with the slowest (highest-rank) ETA.
+
+[[eta]]
+label = "Same day"
+rank = 0
+days = 0
+
+[[eta]]
+label = "Next day"
+rank = 1
+days = 1
+
+[[eta]]
+label = "1–2 days"
+rank = 2
+days = 2
+
+[[eta]]
+label = "2–3 days"
+rank = 3
+days = 3
+
+[[eta]]
+label = "3–5 days"
+rank = 4
+days = 5
+
+[[eta]]
+label = "5–7 days"
+rank = 5
+days = 7
+
+# ---------------------------------------------------------------------------------------------
+# [[guide]]  assembly steps, in the order they are shown.
+#
+#   cat      optional  part the step installs: a category id from catalog.json (cpu, cooler, mobo,
+#                      ram, ssd, gpu, case, psu), or "cables" for cable routing. Omit it for the
+#                      final close-up step (served as `null`).
+#   title    required  step heading
+#   minutes  required  estimated minutes for the step (> 0)
+#   text     required  instructions
+
+[[guide]]
+cat = "case"
+title = "Prepare the case"
+minutes = 5
+text = "Remove both side panels and set the screw bag aside. Check the standoffs match your motherboard size."
+
+[[guide]]
+cat = "mobo"
+title = "Mount the motherboard"
+minutes = 10
+text = "Lower the board onto the standoffs at an angle so the rear I/O lines up with the opening, then fit all nine screws."
+
+[[guide]]
+cat = "cpu"
+title = "Seat the CPU"
+minutes = 4
+text = "Lift the socket lever, line the gold triangle up with the socket marker and drop the CPU in without pressing. Close the lever."
+
+[[guide]]
+cat = "ram"
+title = "Install the memory"
+minutes = 3
+text = "For two sticks use slots A2 and B2, the second and fourth from the CPU. Press down until both latches click."
+
+[[guide]]
+cat = "ssd"
+title = "Fit the M.2 SSD"
+minutes = 4
+text = "Remove the M.2 heatsink, slide the drive into the top slot at about 30 degrees, press it flat and refit the heatsink."
+
+[[guide]]
+cat = "cooler"
+title = "Mount the cooler"
+minutes = 15
+text = "Apply a pea-sized dot of thermal paste. For a liquid cooler, mount the radiator at the top as exhaust before fitting the pump."
+
+[[guide]]
+cat = "psu"
+title = "Install the power supply"
+minutes = 6
+text = "Fan facing down over the floor vent. Plug the 24-pin, CPU and GPU cables into the PSU before sliding it in."
+
+[[guide]]
+cat = "gpu"
+title = "Install the graphics card"
+minutes = 5
+text = "Remove the slot covers, press the card into the top x16 slot until the latch clicks, then screw the bracket in."
+
+[[guide]]
+cat = "cables"
+title = "Route the cables"
+minutes = 20
+text = "The 24-pin and GPU power go through the front grommets, CPU power through the top-left cutout. Comb and tie each run behind the tray."
+
+[[guide]]
+title = "Close up and first boot"
+minutes = 10
+text = "Refit the fans and glass. Plug the monitor into the graphics card, enter BIOS and enable the memory profile."
+
+# ---------------------------------------------------------------------------------------------
+# [[cable_run]]  cable runs in the cable studio.
+#
+#   id         required  unique; matches the studio's cable mesh id (cable_24pin, cable_eps, …)
+#   name       required  cable name, e.g. "24-pin ATX"
+#   conn       required  what it connects
+#   length_mm  required  cable length in millimetres (> 0)
+#   requires   required  category id from catalog.json; the run only exists when that part is
+#                        in the build
+#   tidy       required  route description with managed cabling
+#   stock      required  route description as shipped
+
+[[cable_run]]
+id = "cable_24pin"
+name = "24-pin ATX"
+conn = "Motherboard power"
+length_mm = 610
+requires = "mobo"
+tidy = "Up through the front grommet beside the connector, combed flat."
+stock = "Leaves the shroud and loops across the board edge."
+
+[[cable_run]]
+id = "cable_eps"
+name = "8-pin EPS"
+conn = "CPU power"
+length_mm = 700
+requires = "mobo"
+tidy = "Behind the tray and through the top-left cutout."
+stock = "Pulled across the board from the shroud."
+
+[[cable_run]]
+id = "cable_gpu"
+name = "12V-2x6"
+conn = "Graphics card power"
+length_mm = 650
+requires = "gpu"
+tidy = "Rises off the connector and turns into the front grommet."
+stock = "Arcs over the card and drops to the shroud."
+
+[[cable_run]]
+id = "cable_fp"
+name = "Front panel and fans"
+conn = "Power button, USB, fan headers"
+length_mm = 450
+requires = "mobo"
+tidy = "Short hops into the shroud cutouts."
+stock = "Loose loops along the bottom edge."
+
+# ---------------------------------------------------------------------------------------------
+# [[courier]]  couriers offered when a user records a shipment (order group `courier`).
+# `courier` in retailers.toml must name one of these.
+#
+#   name          required  unique display name
+#   tracking_url  optional  public tracking page, https only, containing the placeholder
+#                           {tracking} (replaced with the URL-encoded tracking number).
+#                           Only add it after confirming the courier's current URL format;
+#                           without it the app shows the tracking number with no link.
+#
+# Example:
+#
+# [[courier]]
+# name = "Example Courier"
+# tracking_url = "https://tracking.example-courier.my/track?no={tracking}"
+
+[[courier]]
+name = "Pos Laju"
+
+[[courier]]
+name = "J&T Express"
+
+[[courier]]
+name = "Ninja Van"
+
+[[courier]]
+name = "DHL eCommerce"
+
+[[courier]]
+name = "GDEX"
+
+[[courier]]
+name = "City-Link Express"
+
+[[courier]]
+name = "SPX Express"
+
+[[courier]]
+name = "Flash Express"
+
+[[courier]]
+name = "Lalamove"

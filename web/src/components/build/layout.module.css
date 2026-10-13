@@ -1,0 +1,27 @@
+/* Shared layout for the build flow (builder, review, cables, guide): a parts column beside a sticky 3D stage. Token-only. */
+
+.split {
+  display: flex; flex-wrap: wrap; align-items: flex-start;
+}
+
+/* ---------- side column ---------- */
+.side {
+  flex: 1 1 360px; max-width: 480px; min-width: 0; display: flex; flex-direction: column;
+  border-right: 1px solid var(--line-soft); min-height: calc(100vh - var(--nav));
+}
+.sideNarrow { max-width: 460px; }
+
+.lead { margin: 0; font: 400 14.5px/1.55 var(--sans); color: var(--fg-soft); text-wrap: pretty; }
+.capsLabel { display: flex; justify-content: space-between; gap: 12px; }
+
+/* ---------- 3D stage ---------- */
+.stage {
+  flex: 999 1 520px; position: sticky; top: var(--nav); height: calc(100vh - var(--nav));
+  min-height: 540px; background: var(--bg-raised);
+}
+.stageTall { min-height: 560px; }
+.stageAside { flex: 1 1 420px; min-height: 520px; border-left: 1px solid var(--line-soft); }
+.canvas { width: 100%; height: 100%; display: block; }
+.caption { position: absolute; left: 20px; top: 18px; pointer-events: none; }
+.tools { position: absolute; right: 16px; top: 14px; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; max-width: 70%; }
+

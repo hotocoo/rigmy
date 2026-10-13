@@ -1,0 +1,38 @@
+/* Build guide page. Token-only. */
+
+.head { display: flex; flex-direction: column; gap: 10px; padding: 28px 24px 18px; }
+.progress { margin-top: 6px; }
+.notice { margin: 0 24px 18px; }
+
+.steps { margin: 0; padding: 0; list-style: none; }
+.step {
+  display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; width: 100%; padding: 13px 24px;
+  background: transparent; border: 0; border-top: 1px solid var(--line-hair); color: var(--fg-3); text-align: left; cursor: pointer;
+  transition: background var(--dur-fast);
+}
+.step:hover { background: var(--fill-faint); }
+.step:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+.stepOn { color: var(--fg); background: color-mix(in srgb, var(--blue) 8%, transparent); }
+.num { font: 500 11px/1 var(--mono); color: var(--dim); }
+.numDone { color: var(--ok); }
+.stepOn .num { color: var(--blue); }
+.body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.stepTitle { font: 600 14px/1.25 var(--sans); }
+.mins { font: 400 11px/1 var(--mono); color: var(--muted); }
+
+/* ---------- step card over the stage ---------- */
+.cardWrap { position: absolute; left: 20px; right: 20px; bottom: 20px; display: flex; justify-content: flex-start; }
+.card {
+  width: min(520px, 100%); display: flex; flex-direction: column; gap: 14px; padding: 22px; background: var(--surface-glass);
+  border: 1px solid var(--line-light); border-radius: var(--radius); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.cardHead { display: flex; justify-content: space-between; gap: 12px; }
+.cardMins { color: var(--muted); }
+.partLink {
+  align-self: flex-start; background: none; border: 0; padding: 0; cursor: pointer; text-align: left;
+  font: 500 12px/1.3 var(--mono); color: var(--blue-soft); transition: color var(--dur-fast);
+}
+.partLink:hover { color: var(--blue-pale); }
+.partLink:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.text { margin: 0; font: 400 14.5px/1.55 var(--sans); color: var(--fg-2); text-wrap: pretty; }
+.nav { display: flex; gap: 8px; }

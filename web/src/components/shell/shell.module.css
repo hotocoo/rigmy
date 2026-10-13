@@ -1,0 +1,122 @@
+/* App shell: navigation, location panel, page wipe, toast. Token-only. */
+.root { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); color: var(--fg); }
+
+/* ---------- nav ---------- */
+.nav {
+  position: sticky; top: 0; z-index: 30; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 22px;
+  padding: 0 24px; min-height: 60px; background: color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line-soft);
+}
+.navPlaceholder { min-height: 61px; }
+.brand { display: flex; align-items: baseline; background: none; border: 0; padding: 0; cursor: pointer; color: var(--fg); }
+.brand span { color: var(--blue); }
+.steps { display: flex; align-items: stretch; align-self: stretch; flex-wrap: wrap; }
+.step {
+  display: flex; align-items: center; gap: 8px; padding: 0 12px; min-height: 58px; background: none; border: 0;
+  border-bottom: 2px solid transparent; color: var(--fg-4); font: 550 13.5px/1 var(--sans); cursor: pointer; transition: color var(--dur-fast);
+}
+.step:hover { color: var(--fg); }
+.stepOn { color: var(--fg); border-bottom-color: var(--blue); }
+.stepIdx { font: 500 10px/1 var(--mono); color: var(--dim); }
+.stepOn .stepIdx { color: var(--blue); }
+.spacer { flex: 1; }
+.links { display: flex; gap: 2px; flex-wrap: wrap; }
+.link { display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: none; border: 0; color: var(--fg-4); font: 500 13px/1 var(--sans); cursor: pointer; transition: color var(--dur-fast); }
+.link:hover, .linkOn { color: var(--fg); }
+.badge { min-width: 16px; height: 16px; padding: 0 4px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--blue); color: var(--ink); font: 600 10px/1 var(--mono); }
+.locBtn {
+  display: flex; align-items: center; gap: 9px; height: 34px; padding: 0 12px; background: transparent; border: 1px solid var(--line-mid);
+  border-radius: var(--radius); color: var(--fg-2); font: 500 11.5px/1 var(--mono); cursor: pointer; max-width: 220px;
+  transition: border-color var(--dur-fast), background var(--dur-fast);
+}
+.locBtn:hover { border-color: var(--line-32); }
+.locBtnOn { background: color-mix(in srgb, var(--blue) 12%, transparent); }
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cartBtn {
+  display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 12px; background: color-mix(in srgb, var(--blue) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--blue) 40%, transparent); border-radius: var(--radius); color: var(--fg); font: 500 12px/1 var(--mono); cursor: pointer;
+  transition: background var(--dur-fast);
+}
+.cartBtn:hover { background: color-mix(in srgb, var(--blue) 18%, transparent); }
+.cartCount { color: var(--blue-soft); }
+.menuBtn { display: none; width: 34px; height: 34px; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--line-mid); border-radius: var(--radius); color: var(--fg-2); cursor: pointer; }
+.menuBtn:hover { border-color: var(--line-hover); color: var(--fg); }
+.burger, .burger::before, .burger::after { display: block; width: 14px; height: 1px; background: currentColor; position: relative; transition: transform var(--dur-fast) var(--ease-out), opacity var(--dur-fast); }
+.burger::before, .burger::after { content: ''; position: absolute; left: 0; }
+.burger::before { top: -5px; } .burger::after { top: 5px; }
+.burgerOpen { background: transparent; }
+.burgerOpen::before { transform: translateY(5px) rotate(45deg); }
+.burgerOpen::after { transform: translateY(-5px) rotate(-45deg); }
+
+/* mobile drawer */
+.drawer {
+  position: fixed; left: 0; right: 0; top: var(--nav); bottom: 0; z-index: 37; overflow: auto; display: flex; flex-direction: column;
+  gap: 28px; padding: 24px 20px 40px; background: var(--bg); border-top: 1px solid var(--line-soft);
+}
+.drawerGroup { display: flex; flex-direction: column; }
+.drawerLabel { margin-bottom: 6px; }
+.drawerItem {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 14px 0; background: none; border: 0;
+  border-bottom: 1px solid var(--line); color: var(--fg-2); font: 600 20px/1.1 var(--sans); font-stretch: 110%; cursor: pointer; text-align: left;
+}
+.drawerItem:hover, .drawerItemOn { color: var(--fg); }
+.drawerItemOn .stepIdx { color: var(--blue); }
+
+@media (max-width: 1080px) {
+  .steps, .links { display: none; }
+  .menuBtn { display: inline-flex; }
+  .nav { padding: 0 16px; gap: 6px 10px; }
+}
+@media (max-width: 520px) {
+  /* Keep brand, location, cart and menu on one row: the location button collapses to its status dot. */
+  .locBtn { padding: 0 12px; }
+  .locBtn .ellipsis { display: none; }
+  .spacer { flex: 1 1 0; }
+}
+
+/* ---------- location panel ---------- */
+.scrim { position: fixed; inset: 0; z-index: 38; background: var(--scrim); }
+.pop {
+  position: fixed; right: 16px; top: calc(var(--nav) + 8px); z-index: 39; width: min(392px, calc(100vw - 32px));
+  display: flex; flex-direction: column; gap: 16px; padding: 20px; background: var(--surface-overlay); border: 1px solid var(--line-mid);
+  border-radius: var(--radius); box-shadow: var(--shadow-pop);
+}
+.row { display: flex; justify-content: space-between; align-items: center; }
+.stack { display: flex; flex-direction: column; gap: 8px; }
+.stackSm { display: flex; flex-direction: column; gap: 6px; }
+.pcRow { display: flex; gap: 6px; }
+.pcField { flex: 1; }
+.regions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.region { height: 34px; padding: 0 10px; background: transparent; border: 1px solid var(--line-mid); border-radius: var(--radius); color: var(--fg-3); font: 500 12px/1 var(--sans); cursor: pointer; text-align: left; transition: background var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast); }
+.region:hover { color: var(--fg); border-color: var(--line-hover); }
+.regionOn { background: color-mix(in srgb, var(--blue) 18%, transparent); border-color: color-mix(in srgb, var(--blue) 60%, transparent); color: var(--fg); }
+.nearest { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 0 0; background: none; border: 0; border-top: 1px solid var(--line); color: var(--fg-2); font: 400 12.5px/1.4 var(--sans); cursor: pointer; text-align: left; }
+.nearest:hover { color: var(--fg-max); }
+.arrow { color: var(--blue-soft); }
+.locateDot { width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--ink); }
+
+/* ---------- splash ---------- */
+.splash { flex: 1; min-height: calc(100vh - var(--nav)); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.splashInner { display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; max-width: 520px; }
+.pulse { width: 8px; height: 8px; border-radius: 50%; animation: pulse var(--loop-pulse) ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+.code { font: 500 12px/1 var(--mono); color: var(--fg-2); background: var(--surface); padding: 2px 6px; border-radius: var(--radius); }
+
+/* ---------- wipe ---------- */
+.wipe {
+  position: fixed; left: 0; right: 0; top: var(--nav); bottom: 0; z-index: 28; pointer-events: none; background-color: var(--bg);
+  background-image: linear-gradient(var(--fill-faint) 1px, transparent 1px), linear-gradient(90deg, var(--fill-faint) 1px, transparent 1px);
+  background-size: 64px 64px; transform: scaleY(0); transform-origin: bottom; display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.wipeEdge { position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--blue); box-shadow: 0 0 24px var(--blue); }
+.wipeInner { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.wipeNum { font: 500 11px/1 var(--mono); letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue-soft); }
+.wipeLbl { color: var(--fg); }
+
+/* ---------- toast ---------- */
+.toast {
+  position: fixed; left: 50%; bottom: 28px; z-index: 70; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; display: flex;
+  align-items: center; gap: 12px; padding: 12px 16px; background: var(--surface-overlay); border: 1px solid color-mix(in srgb, var(--blue) 45%, transparent);
+  border-radius: var(--radius); box-shadow: var(--shadow-toast); font: 500 13px/1.3 var(--sans); color: var(--fg); white-space: nowrap; max-width: calc(100vw - 32px);
+}
+.toastDot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 10px var(--blue); }

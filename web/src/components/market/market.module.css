@@ -1,0 +1,64 @@
+/* Shared layout for the market pages (trending, stores, watchlist, shared build). Token-only. */
+
+/* ---------- page frame ---------- */
+.page {
+  position: relative; display: flex; flex-direction: column; gap: 36px; padding: 44px var(--gutter) 96px;
+  max-width: 1440px; width: 100%; margin: 0 auto;
+}
+.narrow { gap: 28px; max-width: 1240px; }
+/* Content sits above the decorative grid. */
+.page > :not(.gridBg) { position: relative; }
+.gridBg {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(var(--fill-soft) 1px, transparent 1px), linear-gradient(90deg, var(--fill-soft) 1px, transparent 1px);
+  background-size: 64px 64px;
+  /* Masks only read alpha: any opaque token works as the solid stop. */
+  -webkit-mask-image: radial-gradient(ellipse 60% 50% at 15% 0%, var(--fg) 0%, transparent 70%);
+  mask-image: radial-gradient(ellipse 60% 50% at 15% 0%, var(--fg) 0%, transparent 70%);
+}
+
+/* ---------- header ---------- */
+.hero { display: flex; flex-direction: column; gap: 14px; }
+.balance { text-wrap: balance; }
+.lede { margin: 0; max-width: 640px; text-wrap: pretty; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- sections ---------- */
+.stack { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.stackSm { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.sectionHead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.col { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.end { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; text-align: right; }
+.pretty { text-wrap: pretty; }
+.nowrap { white-space: nowrap; }
+
+/* A full-width list row that opens something. A section may set --row-line / --row-hover for its own divider and hover wash. */
+.rowBtn {
+  width: 100%; background: none; border: 0; border-bottom: 1px solid var(--row-line, var(--line-hair)); color: var(--fg); text-align: left;
+  cursor: pointer; transition: background var(--dur-fast);
+}
+.rowBtn:hover:not(:disabled) { background: var(--row-hover, var(--fill-ghost)); }
+.rowBtn:disabled { cursor: default; }
+.rowBtn:focus-visible, .card:focus-visible, .textBtn:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+
+/* An interactive surface card (lows grid). */
+.card {
+  display: flex; flex-direction: column; gap: 14px; padding: 20px; text-align: left; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius); color: var(--fg); cursor: pointer; transition: border-color var(--dur-mid);
+}
+.card:hover { border-color: color-mix(in srgb, var(--ok) 50%, transparent); }
+
+/* Text-only button (part names, "← All stores"). */
+.textBtn { align-self: flex-start; background: none; border: 0; padding: 0; color: inherit; cursor: pointer; text-align: left; transition: color var(--dur-fast); }
+.textBtn:hover { color: var(--blue-soft); }
+
+/* ---------- figures ---------- */
+.statGrid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 1px; margin: 0;
+  background: var(--line-soft); border: 1px solid var(--line-soft); border-radius: var(--radius); overflow: hidden;
+}
+.statTile { display: flex; flex-direction: column; gap: 12px; padding: 22px; background: var(--bg); }
+.statTile dd { margin: 0; display: contents; }
+.statNote { font: 400 12.5px/1.45 var(--sans); color: var(--muted); }

@@ -1,0 +1,1195 @@
+{
+  "regions": [
+    {
+      "id": "kv",
+      "name": "Klang Valley",
+      "short": "KV",
+      "center": {
+        "lat": 3.139,
+        "lon": 101.6869,
+        "label": "Kuala Lumpur"
+      }
+    },
+    {
+      "id": "pen",
+      "name": "Penang",
+      "short": "PNG",
+      "center": {
+        "lat": 5.4141,
+        "lon": 100.3288,
+        "label": "George Town"
+      }
+    },
+    {
+      "id": "jhr",
+      "name": "Johor",
+      "short": "JHR",
+      "center": {
+        "lat": 1.4927,
+        "lon": 103.7414,
+        "label": "Johor Bahru"
+      }
+    },
+    {
+      "id": "east",
+      "name": "Sabah & Sarawak",
+      "short": "E. MY",
+      "center": {
+        "lat": 5.9804,
+        "lon": 116.0735,
+        "label": "Kota Kinabalu"
+      }
+    }
+  ],
+  "categories": [
+    {
+      "id": "cpu",
+      "label": "CPU",
+      "long": "Processor",
+      "idx": "01"
+    },
+    {
+      "id": "cooler",
+      "label": "Cooler",
+      "long": "CPU cooler",
+      "idx": "02"
+    },
+    {
+      "id": "mobo",
+      "label": "Motherboard",
+      "long": "Motherboard",
+      "idx": "03"
+    },
+    {
+      "id": "ram",
+      "label": "Memory",
+      "long": "Memory",
+      "idx": "04"
+    },
+    {
+      "id": "ssd",
+      "label": "Storage",
+      "long": "Storage",
+      "idx": "05"
+    },
+    {
+      "id": "gpu",
+      "label": "Graphics",
+      "long": "Graphics card",
+      "idx": "06"
+    },
+    {
+      "id": "case",
+      "label": "Case",
+      "long": "Case",
+      "idx": "07"
+    },
+    {
+      "id": "psu",
+      "label": "Power",
+      "long": "Power supply",
+      "idx": "08"
+    }
+  ],
+  "specdef": {
+    "cpu": [
+      [
+        "cores",
+        "Cores",
+        "",
+        "high"
+      ],
+      [
+        "threads",
+        "Threads",
+        "",
+        "high"
+      ],
+      [
+        "boost",
+        "Max boost",
+        "GHz",
+        "high"
+      ],
+      [
+        "l3",
+        "L3 cache",
+        "MB",
+        "high"
+      ],
+      [
+        "tdp",
+        "TDP",
+        "W",
+        "low"
+      ],
+      [
+        "socket",
+        "Socket"
+      ],
+      [
+        "igpu",
+        "Integrated graphics"
+      ]
+    ],
+    "cooler": [
+      [
+        "type",
+        "Type"
+      ],
+      [
+        "rad",
+        "Radiator",
+        "mm"
+      ],
+      [
+        "height",
+        "Height",
+        "mm",
+        "low"
+      ],
+      [
+        "fans",
+        "Fans"
+      ],
+      [
+        "noise",
+        "Noise (max)",
+        "dBA",
+        "low"
+      ],
+      [
+        "display",
+        "Display"
+      ]
+    ],
+    "mobo": [
+      [
+        "socket",
+        "Socket"
+      ],
+      [
+        "ff",
+        "Form factor"
+      ],
+      [
+        "chipset",
+        "Chipset"
+      ],
+      [
+        "mem",
+        "Memory"
+      ],
+      [
+        "m2",
+        "M.2 slots",
+        "",
+        "high"
+      ],
+      [
+        "wifi",
+        "Wireless"
+      ]
+    ],
+    "ram": [
+      [
+        "cap",
+        "Capacity",
+        "GB",
+        "high"
+      ],
+      [
+        "kit",
+        "Kit"
+      ],
+      [
+        "speed",
+        "Speed",
+        "MT/s",
+        "high"
+      ],
+      [
+        "cl",
+        "CAS latency",
+        "CL",
+        "low"
+      ],
+      [
+        "type",
+        "Type"
+      ],
+      [
+        "expo",
+        "Profile"
+      ]
+    ],
+    "ssd": [
+      [
+        "cap",
+        "Capacity"
+      ],
+      [
+        "iface",
+        "Interface"
+      ],
+      [
+        "read",
+        "Seq. read",
+        "MB/s",
+        "high"
+      ],
+      [
+        "write",
+        "Seq. write",
+        "MB/s",
+        "high"
+      ],
+      [
+        "tbw",
+        "Endurance",
+        "TBW",
+        "high"
+      ]
+    ],
+    "gpu": [
+      [
+        "vram",
+        "Memory",
+        "GB",
+        "high"
+      ],
+      [
+        "mem",
+        "Memory type"
+      ],
+      [
+        "boost",
+        "Boost clock",
+        "MHz",
+        "high"
+      ],
+      [
+        "tgp",
+        "Board power",
+        "W",
+        "low"
+      ],
+      [
+        "length",
+        "Length",
+        "mm",
+        "low"
+      ],
+      [
+        "slots",
+        "Thickness",
+        "slots",
+        "low"
+      ],
+      [
+        "conn",
+        "Power connector"
+      ]
+    ],
+    "case": [
+      [
+        "type",
+        "Type"
+      ],
+      [
+        "ffs",
+        "Motherboards"
+      ],
+      [
+        "maxGpu",
+        "Max GPU length",
+        "mm",
+        "high"
+      ],
+      [
+        "maxCooler",
+        "Max cooler height",
+        "mm",
+        "high"
+      ],
+      [
+        "radTop",
+        "Top radiator"
+      ],
+      [
+        "fans",
+        "Included fans"
+      ]
+    ],
+    "psu": [
+      [
+        "watt",
+        "Wattage",
+        "W",
+        "high"
+      ],
+      [
+        "eff",
+        "Efficiency"
+      ],
+      [
+        "std",
+        "Standard"
+      ],
+      [
+        "mod",
+        "Cabling"
+      ],
+      [
+        "fan",
+        "Fan"
+      ]
+    ]
+  },
+  "facet": {
+    "cpu": "Socket",
+    "cooler": "Type",
+    "mobo": "Socket",
+    "ram": "Capacity",
+    "ssd": "Interface",
+    "gpu": "Memory",
+    "case": "Size",
+    "psu": "Wattage"
+  },
+  "products": [
+    {
+      "id": "cpu-9800x3d",
+      "cat": "cpu",
+      "brand": "AMD",
+      "name": "AMD Ryzen 7 9800X3D",
+      "glyph": "9800X3D",
+      "socket": "AM5",
+      "tdp": 120,
+      "facet": "AM5",
+      "warrantyY": 3,
+      "specs": {
+        "cores": 8,
+        "threads": 16,
+        "boost": 5.2,
+        "l3": 96,
+        "tdp": 120,
+        "socket": "AM5",
+        "igpu": "Radeon 2 CU"
+      },
+      "vis": {}
+    },
+    {
+      "id": "cpu-9950x3d",
+      "cat": "cpu",
+      "brand": "AMD",
+      "name": "AMD Ryzen 9 9950X3D",
+      "glyph": "9950X3D",
+      "socket": "AM5",
+      "tdp": 170,
+      "facet": "AM5",
+      "warrantyY": 3,
+      "specs": {
+        "cores": 16,
+        "threads": 32,
+        "boost": 5.7,
+        "l3": 128,
+        "tdp": 170,
+        "socket": "AM5",
+        "igpu": "Radeon 2 CU"
+      },
+      "vis": {}
+    },
+    {
+      "id": "cpu-9600x",
+      "cat": "cpu",
+      "brand": "AMD",
+      "name": "AMD Ryzen 5 9600X",
+      "glyph": "9600X",
+      "socket": "AM5",
+      "tdp": 65,
+      "facet": "AM5",
+      "warrantyY": 3,
+      "specs": {
+        "cores": 6,
+        "threads": 12,
+        "boost": 5.4,
+        "l3": 32,
+        "tdp": 65,
+        "socket": "AM5",
+        "igpu": "Radeon 2 CU"
+      },
+      "vis": {}
+    },
+    {
+      "id": "cpu-265k",
+      "cat": "cpu",
+      "brand": "Intel",
+      "name": "Intel Core Ultra 7 265K",
+      "glyph": "265K",
+      "socket": "LGA1851",
+      "tdp": 125,
+      "facet": "LGA1851",
+      "warrantyY": 3,
+      "specs": {
+        "cores": 20,
+        "threads": 20,
+        "boost": 5.5,
+        "l3": 30,
+        "tdp": 125,
+        "socket": "LGA1851",
+        "igpu": "Intel Graphics 4 Xe"
+      },
+      "vis": {}
+    },
+    {
+      "id": "cpu-245k",
+      "cat": "cpu",
+      "brand": "Intel",
+      "name": "Intel Core Ultra 5 245K",
+      "glyph": "245K",
+      "socket": "LGA1851",
+      "tdp": 125,
+      "facet": "LGA1851",
+      "warrantyY": 3,
+      "specs": {
+        "cores": 14,
+        "threads": 14,
+        "boost": 5.2,
+        "l3": 24,
+        "tdp": 125,
+        "socket": "LGA1851",
+        "igpu": "Intel Graphics 4 Xe"
+      },
+      "vis": {}
+    },
+    {
+      "id": "cool-kraken360",
+      "cat": "cooler",
+      "brand": "NZXT",
+      "name": "NZXT Kraken Elite 360 RGB",
+      "glyph": "360 LCD",
+      "ctype": "aio",
+      "rad": 360,
+      "maxTdp": 280,
+      "facet": "Liquid",
+      "warrantyY": 6,
+      "specs": {
+        "type": "360 mm AIO",
+        "rad": 360,
+        "fans": "3 × 120 mm",
+        "noise": 32,
+        "display": "2.36\" LCD"
+      },
+      "vis": {
+        "type": "aio"
+      }
+    },
+    {
+      "id": "cool-lf3",
+      "cat": "cooler",
+      "brand": "Arctic",
+      "name": "Arctic Liquid Freezer III Pro 360",
+      "glyph": "LF III 360",
+      "ctype": "aio",
+      "rad": 360,
+      "maxTdp": 300,
+      "facet": "Liquid",
+      "warrantyY": 6,
+      "specs": {
+        "type": "360 mm AIO",
+        "rad": 360,
+        "fans": "3 × 120 mm",
+        "noise": 31,
+        "display": "—"
+      },
+      "vis": {
+        "type": "aio"
+      }
+    },
+    {
+      "id": "cool-kraken240w",
+      "cat": "cooler",
+      "brand": "NZXT",
+      "name": "NZXT Kraken 240 RGB White",
+      "glyph": "240 W",
+      "ctype": "aio",
+      "rad": 240,
+      "maxTdp": 200,
+      "facet": "Liquid",
+      "warrantyY": 6,
+      "specs": {
+        "type": "240 mm AIO",
+        "rad": 240,
+        "fans": "2 × 120 mm",
+        "noise": 30,
+        "display": "—"
+      },
+      "vis": {
+        "type": "aio",
+        "color": "white"
+      }
+    },
+    {
+      "id": "cool-pa120",
+      "cat": "cooler",
+      "brand": "Thermalright",
+      "name": "Thermalright Peerless Assassin 120 SE",
+      "glyph": "PA120",
+      "ctype": "air",
+      "height": 155,
+      "maxTdp": 150,
+      "facet": "Air",
+      "warrantyY": 3,
+      "specs": {
+        "type": "Dual-tower air",
+        "height": 155,
+        "fans": "2 × 120 mm",
+        "noise": 26,
+        "display": "—"
+      },
+      "vis": {
+        "type": "air",
+        "height": 0.155
+      }
+    },
+    {
+      "id": "cool-nhd15",
+      "cat": "cooler",
+      "brand": "Noctua",
+      "name": "Noctua NH-D15 G2",
+      "glyph": "NH-D15",
+      "ctype": "air",
+      "height": 168,
+      "maxTdp": 220,
+      "facet": "Air",
+      "warrantyY": 6,
+      "specs": {
+        "type": "Dual-tower air",
+        "height": 168,
+        "fans": "2 × 140 mm",
+        "noise": 25,
+        "display": "—"
+      },
+      "vis": {
+        "type": "air",
+        "height": 0.168
+      }
+    },
+    {
+      "id": "mb-b850f",
+      "cat": "mobo",
+      "brand": "ASUS",
+      "name": "ASUS ROG Strix B850-F Gaming WiFi",
+      "glyph": "B850-F",
+      "socket": "AM5",
+      "ff": "ATX",
+      "mem": "DDR5",
+      "facet": "AM5",
+      "warrantyY": 3,
+      "specs": {
+        "socket": "AM5",
+        "ff": "ATX",
+        "chipset": "B850",
+        "mem": "DDR5 · 4 slots",
+        "m2": 4,
+        "wifi": "Wi-Fi 7"
+      },
+      "vis": {
+        "ff": "atx"
+      }
+    },
+    {
+      "id": "mb-x870tom",
+      "cat": "mobo",
+      "brand": "MSI",
+      "name": "MSI MAG X870 Tomahawk WiFi",
+      "glyph": "X870",
+      "socket": "AM5",
+      "ff": "ATX",
+      "mem": "DDR5",
+      "facet": "AM5",
+      "warrantyY": 3,
+      "specs": {
+        "socket": "AM5",
+        "ff": "ATX",
+        "chipset": "X870",
+        "mem": "DDR5 · 4 slots",
+        "m2": 4,
+        "wifi": "Wi-Fi 7"
+      },
+      "vis": {
+        "ff": "atx"
+      }
+    },
+    {
+      "id": "mb-b650m",
+      "cat": "mobo",
+      "brand": "Gigabyte",
+      "name": "Gigabyte B650M Aorus Elite AX",
+      "glyph": "B650M",
+      "socket": "AM5",
+      "ff": "mATX",
+      "mem": "DDR5",
+      "facet": "AM5",
+      "warrantyY": 3,
+      "specs": {
+        "socket": "AM5",
+        "ff": "Micro-ATX",
+        "chipset": "B650",
+        "mem": "DDR5 · 4 slots",
+        "m2": 2,
+        "wifi": "Wi-Fi 6E"
+      },
+      "vis": {
+        "ff": "matx"
+      }
+    },
+    {
+      "id": "mb-z890",
+      "cat": "mobo",
+      "brand": "ASUS",
+      "name": "ASUS TUF Gaming Z890-Plus WiFi",
+      "glyph": "Z890",
+      "socket": "LGA1851",
+      "ff": "ATX",
+      "mem": "DDR5",
+      "facet": "LGA1851",
+      "warrantyY": 3,
+      "specs": {
+        "socket": "LGA1851",
+        "ff": "ATX",
+        "chipset": "Z890",
+        "mem": "DDR5 · 4 slots",
+        "m2": 4,
+        "wifi": "Wi-Fi 7"
+      },
+      "vis": {
+        "ff": "atx"
+      }
+    },
+    {
+      "id": "mb-b860m",
+      "cat": "mobo",
+      "brand": "MSI",
+      "name": "MSI MAG B860M Mortar WiFi",
+      "glyph": "B860M",
+      "socket": "LGA1851",
+      "ff": "mATX",
+      "mem": "DDR5",
+      "facet": "LGA1851",
+      "warrantyY": 3,
+      "specs": {
+        "socket": "LGA1851",
+        "ff": "Micro-ATX",
+        "chipset": "B860",
+        "mem": "DDR5 · 4 slots",
+        "m2": 3,
+        "wifi": "Wi-Fi 6E"
+      },
+      "vis": {
+        "ff": "matx"
+      }
+    },
+    {
+      "id": "ram-tz5",
+      "cat": "ram",
+      "brand": "G.Skill",
+      "name": "G.Skill Trident Z5 Neo RGB 32GB (2×16) DDR5-6000 CL30",
+      "glyph": "32GB",
+      "mem": "DDR5",
+      "facet": "32 GB",
+      "warrantyY": 99,
+      "specs": {
+        "cap": 32,
+        "kit": "2 × 16 GB",
+        "speed": 6000,
+        "cl": 30,
+        "type": "DDR5",
+        "expo": "EXPO"
+      },
+      "vis": {}
+    },
+    {
+      "id": "ram-fury",
+      "cat": "ram",
+      "brand": "Kingston",
+      "name": "Kingston Fury Beast RGB 32GB (2×16) DDR5-6000 CL36",
+      "glyph": "32GB",
+      "mem": "DDR5",
+      "facet": "32 GB",
+      "warrantyY": 99,
+      "specs": {
+        "cap": 32,
+        "kit": "2 × 16 GB",
+        "speed": 6000,
+        "cl": 36,
+        "type": "DDR5",
+        "expo": "EXPO / XMP"
+      },
+      "vis": {}
+    },
+    {
+      "id": "ram-veng64",
+      "cat": "ram",
+      "brand": "Corsair",
+      "name": "Corsair Vengeance RGB 64GB (2×32) DDR5-6000 CL30",
+      "glyph": "64GB",
+      "mem": "DDR5",
+      "facet": "64 GB",
+      "warrantyY": 99,
+      "specs": {
+        "cap": 64,
+        "kit": "2 × 32 GB",
+        "speed": 6000,
+        "cl": 30,
+        "type": "DDR5",
+        "expo": "XMP"
+      },
+      "vis": {}
+    },
+    {
+      "id": "ram-deltaw",
+      "cat": "ram",
+      "brand": "TeamGroup",
+      "name": "T-Force Delta RGB 32GB (2×16) DDR5-6400 White",
+      "glyph": "32GB W",
+      "mem": "DDR5",
+      "facet": "32 GB",
+      "warrantyY": 99,
+      "specs": {
+        "cap": 32,
+        "kit": "2 × 16 GB",
+        "speed": 6400,
+        "cl": 32,
+        "type": "DDR5",
+        "expo": "XMP"
+      },
+      "vis": {
+        "color": "white"
+      }
+    },
+    {
+      "id": "ssd-990",
+      "cat": "ssd",
+      "brand": "Samsung",
+      "name": "Samsung 990 Pro 2TB NVMe",
+      "glyph": "990 PRO",
+      "facet": "PCIe 4.0",
+      "warrantyY": 5,
+      "specs": {
+        "cap": "2 TB",
+        "iface": "PCIe 4.0 ×4",
+        "read": 7450,
+        "write": 6900,
+        "tbw": 1200
+      },
+      "vis": {}
+    },
+    {
+      "id": "ssd-sn850x",
+      "cat": "ssd",
+      "brand": "WD",
+      "name": "WD_Black SN850X 2TB NVMe",
+      "glyph": "SN850X",
+      "facet": "PCIe 4.0",
+      "warrantyY": 5,
+      "specs": {
+        "cap": "2 TB",
+        "iface": "PCIe 4.0 ×4",
+        "read": 7300,
+        "write": 6600,
+        "tbw": 1200
+      },
+      "vis": {}
+    },
+    {
+      "id": "ssd-t705",
+      "cat": "ssd",
+      "brand": "Crucial",
+      "name": "Crucial T705 2TB Gen5 NVMe",
+      "glyph": "T705",
+      "facet": "PCIe 5.0",
+      "warrantyY": 5,
+      "specs": {
+        "cap": "2 TB",
+        "iface": "PCIe 5.0 ×4",
+        "read": 14500,
+        "write": 12700,
+        "tbw": 1200
+      },
+      "vis": {}
+    },
+    {
+      "id": "ssd-nm790",
+      "cat": "ssd",
+      "brand": "Lexar",
+      "name": "Lexar NM790 2TB NVMe",
+      "glyph": "NM790",
+      "facet": "PCIe 4.0",
+      "warrantyY": 5,
+      "specs": {
+        "cap": "2 TB",
+        "iface": "PCIe 4.0 ×4",
+        "read": 7400,
+        "write": 6500,
+        "tbw": 1500
+      },
+      "vis": {}
+    },
+    {
+      "id": "gpu-5070",
+      "cat": "gpu",
+      "brand": "MSI",
+      "name": "MSI GeForce RTX 5070 Ventus 2X OC 12GB",
+      "glyph": "5070",
+      "short": "RTX 5070",
+      "length": 242,
+      "tgp": 250,
+      "facet": "12 GB",
+      "warrantyY": 3,
+      "specs": {
+        "vram": 12,
+        "mem": "GDDR7",
+        "boost": 2557,
+        "tgp": 250,
+        "length": 242,
+        "slots": 2,
+        "conn": "1 × 16-pin"
+      },
+      "vis": {
+        "L": 0.242,
+        "T": 0.052,
+        "H": 0.124,
+        "fans": 2
+      }
+    },
+    {
+      "id": "gpu-5070ti",
+      "cat": "gpu",
+      "brand": "Gigabyte",
+      "name": "Gigabyte GeForce RTX 5070 Ti Windforce OC 16GB",
+      "glyph": "5070 Ti",
+      "short": "RTX 5070 Ti",
+      "length": 304,
+      "tgp": 300,
+      "facet": "16 GB",
+      "warrantyY": 3,
+      "specs": {
+        "vram": 16,
+        "mem": "GDDR7",
+        "boost": 2588,
+        "tgp": 300,
+        "length": 304,
+        "slots": 2.5,
+        "conn": "1 × 16-pin"
+      },
+      "vis": {
+        "L": 0.304,
+        "T": 0.058,
+        "H": 0.126,
+        "fans": 3
+      }
+    },
+    {
+      "id": "gpu-5080",
+      "cat": "gpu",
+      "brand": "ASUS",
+      "name": "ASUS TUF Gaming GeForce RTX 5080 16GB",
+      "glyph": "5080",
+      "short": "RTX 5080",
+      "length": 348,
+      "tgp": 360,
+      "facet": "16 GB",
+      "warrantyY": 3,
+      "specs": {
+        "vram": 16,
+        "mem": "GDDR7",
+        "boost": 2730,
+        "tgp": 360,
+        "length": 348,
+        "slots": 3.6,
+        "conn": "1 × 16-pin"
+      },
+      "vis": {
+        "L": 0.348,
+        "T": 0.072,
+        "H": 0.14,
+        "fans": 3
+      }
+    },
+    {
+      "id": "gpu-5090",
+      "cat": "gpu",
+      "brand": "ASUS",
+      "name": "ASUS ROG Astral GeForce RTX 5090 32GB",
+      "glyph": "5090",
+      "short": "RTX 5090",
+      "length": 358,
+      "tgp": 575,
+      "facet": "32 GB",
+      "warrantyY": 3,
+      "specs": {
+        "vram": 32,
+        "mem": "GDDR7",
+        "boost": 2610,
+        "tgp": 575,
+        "length": 358,
+        "slots": 3.8,
+        "conn": "1 × 16-pin"
+      },
+      "vis": {
+        "L": 0.358,
+        "T": 0.076,
+        "H": 0.15,
+        "fans": 4,
+        "rgb": true
+      }
+    },
+    {
+      "id": "gpu-9070xt",
+      "cat": "gpu",
+      "brand": "Sapphire",
+      "name": "Sapphire Pure Radeon RX 9070 XT 16GB",
+      "glyph": "9070 XT",
+      "short": "RX 9070 XT",
+      "length": 320,
+      "tgp": 304,
+      "facet": "16 GB",
+      "warrantyY": 2,
+      "specs": {
+        "vram": 16,
+        "mem": "GDDR6",
+        "boost": 2970,
+        "tgp": 304,
+        "length": 320,
+        "slots": 3,
+        "conn": "2 × 8-pin"
+      },
+      "vis": {
+        "L": 0.32,
+        "T": 0.064,
+        "H": 0.132,
+        "fans": 3,
+        "color": "white"
+      }
+    },
+    {
+      "id": "case-903",
+      "cat": "case",
+      "brand": "Montech",
+      "name": "Montech Air 903 Max",
+      "glyph": "AIR 903",
+      "short": "Air 903 Max",
+      "ffs": [
+        "ATX",
+        "mATX"
+      ],
+      "maxGpu": 400,
+      "maxCooler": 180,
+      "radTop": 360,
+      "facet": "Mid tower",
+      "warrantyY": 1,
+      "specs": {
+        "type": "Mid tower · mesh",
+        "ffs": "E-ATX, ATX, mATX",
+        "maxGpu": 400,
+        "maxCooler": 180,
+        "radTop": "360 mm",
+        "fans": "4 × 140 mm incl."
+      },
+      "vis": {
+        "style": "mesh",
+        "color": "black",
+        "w": 0.235,
+        "h": 0.49,
+        "d": 0.46
+      }
+    },
+    {
+      "id": "case-o11vc",
+      "cat": "case",
+      "brand": "Lian Li",
+      "name": "Lian Li O11 Vision Compact",
+      "glyph": "O11 VC",
+      "short": "O11 Vision C",
+      "ffs": [
+        "ATX",
+        "mATX"
+      ],
+      "maxGpu": 380,
+      "maxCooler": 167,
+      "radTop": 360,
+      "facet": "Mid tower",
+      "warrantyY": 1,
+      "specs": {
+        "type": "Mid tower · panoramic glass",
+        "ffs": "ATX, mATX",
+        "maxGpu": 380,
+        "maxCooler": 167,
+        "radTop": "360 mm",
+        "fans": "None incl."
+      },
+      "vis": {
+        "style": "glass",
+        "color": "black",
+        "w": 0.25,
+        "h": 0.47,
+        "d": 0.47
+      }
+    },
+    {
+      "id": "case-popmini",
+      "cat": "case",
+      "brand": "Fractal",
+      "name": "Fractal Design Pop Mini Air White",
+      "glyph": "POP MINI",
+      "short": "Pop Mini Air",
+      "ffs": [
+        "mATX"
+      ],
+      "maxGpu": 335,
+      "maxCooler": 170,
+      "radTop": 240,
+      "facet": "Micro tower",
+      "warrantyY": 2,
+      "specs": {
+        "type": "Micro tower · mesh",
+        "ffs": "mATX, Mini-ITX",
+        "maxGpu": 335,
+        "maxCooler": 170,
+        "radTop": "240 mm",
+        "fans": "3 × 120 mm incl."
+      },
+      "vis": {
+        "style": "mesh",
+        "color": "white",
+        "w": 0.215,
+        "h": 0.465,
+        "d": 0.4
+      }
+    },
+    {
+      "id": "psu-a750",
+      "cat": "psu",
+      "brand": "MSI",
+      "name": "MSI MAG A750GL PCIE5 750W",
+      "glyph": "750W",
+      "watt": 750,
+      "facet": "750 W",
+      "warrantyY": 7,
+      "specs": {
+        "watt": 750,
+        "eff": "80+ Gold",
+        "std": "ATX 3.1",
+        "mod": "Fully modular",
+        "fan": "120 mm"
+      },
+      "vis": {}
+    },
+    {
+      "id": "psu-rm850e",
+      "cat": "psu",
+      "brand": "Corsair",
+      "name": "Corsair RM850e (2025) 850W",
+      "glyph": "850W",
+      "watt": 850,
+      "facet": "850 W",
+      "warrantyY": 7,
+      "specs": {
+        "watt": 850,
+        "eff": "80+ Gold",
+        "std": "ATX 3.1",
+        "mod": "Fully modular",
+        "fan": "120 mm"
+      },
+      "vis": {}
+    },
+    {
+      "id": "psu-gx1000",
+      "cat": "psu",
+      "brand": "Seasonic",
+      "name": "Seasonic Focus GX-1000 ATX 3.1",
+      "glyph": "1000W",
+      "watt": 1000,
+      "facet": "1000 W",
+      "warrantyY": 10,
+      "specs": {
+        "watt": 1000,
+        "eff": "80+ Gold",
+        "std": "ATX 3.1",
+        "mod": "Fully modular",
+        "fan": "135 mm"
+      },
+      "vis": {}
+    },
+    {
+      "id": "psu-hx1500",
+      "cat": "psu",
+      "brand": "Corsair",
+      "name": "Corsair HX1500i 1500W",
+      "glyph": "1500W",
+      "watt": 1500,
+      "facet": "1500 W",
+      "warrantyY": 10,
+      "specs": {
+        "watt": 1500,
+        "eff": "80+ Platinum",
+        "std": "ATX 3.1",
+        "mod": "Fully modular",
+        "fan": "140 mm"
+      },
+      "vis": {}
+    }
+  ],
+  "presets": [
+    {
+      "id": "kancil",
+      "name": "Kancil",
+      "tier": "1080p esports",
+      "note": "Small white tower, high frame rates in Valorant and CS2.",
+      "build": {
+        "cpu": "cpu-9600x",
+        "cooler": "cool-pa120",
+        "mobo": "mb-b650m",
+        "ram": "ram-fury",
+        "ssd": "ssd-nm790",
+        "gpu": "gpu-5070",
+        "case": "case-popmini",
+        "psu": "psu-a750"
+      }
+    },
+    {
+      "id": "harimau",
+      "name": "Harimau",
+      "tier": "1440p all-rounder",
+      "note": "Panoramic glass, white Radeon, quiet 360 mm loop.",
+      "build": {
+        "cpu": "cpu-9800x3d",
+        "cooler": "cool-lf3",
+        "mobo": "mb-x870tom",
+        "ram": "ram-tz5",
+        "ssd": "ssd-sn850x",
+        "gpu": "gpu-9070xt",
+        "case": "case-o11vc",
+        "psu": "psu-rm850e"
+      }
+    },
+    {
+      "id": "helang",
+      "name": "Helang",
+      "tier": "4K flagship",
+      "note": "The fastest gaming CPU with an RTX 5080 in a high-airflow mesh tower.",
+      "build": {
+        "cpu": "cpu-9800x3d",
+        "cooler": "cool-kraken360",
+        "mobo": "mb-b850f",
+        "ram": "ram-tz5",
+        "ssd": "ssd-990",
+        "gpu": "gpu-5080",
+        "case": "case-903",
+        "psu": "psu-rm850e"
+      },
+      "featured": true
+    }
+  ]
+}

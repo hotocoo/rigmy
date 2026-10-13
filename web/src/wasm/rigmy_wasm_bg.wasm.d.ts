@@ -1,0 +1,25 @@
+/* tslint:disable */
+export const memory: WebAssembly.Memory;
+export const __wbg_engine_free: (a: number, b: number) => void;
+export const engine_compat: (a: number, b: number, c: number, d: number, e: number) => void;
+export const engine_dist: (a: number, b: number, c: number, d: number) => void;
+export const engine_etaDays: (a: number, b: number, c: number, d: number) => void;
+export const engine_etaRank: (a: number, b: number, c: number, d: number) => void;
+export const engine_etas: (a: number, b: number) => void;
+export const engine_fmtKm: (a: number, b: number, c: number) => void;
+export const engine_lowest: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+export const engine_maxEta: (a: number, b: number, c: number) => void;
+export const engine_nearby: (a: number, b: number, c: number) => void;
+export const engine_new: (a: number, b: number, c: number) => void;
+export const engine_offers: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+export const engine_openState: (a: number, b: number, c: number, d: number, e: number) => void;
+export const engine_plan: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+export const engine_postcode: (a: number, b: number, c: number, d: number) => void;
+export const engine_power: (a: number, b: number, c: number) => void;
+export const engine_regionOf: (a: number, b: number, c: number, d: number) => void;
+export const engine_trackingUrl: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+export const __wbindgen_export: (a: number, b: number) => number;
+export const __wbindgen_export2: (a: number, b: number, c: number, d: number) => number;
+export const __wbindgen_export3: (a: number) => void;
+export const __wbindgen_add_to_stack_pointer: (a: number) => number;
+export const __wbindgen_export4: (a: number, b: number, c: number) => void;

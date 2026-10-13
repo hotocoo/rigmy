@@ -1,0 +1,28 @@
+/* Cable management page. Token-only. */
+
+.side { gap: 26px; padding: 28px 24px 48px; }
+.group { display: flex; flex-direction: column; gap: 10px; }
+.routes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.optTitle { font: 600 14px/1.2 var(--sans); }
+.optNote { font: 400 12px/1.4 var(--sans); color: var(--fg-3); }
+
+.sleeves { display: flex; flex-direction: column; gap: 6px; }
+/* Sleeve option: a row-laid block chip with a swatch of the studio's sleeve material. */
+.sleeve { --chip-pad: 12px 14px; --chip-gap: 12px; }
+.swatch { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line-20); }
+.sleeveName { flex: 1; font: 600 14px/1.2 var(--sans); }
+.preview { display: flex; align-items: center; gap: 8px; font: 500 12px/1.4 var(--mono); color: var(--blue-soft); }
+
+.runs { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.run {
+  display: flex; flex-direction: column; gap: 8px; width: 100%; padding: 14px; background: transparent; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--fg); cursor: pointer; text-align: left;
+  transition: background var(--dur-fast), border-color var(--dur-fast);
+}
+.run:hover { border-color: var(--line-2); }
+.run:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.runOn, .runOn:hover { background: color-mix(in srgb, var(--blue) 8%, transparent); border-color: color-mix(in srgb, var(--blue) 55%, transparent); }
+.runHead { display: flex; justify-content: space-between; width: 100%; gap: 12px; }
+.runName { font: 600 14.5px/1.2 var(--sans); }
+.runState { font: 500 10.5px/1.2 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--blue-soft); }
+.runText { font: 400 13px/1.45 var(--sans); color: var(--fg-soft); }

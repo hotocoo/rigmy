@@ -1,0 +1,8 @@
+# Extra sale / festival events for price charts and "sale in N days" verdicts.
+# Fixed-date mega sales (6.6, 7.7, 8.8, 9.9, 10.10, 11.11, 12.12) are built in.
+# Moving dates such as Chinese New Year or Hari Raya change every year, so add them here
+# per year once the dates are announced. Dates are Malaysia time, YYYY-MM-DD.
+#
+# [[event]]
+# date = "2027-02-06"
+# label = "CNY"
