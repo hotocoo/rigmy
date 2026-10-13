@@ -11,6 +11,7 @@ import { useRig } from '@/lib/store';
 import type { CatId } from '@/lib/types';
 import { BuilderStage } from './BuilderStage';
 import { BuildRow } from './BuildRow';
+import { downloadCsv } from './csv';
 import { PowerMeter } from './Notices';
 import { errText, partPrice, powerView, presetName, totalView } from './shared';
 import { useStudioHost } from './useStudioHost';
@@ -44,6 +45,7 @@ export function BuilderPage() {
           </div>
           <div className={s.headTools}>
             <SaveShare build={build} region={region} variant="mini" />
+            <Button variant="mini" onClick={() => downloadCsv(d, build, region)}>CSV</Button>
             <Button variant="mini" onClick={() => set({ build: {}, sel: null, picks: {} })}>Clear</Button>
           </div>
         </header>

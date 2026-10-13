@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useGo } from '@/components/shell/useGo';
 import { BackLink, Button, Chip, Dot, EmptyState, Eyebrow, Meta, Tabs, Text } from '@/components/ui';
 import { regionById } from '@/lib/content';
@@ -10,7 +10,7 @@ import { useData, type Data } from '@/lib/data';
 import { href, ROUTES } from '@/lib/routes';
 import { useRig, type RigState } from '@/lib/store';
 import { color } from '@/lib/tokens';
-import type { CatalogPart, Product, RegionId } from '@/lib/types';
+import type { CatalogPart, RegionId } from '@/lib/types';
 import { isCatalogPart } from '@/lib/types';
 import { BrowsePreview } from './BrowsePreview';
 import { BrowseRow } from './BrowseRow';
@@ -42,6 +42,7 @@ export function BrowsePage() {
   const toggleCompare = useCompareToggle();
   const build = useRig((x) => x.build), region = useRig((x) => x.region), facet = useRig((x) => x.facet), sort = useRig((x) => x.sort);
   const previewId = useRig((x) => x.previewId), compare = useRig((x) => x.compare), set = useRig((x) => x.set);
+  const [q, setQ] = useState('');
   const cd = d.categories.find((c) => c.id === params.cat);
   const cat = cd?.id;
 
@@ -53,7 +54,11 @@ export function BrowsePage() {
   }, [cat, d, router]);
 
   const all = d.products.filter((p): p is CatalogPart => p.cat === cat);
-  const list = sortParts(d, all.filter((p) => facet === ALL_FACET || p.facet === facet), region, sort);
+  const needle = q.trim().toLowerCase();
+  // Text search across name, brand and spec values (market listings are excluded by the cat filter above).
+  const matches = (p: CatalogPart) =>
+    !needle || p.name.toLowerCase().includes(needle) || p.brand.toLowerCase().includes(needle) || Object.values(p.specs).some((v) => String(v).toLowerCase().includes(needle));
+  const list = sortParts(d, all.filter((p) => (facet === ALL_FACET || p.facet === facet) && matches(p)), region, sort);
 
   if (!cd || !cat) return null;
 
@@ -68,6 +73,7 @@ export function BrowsePage() {
     if (id === cat) return;
     const next = d.categories.find((c) => c.id === id);
     if (!next) return;
+    setQ('');
     set({ facet: ALL_FACET, previewId: build[next.id] || null });
     router.push(href.parts(next.id), { scroll: false });
   };
@@ -79,7 +85,7 @@ export function BrowsePage() {
           <BackLink onClick={() => go(ROUTES.build.path)}>Back to {ROUTES.build.navLabel.toLowerCase()}</BackLink>
           <Text v="h2" as="h1">{(build[cat] ? 'Change your ' : 'Choose a ') + cd.long.toLowerCase()}</Text>
         </div>
-        <Meta>{list.length + ' of ' + all.length + ' parts · prices for ' + reg.name}</Meta>
+        <Meta>{list.length + ' of ' + all.length + ' parts' + (needle ? ' matching "' + q.trim() + '"' : '') + ' · prices for ' + reg.name}</Meta>
       </header>
 
       <Tabs
@@ -96,6 +102,16 @@ export function BrowsePage() {
         <div className={b.chips} role="group" aria-label="Sort">
           <Eyebrow className={b.chipLabel}>Sort</Eyebrow>
           {SORT_OPTIONS.map((o) => <Chip key={o.id} size="sm" on={sort === o.id} onClick={() => set({ sort: o.id })}>{o.label}</Chip>)}
+        </div>
+        <div className={b.search} role="search">
+          <input
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={'Search ' + cd.long.toLowerCase() + 's by name or spec'}
+            aria-label={'Search ' + cd.long.toLowerCase() + 's by name or spec'}
+          />
+          {q && <button type="button" className={b.clear} onClick={() => setQ('')} aria-label="Clear search">×</button>}
         </div>
       </div>
 
@@ -116,6 +132,7 @@ export function BrowsePage() {
             />
           ))}
           {!all.length && <EmptyState title={'No ' + cd.long.toLowerCase() + ' options yet'} body="Parts appear here as soon as they are added to the catalogue." />}
+          {all.length > 0 && list.length === 0 && <EmptyState title="No matches" body={'Nothing in ' + cd.long.toLowerCase() + 's matches "' + q.trim() + '". Try a different name, brand or spec.'} />}
           {compare.length > 1 && (
             <Button wide className={b.compareCta} onClick={() => go(ROUTES.compare.path)}>{'Compare ' + compare.length + ' parts'} →</Button>
           )}

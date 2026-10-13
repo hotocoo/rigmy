@@ -7,6 +7,20 @@
 .chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .chipLabel { margin-right: 4px; }
 
+.search { position: relative; display: flex; align-items: center; }
+.search input {
+  min-width: 260px; padding: 9px 34px 9px 12px;
+  font: 500 13px/1 var(--sans); color: var(--fg-bright);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+}
+.search input::placeholder { color: var(--muted); }
+.search input:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.clear {
+  position: absolute; right: 8px; width: 20px; height: 20px; display: grid; place-items: center;
+  font: 500 14px/1 var(--sans); color: var(--muted); background: none; border: 0; border-radius: 50%; cursor: pointer;
+}
+.clear:hover { color: var(--fg-bright); }
+
 .body { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 20px; }
 .list { flex: 999 1 520px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .compareCta { position: sticky; bottom: 16px; align-self: center; box-shadow: var(--shadow-toast); }

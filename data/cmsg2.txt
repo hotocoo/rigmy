@@ -1,0 +1,9 @@
+feat(web): build CSV export and /parts text search
+
+- CSV export on the builder page: one row per selected part with the
+  lowest available offer in the region (price, retailer, stock,
+  delivery, URL); unpriced parts keep honest status text; total row
+  only when the engine has a real lowest total
+- /parts text search: filter by name, brand or spec value, combined
+  with the facet filter; clear button; honest no-match state
+- verified: tsc clean, eslint clean, next build clean
