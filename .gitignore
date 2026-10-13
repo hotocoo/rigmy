@@ -5,3 +5,6 @@
 .DS_Store
 *.bundle
 .ci/
+e2e/
+test-results/
+playwright-report/
