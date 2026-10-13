@@ -1,0 +1,90 @@
+name: Release
+
+# Tagged release: pushes the API and web images to GHCR and publishes a GitHub
+# Release with the source archive and SHA-256 checksums.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: API image metadata
+        id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}-api
+          tags: |
+            type=sha,prefix=sha-
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Web image metadata
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}-web
+          tags: |
+            type=sha,prefix=sha-
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: web
+          build-args: |
+            RIGMY_API_URL=http://api:8787
+          push: true
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Source archive and checksums
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          tar --exclude=.git --exclude=web/node_modules --exclude=target --exclude=.ci \
+            -czf "rigmy-${tag}.tar.gz" .
+          sha256sum "rigmy-${tag}.tar.gz" > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            rigmy-${{ github.ref_name }}.tar.gz
+            SHA256SUMS
+          body: |
+            RigMY ${{ github.ref_name }} — Malaysian PC building and price comparison.
+
+            Docker images (GHCR):
+            - `ghcr.io/${{ github.repository }}-api:${{ github.ref_name }}`
+            - `ghcr.io/${{ github.repository }}-web:${{ github.ref_name }}`
+
+            Verify the archive: `sha256sum -c SHA256SUMS`. Deployment guide: docs/DEPLOYMENT.md.
