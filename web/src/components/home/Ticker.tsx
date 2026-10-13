@@ -24,7 +24,7 @@ export function Ticker() {
       .sort((a, b) => Math.abs(b.st.d7 ?? 0) - Math.abs(a.st.d7 ?? 0))
       .slice(0, TICKER_COUNT)
       .map(({ p, st }) => ({
-        id: p.id, cat: d.cat(p.cat)?.label || p.cat, name: p.short || p.brand + ' ' + p.glyph, price: fmt(st.cur!),
+        id: p.id, cat: p.cat ? d.cat(p.cat)?.label || p.cat : p.market || 'Other', name: p.cat ? p.short || p.brand + ' ' + p.glyph : p.short || p.name, price: fmt(st.cur!),
         chg: chgTxt(st.d7), c: chgColor(st.d7),
       }))
     : [];

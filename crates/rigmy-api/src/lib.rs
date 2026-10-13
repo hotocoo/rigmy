@@ -5,6 +5,7 @@ pub mod adapters;
 pub mod config;
 pub mod db;
 pub mod hours;
+pub mod import;
 pub mod ingest;
 pub mod osm;
 pub mod seed;

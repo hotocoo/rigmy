@@ -2,12 +2,12 @@
 
 import { Text } from '@/components/ui';
 import { useData } from '@/lib/data';
-import type { Product } from '@/lib/types';
+import type { CatalogPart } from '@/lib/types';
 import { specRows } from './derive';
 import p from './part.module.css';
 
 /** The part's full specification list. */
-export function SpecList({ P }: { P: Product }) {
+export function SpecList({ P }: { P: CatalogPart }) {
   const d = useData();
   return (
     <section data-rv="1" className={p.specs}>

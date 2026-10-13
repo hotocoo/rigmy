@@ -10,7 +10,8 @@ import { useData, type Data } from '@/lib/data';
 import { href, ROUTES } from '@/lib/routes';
 import { useRig, type RigState } from '@/lib/store';
 import { color } from '@/lib/tokens';
-import type { Product, RegionId } from '@/lib/types';
+import type { CatalogPart, Product, RegionId } from '@/lib/types';
+import { isCatalogPart } from '@/lib/types';
 import { BrowsePreview } from './BrowsePreview';
 import { BrowseRow } from './BrowseRow';
 import { ALL_FACET, SORT_OPTIONS } from './constants';
@@ -20,7 +21,7 @@ import b from './browse.module.css';
 import s from './parts.module.css';
 
 /** Order parts by the chosen sort. Parts with no price in the region always sort after priced ones. */
-function sortParts(d: Data, parts: Product[], region: RegionId, sort: RigState['sort']) {
+function sortParts(d: Data, parts: CatalogPart[], region: RegionId, sort: RigState['sort']) {
   if (sort === 'name') return parts.slice().sort((x, y) => x.name.localeCompare(y.name));
   const dir = sort === 'desc' ? -1 : 1;
   const low = new Map(parts.map((p) => [p.id, d.engine.lowest(p.id, region)?.price ?? null]));
@@ -51,16 +52,18 @@ export function BrowsePage() {
     if (fallback) router.replace(href.parts(fallback));
   }, [cat, d, router]);
 
-  const all = d.products.filter((p) => p.cat === cat);
+  const all = d.products.filter((p): p is CatalogPart => p.cat === cat);
   const list = sortParts(d, all.filter((p) => facet === ALL_FACET || p.facet === facet), region, sort);
 
   if (!cd || !cat) return null;
 
   const reg = regionById(d, region);
   const facets = [ALL_FACET, ...new Set(all.map((p) => p.facet))];
-  const preview = (previewId && d.byId[previewId]?.cat === cat ? d.byId[previewId] : undefined)
-    || (build[cat] ? d.byId[build[cat]!] : undefined)
-    || all.find((p) => facet === ALL_FACET || p.facet === facet);
+  const catPart = (id?: string | null): CatalogPart | undefined => {
+    const p = id ? d.byId[id] : undefined;
+    return p && isCatalogPart(p) && p.cat === cat ? p : undefined;
+  };
+  const preview = catPart(previewId) || catPart(build[cat]) || all.find((p) => facet === ALL_FACET || p.facet === facet);
   const pickTab = (id: string) => {
     if (id === cat) return;
     const next = d.categories.find((c) => c.id === id);

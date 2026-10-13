@@ -43,6 +43,31 @@ pub struct RetailerConf {
     /// Case-insensitive substrings matched against OSM `name` / `brand` / `operator` tags.
     #[serde(default)]
     pub osm_match: Vec<String>,
+    /// Bulk product-feed import (`rigmy-api import`); absent = no bulk import for this shop.
+    #[serde(default)]
+    pub import: Option<ImportConf>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ImportKind {
+    /// Shopify storefront: paginates the public `products.json` feed.
+    Shopify,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ImportConf {
+    pub kind: ImportKind,
+    /// Storefront origin, e.g. `https://www.example.my` (no trailing slash).
+    pub base_url: String,
+    /// Safety cap on feed pages (Shopify pages hold at most 250 products).
+    #[serde(default = "default_max_pages")]
+    pub max_pages: u32,
+}
+
+fn default_max_pages() -> u32 {
+    40
 }
 
 fn yes() -> bool {
@@ -373,11 +398,13 @@ impl Config {
             }
             for (cat, pid) in &p.build {
                 match self.catalog.products.iter().find(|x| &x.id == pid) {
-                    Some(x) if x.cat == *cat => {}
+                    Some(x) if x.cat == Some(*cat) => {}
                     Some(x) => bail!(
                         "catalog.json: preset '{}' puts '{pid}' ({}) in the {cat} slot",
                         p.id,
                         x.cat
+                            .map(|c| c.to_string())
+                            .unwrap_or_else(|| "market listing".into())
                     ),
                     None => bail!(
                         "catalog.json: preset '{}' uses unknown product '{pid}'",

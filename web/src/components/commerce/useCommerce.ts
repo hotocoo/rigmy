@@ -32,6 +32,7 @@ export function groupsOf(d: Data, choice: Choice, region: RegionId, pickup: bool
     const o = choice[pid], p = d.byId[pid];
     const r = o ? d.retailerById[o.retailerId] : undefined;
     if (!o || !p || !r) continue;
+    if (!p.cat) continue; // cart is build-based; market listings cannot be bought from it
     const x = g.get(r.id) ?? { r, items: [], eta: null };
     g.set(r.id, x);
     x.items.push({ productId: p.id, name: p.name, cat: p.cat, catLong: d.cat(p.cat)?.long || p.cat, price: o.price, url: o.url });

@@ -10,7 +10,7 @@ import { useData } from '@/lib/data';
 import { plural, stockTone } from '@/lib/format';
 import { useLocDescription } from '@/lib/location';
 import { useRig } from '@/lib/store';
-import type { Product, RawOffer } from '@/lib/types';
+import type { CatalogPart, RawOffer } from '@/lib/types';
 import { BranchItem, type NearBranch } from './BranchItem';
 import { MAP_NEAR_KM, NEAREST_BRANCH_LIMIT, NO_PICKUP_STOCK } from './constants';
 import p from './part.module.css';
@@ -19,7 +19,7 @@ import p from './part.module.css';
  * Nearest branches of the retailers that list this part online (shelf stock itself is not tracked), with a map and
  * "pick up here", which puts the part in the build with that retailer and branch chosen for pickup.
  */
-export function NearbyStores({ P }: { P: Product }) {
+export function NearbyStores({ P }: { P: CatalogPart }) {
   const d = useData();
   const { L, label: locLabel } = useLocDescription();
   const now = useNow();

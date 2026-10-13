@@ -27,7 +27,7 @@ function MissingCard({ parts, c }: { parts: Product[]; c: Commerce }) {
   return (
     <section data-rv="1" className={cx(s.card, s.cardMissing)} aria-label="Parts without listings">
       <CardHead title="No retailer listings yet" titleColor={color.fg3} meta={'Not buyable for delivery to ' + c.regionName + ' · ' + plural(parts.length, 'part')} />
-      {parts.map((p) => <ItemRow key={p.id} muted cat={c.d.cat(p.cat)?.long || p.cat} name={p.name} price="—" />)}
+      {parts.map((p) => <ItemRow key={p.id} muted cat={p.cat ? c.d.cat(p.cat)?.long || p.cat : p.market || 'Other'} name={p.name} price="—" />)}
     </section>
   );
 }

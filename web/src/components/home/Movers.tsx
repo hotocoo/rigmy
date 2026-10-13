@@ -29,7 +29,7 @@ export function Movers({ today }: { today: string }) {
       .map(({ p, st }) => {
         const spark = st.spark.slice(-MOVER_SPARK_DAYS);
         return {
-          id: p.id, cat: d.cat(p.cat)?.label || p.cat, chg: chgTxt(st.d7) + ' · 7 days', name: p.name, price: fmt(st.cur!),
+          id: p.id, cat: p.cat ? d.cat(p.cat)?.label || p.cat : p.market || 'Other', chg: chgTxt(st.d7) + ' · 7 days', name: p.name, price: fmt(st.cur!),
           note: spark.length >= 2 ? st.verdict : 'History builds daily', spark, c: chgColor(st.d7, color.blueSoft),
         };
       })

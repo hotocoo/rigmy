@@ -6,7 +6,7 @@ import { useGo } from '@/components/shell/useGo';
 import { useData } from '@/lib/data';
 import { href, ROUTES } from '@/lib/routes';
 import { useRig } from '@/lib/store';
-import type { CatId, Product } from '@/lib/types';
+import type { CatalogPart, CatId } from '@/lib/types';
 import { ADD_TOAST_DELAY_MS, ALL_FACET } from './constants';
 
 /** Open a category's list with the facet reset and the build's current part (if any) previewed. */
@@ -22,7 +22,7 @@ export function useBrowse() {
 export function useAddPart() {
   const go = useGo();
   const setPart = useRig((s) => s.setPart);
-  return useCallback((p: Product) => {
+  return useCallback((p: CatalogPart) => {
     setPart(p.cat, p.id);
     go(ROUTES.build.path, { sel: p.cat });
     setTimeout(() => toast((p.short || p.name) + ' added to your build'), ADD_TOAST_DELAY_MS);

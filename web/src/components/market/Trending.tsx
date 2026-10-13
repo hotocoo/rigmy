@@ -42,7 +42,7 @@ export function Trending() {
 
   const regionName = (d.regions.find((r) => r.id === region) || d.regions[0])?.name || '';
   const cd = trCat === 'all' ? null : d.cat(trCat);
-  const catLabel = (p: Product) => d.cat(p.cat)?.label || p.cat;
+  const catLabel = (p: Product) => p.cat ? d.cat(p.cat)?.label || p.cat : p.market || 'Other';
   const open = (id: string) => go(href.part(id));
   const waitMsg = trackingMsg(startedAgo);
   const yearOfData = v.maxDays >= YEAR_DAYS;

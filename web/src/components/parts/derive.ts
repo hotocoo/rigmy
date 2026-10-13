@@ -4,9 +4,11 @@ import type { Build, Offer, Product, RegionId, Tone } from '@/lib/types';
 
 /** How the part fits the current build, from the engine's compatibility checks. */
 export function fitOf(d: Data, build: Build, p: Product): { text: string; tone: Tone } {
-  const issues = d.engine.compat({ ...build, [p.cat]: p.id }).filter((c) => (c.status === 'error' || c.status === 'warn') && c.parts.includes(p.cat));
+  if (!p.cat) return { text: 'Market listing · not buildable', tone: 'info' };
+  const cat = p.cat;
+  const issues = d.engine.compat({ ...build, [cat]: p.id }).filter((c) => (c.status === 'error' || c.status === 'warn') && c.parts.includes(cat));
   if (!issues.length) {
-    const others = Object.keys(build).filter((k) => k !== p.cat).length;
+    const others = Object.keys(build).filter((k) => k !== cat).length;
     return { text: others ? 'Fits your build' : 'No conflicts yet', tone: 'ok' };
   }
   const worst = issues.find((i) => i.status === 'error') || issues[0];
@@ -15,6 +17,7 @@ export function fitOf(d: Data, build: Build, p: Product): { text: string; tone: 
 
 /** Labelled spec values for a product, skipping specs it does not have. */
 export function specRows(d: Data, p: Product) {
+  if (!p.cat) return [];
   return (d.specdef[p.cat] || []).map(([k, label, unit]) => ({ label, value: specVal(p.specs[k], unit) })).filter((r) => r.value !== '—');
 }
 

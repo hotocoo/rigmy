@@ -34,7 +34,7 @@ export function WatchCard({ item, p, cat, st, loading, open }: { item: WatchItem
   return (
     <Panel as="li" data-rv="1" className={w.card} style={hit ? { borderColor: tint(tone.ok, HIT_BORDER_PCT) } : undefined}>
       <div className={w.info}>
-        <Text v="eyebrowSm">{cat?.long || p.cat}</Text>
+        <Text v="eyebrowSm">{cat?.long || p.market || 'Other'}</Text>
         <button type="button" onClick={open} className={cx(m.textBtn, w.name)}>{p.name}</button>
         <span className={w.verdict}>{loading ? 'Loading price data…' : st ? st.verdict : 'No price yet'}</span>
       </div>

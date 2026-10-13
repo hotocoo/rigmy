@@ -166,7 +166,7 @@ impl Catalog {
             },
             Some(d) => {
                 // Bulky parts ship as oversize parcels: `[delivery] size_multiplier` in content.toml.
-                let big = self.data.content.size_multiplier(p.cat);
+                let big = self.data.content.size_multiplier_for(p.cat);
                 // Pre-orders ship whenever stock lands: show the slowest bucket in the table.
                 let eta = if raw.stock == StockState::PreOrder {
                     self.etas.slowest()
@@ -219,7 +219,7 @@ impl Catalog {
         build
             .get(&cat)
             .and_then(|id| self.product(id))
-            .filter(|p| p.cat == cat)
+            .filter(|p| p.cat == Some(cat))
     }
 
     pub fn power(&self, build: &Build) -> Power {
@@ -296,7 +296,7 @@ impl Catalog {
                     None
                 } else {
                     self.cheapest(region, |p| {
-                        p.cat == CatId::Mobo
+                        p.cat == Some(CatId::Mobo)
                             && p.socket == cpu.socket
                             && cs.is_none_or(|c| p.ff.as_ref().is_some_and(|f| ffs(c).contains(f)))
                     })
@@ -345,7 +345,8 @@ impl Catalog {
                         fix: None,
                     });
                 } else {
-                    let fx = self.cheapest(region, |p| p.cat == CatId::Ram && p.mem == mobo.mem);
+                    let fx =
+                        self.cheapest(region, |p| p.cat == Some(CatId::Ram) && p.mem == mobo.mem);
                     out.push(Check {
                         id: CheckId::Mem,
                         label: "Memory type".into(),
@@ -376,7 +377,7 @@ impl Catalog {
                     None
                 } else {
                     self.cheapest(region, |p| {
-                        p.cat == CatId::Mobo
+                        p.cat == Some(CatId::Mobo)
                             && p.socket == mobo.socket
                             && p.ff.as_ref().is_some_and(|f| ffs(cs).contains(f))
                     })
@@ -445,7 +446,7 @@ impl Catalog {
                 };
                 let fx = if st == Tone::Error {
                     self.cheapest(region, |p| {
-                        p.cat == CatId::Case
+                        p.cat == Some(CatId::Case)
                             && n(p.max_gpu) >= len + GPU_CLEARANCE_WARN_MM
                             && mobo
                                 .is_none_or(|m| m.ff.as_ref().is_some_and(|f| ffs(p).contains(f)))
@@ -493,7 +494,7 @@ impl Catalog {
                 let mut fx = None;
                 let alt = || {
                     self.cheapest(region, |p| {
-                        p.cat == CatId::Cooler
+                        p.cat == Some(CatId::Cooler)
                             && cooler_fits(p, cs)
                             && cpu.is_none_or(|c| n(p.max_tdp) >= n(c.tdp))
                     })
@@ -553,7 +554,7 @@ impl Catalog {
             let (mt, tdp) = (n(cool.max_tdp), n(cpu.tdp));
             if mt < tdp {
                 let fx = self.cheapest(region, |p| {
-                    p.cat == CatId::Cooler
+                    p.cat == Some(CatId::Cooler)
                         && n(p.max_tdp) >= tdp
                         && cs.is_none_or(|c| cooler_fits(p, c))
                 });
@@ -588,7 +589,7 @@ impl Catalog {
                 let fx = if st == Tone::Ok {
                     None
                 } else {
-                    self.cheapest(region, |p| p.cat == CatId::Psu && n(p.watt) >= pw.rec)
+                    self.cheapest(region, |p| p.cat == Some(CatId::Psu) && n(p.watt) >= pw.rec)
                 };
                 out.push(Check {
                     id: CheckId::Psu,
@@ -638,7 +639,7 @@ impl Catalog {
                     None => missing += 1,
                     Some(o) => {
                         parts += o.raw.price;
-                        let m = self.data.content.size_multiplier(r.p.cat);
+                        let m = self.data.content.size_multiplier_for(r.p.cat);
                         match shops.iter_mut().find(|(id, _)| *id == o.raw.retailer_id) {
                             Some(s) => s.1 = s.1.max(m),
                             None => shops.push((&o.raw.retailer_id, m)),

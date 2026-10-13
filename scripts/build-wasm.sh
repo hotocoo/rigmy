@@ -36,7 +36,8 @@ grep -q 'region?: RegionId' "$OUT/rigmy_wasm.d.ts" && grep -q 'picks?: Record' "
   || { echo "d.ts post-processing failed" >&2; exit 1; }
 
 # Generated code: keep it out of the web app's ESLint run (the .d.ts files lint clean as-is).
-sed -i.bak '1a /* eslint-disable */' "$OUT/rigmy_wasm.js"
+# (Insertion via s/// keeps the script portable between GNU and BSD sed.)
+sed -i.bak '1s/^/\/* eslint-disable *\/\n/' "$OUT/rigmy_wasm.js"
 sed -i.bak '/^\/\* eslint-disable \*\/$/d' "$OUT/rigmy_wasm.d.ts" "$OUT/rigmy_wasm_bg.wasm.d.ts"
 rm -f "$OUT"/*.bak
 

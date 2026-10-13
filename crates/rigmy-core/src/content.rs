@@ -336,6 +336,12 @@ impl Content {
             .unwrap_or(DEFAULT_SIZE_MULTIPLIER)
     }
 
+    /// Multiplier for a product; market listings (no build slot) use the default.
+    pub fn size_multiplier_for(&self, c: Option<CatId>) -> f64 {
+        c.map(|c| self.size_multiplier(c))
+            .unwrap_or(DEFAULT_SIZE_MULTIPLIER)
+    }
+
     pub fn courier(&self, name: &str) -> Option<&Courier> {
         self.couriers.iter().find(|c| c.name == name)
     }

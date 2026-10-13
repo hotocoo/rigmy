@@ -35,7 +35,7 @@ pub fn seed(conn: &mut Connection, cfg: &Config, now: i64) -> Result<SeedSummary
         tx.execute(
             "INSERT INTO products(id, cat, sort, json) VALUES(?1, ?2, ?3, ?4)
              ON CONFLICT(id) DO UPDATE SET cat = excluded.cat, sort = excluded.sort, json = excluded.json",
-            params![p.id, p.cat.as_str(), i as i64, serde_json::to_string(p)?],
+            params![p.id, p.cat.map(|c| c.as_str()).unwrap_or_default(), i as i64, serde_json::to_string(p)?],
         )?;
     }
 

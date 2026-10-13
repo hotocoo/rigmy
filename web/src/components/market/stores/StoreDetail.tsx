@@ -30,7 +30,7 @@ export function StoreDetail({ x, now, parts, listing, preset, loadPreset, back, 
   const rName = r?.name || b.retailerId;
   const items = parts.map((p) => {
     const o = listing[p.id] || null;
-    return { p, o, ok: inStock(o?.stock), cat: d.cat(p.cat)?.long || p.cat };
+    return { p, o, ok: inStock(o?.stock), cat: p.cat ? d.cat(p.cat)?.long || p.cat : p.market || 'Other' };
   });
   const ok = items.filter((i) => i.ok);
   const sumColor = ok.length === parts.length ? tone.ok : ok.length ? color.blueSoft : tone.warn;

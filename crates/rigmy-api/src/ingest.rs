@@ -75,6 +75,11 @@ impl Fetcher {
         self.last.insert(host, Instant::now());
     }
 
+    /// GET `url` and return the body (per-host delay + retries applied).
+    pub async fn get_text(&mut self, url: &str) -> Result<String, FetchError> {
+        self.send(|c| c.get(url), url).await
+    }
+
     async fn send(
         &mut self,
         build: impl Fn(&reqwest::Client) -> reqwest::RequestBuilder,

@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use clap::{Parser, Subcommand};
-use rigmy_api::{config::Config, db, ingest, seed, server};
+use rigmy_api::{config::Config, db, import, ingest, seed, server};
 
 #[derive(Parser)]
 #[command(
@@ -52,6 +52,13 @@ enum Cmd {
         /// Only import OSM stores; skip prices.
         #[arg(long)]
         stores_only: bool,
+    },
+    /// Bulk-import a retailer product feed (robots-checked, rate-limited). Matched catalog
+    /// parts get offers; the rest become market listings (price/stock only).
+    Import {
+        /// Retailer id from retailers.toml (default: every retailer with an [import] block).
+        #[arg(long)]
+        retailer: Option<String>,
     },
 }
 
@@ -102,6 +109,52 @@ async fn main() -> Result<()> {
             }
             if stores_osm || stores_only {
                 ingest::run_stores(&mut conn, &cfg).await?;
+            }
+        }
+        Cmd::Import { retailer } => {
+            seed::seed(&mut conn, &cfg, db::now_ms())?;
+            let ids: Vec<String> = match retailer {
+                Some(id) => vec![id],
+                None => cfg
+                    .retailers
+                    .retailer
+                    .iter()
+                    .filter(|r| r.import.is_some())
+                    .map(|r| r.id.clone())
+                    .collect(),
+            };
+            if ids.is_empty() {
+                bail!("no retailer with an [import] block in retailers.toml");
+            }
+            let mut fetcher = import::HttpFetcher::new(&cfg.sources.settings)?;
+            for id in &ids {
+                let now = db::now_ms();
+                let s = import::run(&mut conn, &cfg, id, &mut fetcher, now).await?;
+                println!(
+                    "{id}: {} pages, {} listings ({} matched to catalog, {} market), {} skipped",
+                    s.pages, s.products, s.matched, s.market, s.failed
+                );
+                for m in &s.matches {
+                    println!(
+                        "  matched: {} -> {} (token: {})",
+                        m.listing, m.seed_id, m.token
+                    );
+                }
+                let types: Vec<String> = s
+                    .product_types
+                    .iter()
+                    .map(|(k, n)| {
+                        format!(
+                            "{}={n}",
+                            if k.is_empty() {
+                                "(none)".into()
+                            } else {
+                                k.clone()
+                            }
+                        )
+                    })
+                    .collect();
+                println!("  product types: {}", types.join(", "));
             }
         }
         Cmd::Serve {

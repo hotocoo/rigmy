@@ -64,7 +64,7 @@ function MatrixRow({ row, retailers, c }: { row: PlanRow; retailers: Retailer[];
     <tr>
       <th scope="row" className={s.rowHead}>
         <span className={s.headStack}>
-          <span className={s.catLabel}>{c.d.cat(row.p.cat)?.label || row.p.cat}</span>
+          <span className={s.catLabel}>{row.p.cat ? c.d.cat(row.p.cat)?.label || row.p.cat : row.p.market || 'Other'}</span>
           <Text v="uiSm">{row.p.name}</Text>
           {!row.offers.length && <span className={s.unlisted}>No retailer listings yet</span>}
         </span>

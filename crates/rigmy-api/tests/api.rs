@@ -87,7 +87,10 @@ async fn empty_install_bootstrap_and_stats() {
     let (s, b) = call(&app, "GET", "/api/bootstrap", None).await;
     assert_eq!(s, StatusCode::OK);
     assert_eq!(b["products"].as_array().unwrap().len(), 35);
-    assert_eq!(b["retailers"], json!([]));
+    // The shipped config carries exactly one verified real retailer (ALL IT Hypermarket);
+    // no offers exist until an import or ingest run has recorded prices.
+    assert_eq!(b["retailers"].as_array().unwrap().len(), 1);
+    assert_eq!(b["retailers"][0]["id"], "all-it");
     assert_eq!(b["offers"], json!([]));
     assert_eq!(b["branches"], json!([]));
     assert!(b["lastIngest"].is_null());
@@ -603,12 +606,26 @@ fn seed_is_idempotent_and_disables_removed_retailers() {
 }
 
 #[test]
-fn shipped_config_has_no_retailers_or_sources() {
+fn shipped_config_has_no_synthetic_data() {
     let cfg = config();
-    assert!(cfg.retailers.retailer.is_empty());
+    // No per-product price sources, branches or events ship: every offer must come from a
+    // verified retailer feed or one an operator adds.
     assert!(cfg.sources.source.is_empty());
     assert!(cfg.stores.branch.is_empty());
     assert!(cfg.events.is_empty());
+    // Shipped retailers are real, verified shops only — never test fixtures.
+    for r in &cfg.retailers.retailer {
+        assert!(
+            !r.website.contains(".test"),
+            "synthetic retailer shipped: {}",
+            r.id
+        );
+        assert!(
+            r.website.starts_with("https://"),
+            "insecure retailer website: {}",
+            r.id
+        );
+    }
 }
 
 /// Copy the shipped config to a fresh directory, apply `edit` to `file`, and load it.

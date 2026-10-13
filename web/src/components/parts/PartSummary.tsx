@@ -6,7 +6,7 @@ import { useData } from '@/lib/data';
 import { keySpecs } from '@/lib/format';
 import { useRig } from '@/lib/store';
 import { color, tint, tone } from '@/lib/tokens';
-import type { PartStats, Product } from '@/lib/types';
+import type { CatalogPart, PartStats } from '@/lib/types';
 import { FitLine, PartPrice } from './bits';
 import { fitOf, priceOf } from './derive';
 import { useAddPart, useCompareToggle } from './hooks';
@@ -18,7 +18,7 @@ import p from './part.module.css';
 const VERDICT_BG_PCT = 7, VERDICT_BORDER_PCT = 32;
 
 /** Right-hand column of the part hero: identity, fit, lowest price, build/compare actions, verdict, stats and alert. */
-export function PartSummary({ P, stats }: { P: Product; stats: Record<string, PartStats> | null }) {
+export function PartSummary({ P, stats }: { P: CatalogPart; stats: Record<string, PartStats> | null }) {
   const d = useData();
   const addPart = useAddPart();
   const toggleCompare = useCompareToggle();

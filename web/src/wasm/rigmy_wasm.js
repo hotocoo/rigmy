@@ -1,5 +1,5 @@
-/* @ts-self-types="./rigmy_wasm.d.ts" */
 /* eslint-disable */
+/* @ts-self-types="./rigmy_wasm.d.ts" */
 
 export class Engine {
     __destroy_into_raw() {

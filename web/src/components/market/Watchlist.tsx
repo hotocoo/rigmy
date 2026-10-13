@@ -50,7 +50,7 @@ export function Watchlist() {
       {items.length > 0 && (
         <ul className={w.items} aria-label="Watched parts">
           {items.map(({ item, p }) => (
-            <WatchCard key={p.id} item={item} p={p} cat={d.cat(p.cat)} st={stats?.[p.id] || null} loading={stats == null} open={() => go(href.part(p.id))} />
+            <WatchCard key={p.id} item={item} p={p} cat={p.cat ? d.cat(p.cat) : undefined} st={stats?.[p.id] || null} loading={stats == null} open={() => go(href.part(p.id))} />
           ))}
         </ul>
       )}

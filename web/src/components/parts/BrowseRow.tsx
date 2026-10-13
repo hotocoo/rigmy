@@ -5,14 +5,14 @@ import { Button, Panel, Text } from '@/components/ui';
 import { useData } from '@/lib/data';
 import { keySpecs, plural } from '@/lib/format';
 import { color } from '@/lib/tokens';
-import type { Build, Product, RegionId } from '@/lib/types';
+import type { Build, CatalogPart, RegionId } from '@/lib/types';
 import { FitLine, InBuild, PartPrice } from './bits';
 import { fitOf, priceOf } from './derive';
 import b from './browse.module.css';
 import s from './parts.module.css';
 
 interface Props {
-  p: Product;
+  p: CatalogPart;
   build: Build;
   region: RegionId;
   selected: boolean;

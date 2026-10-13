@@ -7,7 +7,7 @@ import { useData } from '@/lib/data';
 import { specVal } from '@/lib/format';
 import { href } from '@/lib/routes';
 import { useRig } from '@/lib/store';
-import type { Product } from '@/lib/types';
+import type { CatalogPart } from '@/lib/types';
 import { FitLine, InBuild, PageEmpty, PartPrice } from './bits';
 import { fitOf, priceOf } from './derive';
 import { useAddPart, useBrowse, useCompareToggle } from './hooks';
@@ -16,7 +16,7 @@ import c from './compare.module.css';
 import s from './parts.module.css';
 
 /** Spec rows for the compared parts; on rows with a `better` direction the best distinct value is flagged. */
-function compareRows(specdef: ReturnType<typeof useData>['specdef'], items: Product[]) {
+function compareRows(specdef: ReturnType<typeof useData>['specdef'], items: CatalogPart[]) {
   return (specdef[items[0].cat] || []).map(([key, label, unit, better]) => {
     const vals = items.map((p) => p.specs[key]);
     const nums = vals.filter((x): x is number => typeof x === 'number');
@@ -31,7 +31,7 @@ export function ComparePage() {
   const d = useData();
   const browse = useBrowse();
   const compare = useRig((x) => x.compare);
-  const items = compare.map((id) => d.byId[id]).filter((p): p is Product => !!p);
+  const items = compare.map((id) => d.byId[id]).filter((p): p is CatalogPart => !!p && !!p.cat);
   const fallback = lastBrowseCat(d);
   return (
     <div className={cx(s.page, s.pageCompare)}>
@@ -47,7 +47,7 @@ export function ComparePage() {
   );
 }
 
-function CompareView({ items }: { items: Product[] }) {
+function CompareView({ items }: { items: CatalogPart[] }) {
   const d = useData();
   const go = useGo();
   const browse = useBrowse();

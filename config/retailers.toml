@@ -16,6 +16,12 @@
 #   enabled     optional  default true; false hides the shop and its offers without deleting history
 #   osm_match   optional  case-insensitive substrings matched against OpenStreetMap shop
 #                         name/brand/operator when running `ingest --stores-osm`
+#   [retailer.import]   optional; enables `rigmy-api import` for this shop. The import fetches
+#                       the shop's robots.txt first and refuses to run if the feed path is
+#                       disallowed. Rate limits / UA / retries come from sources.toml [settings].
+#       kind        "shopify" — paginates the public products.json feed
+#       base_url    storefront origin, no trailing slash
+#       max_pages   safety cap (Shopify pages hold at most 250 products); default 40
 #   [retailer.delivery.<region>]   one table per region the shop delivers to
 #                         (regions: kv, pen, jhr, east). A missing region = does not deliver there.
 #       fee     number, RM per order; multiplied per category by [delivery] size_multiplier in
@@ -52,3 +58,19 @@
 # [retailer.delivery.east]
 # fee = 35
 # eta = "5–7 days"
+
+# ---------------------------------------------------------------------------
+# Verified real retailers (public feeds, crawl permission checked against each
+# site's robots.txt before the first import; see docs/DATA-SOURCES.md).
+# ---------------------------------------------------------------------------
+
+[[retailer]]
+id = "all-it"
+name = "ALL IT Hypermarket"
+city = "Kuala Lumpur"
+website = "https://www.allithypermarket.com.my"
+
+[retailer.import]
+kind = "shopify"
+base_url = "https://www.allithypermarket.com.my"
+max_pages = 60

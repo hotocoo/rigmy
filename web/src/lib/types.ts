@@ -16,7 +16,14 @@ export type SpecDef = [string, string, string?, ('high' | 'low')?];
 
 export interface Product {
   id: string;
-  cat: CatId;
+  /**
+   * Build slot. Absent for market listings — products discovered from retailer
+   * feeds that were not verified into the catalog. Market listings carry
+   * price/stock/history only and can never enter a build (no specs to check).
+   */
+  cat?: CatId;
+  /** Retailer category label for market listings, e.g. "Keyboard". */
+  market?: string;
   brand: string;
   name: string;
   glyph: string;
@@ -44,6 +51,12 @@ export interface Product {
   /** Hints for the 3D studio (dimensions in metres, colours, fan count…). */
   vis: Record<string, unknown>;
 }
+
+/** A verified, buildable catalogue part (as opposed to a market listing, which has no `cat`). */
+export type CatalogPart = Product & { cat: CatId };
+
+/** Type guard: true for verified catalogue parts, false for market listings. */
+export const isCatalogPart = (p: Product): p is CatalogPart => !!p.cat;
 
 export interface Delivery { fee: number; eta: Eta }
 export interface Retailer {

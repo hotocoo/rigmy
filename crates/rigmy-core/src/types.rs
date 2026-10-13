@@ -106,7 +106,13 @@ pub type SpecDef = Vec<Value>;
 #[serde(rename_all = "camelCase")]
 pub struct Product {
     pub id: String,
-    pub cat: CatId,
+    /// Build slot for spec-verified parts; `None` for market listings (price/stock only).
+    /// `Catalog::part` filters on this, so market listings can never satisfy a build slot.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cat: Option<CatId>,
+    /// Market category label for listings without a build slot (e.g. "Keyboard").
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub market: Option<String>,
     pub brand: String,
     pub name: String,
     pub glyph: String,

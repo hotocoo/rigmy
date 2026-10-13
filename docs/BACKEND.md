@@ -11,8 +11,9 @@ scripts/build-wasm.sh
 
 ## Where the data comes from
 
-**Every price, stock state and price-history point comes from `rigmy-api ingest`.** Nothing is
-generated, estimated or bundled. A fresh install has:
+**Every price, stock state and price-history point comes from `rigmy-api ingest` (per-page
+sources) or `rigmy-api import` (whole retailer feeds, §4).** Nothing is generated, estimated or
+bundled. A fresh install has:
 
 - 35 products in `config/catalog.json`: manufacturer specs only (socket, TDP, lengths, wattage, …),
   no prices. There are also the regions (each with a `center`), categories, spec labels and the
@@ -34,6 +35,7 @@ export RIGMY_DB=$PWD/rigmy.db RIGMY_CONFIG=$PWD/config
 
 ./target/release/rigmy-api seed      # load config into SQLite (idempotent)
 ./target/release/rigmy-api ingest    # fetch prices from config/sources.toml
+./target/release/rigmy-api import    # bulk-import retailer feeds (see §4)
 ./target/release/rigmy-api serve     # http://127.0.0.1:8787 (also re-seeds on start)
 ```
 
@@ -129,7 +131,65 @@ Cron example, every 6 hours:
 A systemd timer with `OnCalendar=*-*-* 00/6:15` works the same way. SQLite runs in WAL mode, so
 `serve` can keep running during an ingest.
 
-## 4. Store locations
+## 4. Bulk-import a retailer feed (`import`)
+
+`ingest` reads the price pages you map yourself, one at a time. `import` takes a retailer's
+whole product feed in one go: every product the shop sells becomes a **market listing**
+(live price, stock, price history, buy link), and listings that can be matched to a verified
+catalogue part with confidence additionally become offers on that part.
+
+```toml
+# config/retailers.toml
+[[retailer]]
+id = "all-it"
+name = "ALL IT Hypermarket"
+city = "Kuala Lumpur"
+website = "https://www.allithypermarket.com.my"
+
+[retailer.import]
+kind = "shopify"        # the only feed kind today
+base_url = "https://www.allithypermarket.com.my"
+max_pages = 60          # feed page cap (250 products per page)
+```
+
+```bash
+rigmy-api import                     # every retailer with an [import] block
+rigmy-api import --retailer all-it   # just one
+```
+
+How it works:
+
+1. **robots.txt first.** The command fetches `<base_url>/robots.txt` and applies its rules to
+   the feed path before any feed request (the `User-agent: *` group, longest matching
+   `Allow`/`Disallow` wins, ties go to Allow). A missing file (404/410) means allowed; any
+   other fetch error, or a `Disallow` covering the feed, aborts the import with a message.
+   `import` never fetches a feed that robots.txt forbids. (`ingest` has no such check — it
+   fetches pages you configured deliberately, so you verify those sites yourself.)
+2. It paginates the Shopify product feed `<base_url>/products.json?limit=250&page=N` until an
+   empty page or `max_pages`, honouring the per-host `delay_ms` from `sources.toml`
+   `[settings]` (default 5 s) between pages.
+3. **Matching is deliberately conservative.** A listing matches a catalogue part only if the
+   part's brand appears in the listing (case-insensitive substring, either direction, minimum
+   3 characters) **and** a model token from the part name appears in the listing title. A model
+   token is an alphanumeric run of 4+ characters containing both letters and digits, excluding
+   spec-like values (`850w`, `16gb`, `6000mhz`, `2025`, …). The longest matching token wins.
+   No spec is ever invented or filled in from a title.
+4. **Matched** listings write an offer and a daily snapshot to the verified part — the same
+   rows `ingest` writes, so the last command that ran wins per (product, retailer).
+   **Unmatched** listings become market products: id `mkt-<retailer>-<feed handle>`, no
+   category, a `market` label derived from the retailer's product type (`VGA` → "Graphics
+   Card", `KEYBO` → "Keyboard", …), and an offer plus snapshot.
+
+Market listings appear everywhere prices appear — part pages, price history, movers, trending,
+watchlist, stats — but never in the build flow, the cart or the compatibility engine: the core
+engine only accepts catalogue parts in a slot, and the API rejects saved builds containing a
+market product. The residual matcher risk (a same-brand part whose name shares a spec-like
+token) is documented on `model_tokens` in `crates/rigmy-api/src/import.rs`.
+
+The command is idempotent: re-running upserts the same rows and never duplicates products or
+offers. See `docs/DATA-SOURCES.md` for the verified-retailer list and the robots policy.
+
+## 5. Store locations
 
 - **Manual:** add `[[branch]]` blocks to `config/stores.toml`. `hours` uses OSM `opening_hours`
   syntax.

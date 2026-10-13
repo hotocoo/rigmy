@@ -91,6 +91,8 @@ export const useRig = create<RigState & RigActions>()(
       removePart: (cat) => set((s) => { const b = { ...s.build }; delete b[cat]; return { build: b, sel: null }; }),
       toggleCompare: (id, catOf) => set((s) => {
         const cat = catOf(id);
+        // Comparing needs one category of verified parts; market listings have no specs to compare.
+        if (!cat) return {};
         let c = s.compare.filter((x) => catOf(x) === cat);
         if (c.includes(id)) c = c.filter((x) => x !== id); else { c.push(id); if (c.length > COMPARE_LIMIT) c.shift(); }
         return { compare: c };

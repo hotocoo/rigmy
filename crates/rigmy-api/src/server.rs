@@ -191,7 +191,7 @@ async fn index(State(st): S, Query(q): Query<IndexQuery>) -> Res<Vec<IndexPoint>
     let snaps = db::snapshots(&c, None)?;
     let histories: Vec<Vec<HistoryPoint>> = db::products(&c)?
         .iter()
-        .filter(|p| cat.is_none_or(|k| p.cat == k))
+        .filter(|p| cat.is_none_or(|k| p.cat == Some(k)))
         .map(|p| build_history(snaps.get(&p.id).map(Vec::as_slice).unwrap_or(&[]), &events))
         .collect();
     Ok(Json(cat_index(&histories)))
@@ -263,7 +263,7 @@ async fn create_build(
     let products = db::products(&c)?;
     for (cat, id) in &build {
         match products.iter().find(|p| &p.id == id) {
-            Some(p) if p.cat == *cat => {}
+            Some(p) if p.cat == Some(*cat) => {}
             Some(_) => return Err(ApiError::bad(format!("product '{id}' is not a {cat}"))),
             None => return Err(ApiError::bad(format!("unknown product '{id}'"))),
         }
