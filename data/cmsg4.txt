@@ -1,0 +1,14 @@
+test(web): vitest unit tests for pure frontend logic
+
+- vitest + node env, @ alias; test script in package.json, wired
+  into the CI web job between typecheck and build
+- format: ringgit/locale formatting, digits, plural, hostOf, h12,
+  startOfDay, stockTone honesty mapping
+- shared: partPrice (lowest / No price yet / No delivery / Sold out),
+  totalView (never invents a total), powerView colour bands,
+  presetName exact match, errText
+- csv: one row per part with the lowest offer, unpriced parts keep
+  the honest status text, total row only when the engine has a real
+  total, RFC 4180 quoting
+- store: build slots, compare sliding window, price watch
+- 31 tests green; tsc/eslint clean
