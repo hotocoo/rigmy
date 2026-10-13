@@ -179,6 +179,22 @@ export interface PlanTotal {
   choice: Choice;
 }
 export interface ShopTotal extends PlanTotal { rid: string; retailer: Retailer }
+
+/** One priced alternative for a build slot, from `engine.swaps`. */
+export interface SwapOption {
+  id: string;
+  /** Lowest available price in the region; absent when the part has no usable offer. */
+  price?: number;
+}
+
+/** Other catalogue parts that fit a filled slot without breaking compatibility.
+ *  Not a quality ranking — priced alternatives for the user to judge. */
+export interface SlotSwaps {
+  cat: CatId;
+  current: string;
+  /** Priced ascending, unpriced last; the current part is excluded. */
+  options: SwapOption[];
+}
 export interface PlanRow { p: Product; offers: Offer[] }
 export interface Plan {
   rows: PlanRow[];

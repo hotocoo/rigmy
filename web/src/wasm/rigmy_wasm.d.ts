@@ -1,6 +1,6 @@
 /* tslint:disable */
 
-import type { Build, Check, Choice, Eta, EtaDef, Offer, OpenState, Plan, Power, RegionId, UserLoc } from '../lib/types';
+import type { Build, Check, Choice, Eta, EtaDef, Offer, OpenState, Plan, Power, RegionId, SlotSwaps, UserLoc } from '../lib/types';
 export interface NearbyBranch { branchId: string; km: number }
 export interface LatLon { lat: number; lon: number }
 
@@ -66,6 +66,12 @@ export class Engine {
     power(build: Build): Power;
     regionOf(lat: number, lon: number): RegionId;
     /**
+     * Swap/upgrade suggestions: for each filled slot, the other catalogue parts in the same
+     * category that keep the build free of compatibility errors, with their lowest regional
+     * price (priced ascending, unpriced last). Not a quality ranking.
+     */
+    swaps(build: Build, region: RegionId): SlotSwaps[];
+    /**
      * Tracking link for a courier from `content.couriers`, or `undefined` when the courier is unknown
      * or has no `trackingUrl`. The tracking number is URL-encoded.
      */
@@ -93,6 +99,7 @@ export interface InitOutput {
     readonly engine_postcode: (a: number, b: number, c: number, d: number) => void;
     readonly engine_power: (a: number, b: number, c: number) => void;
     readonly engine_regionOf: (a: number, b: number, c: number, d: number) => void;
+    readonly engine_swaps: (a: number, b: number, c: number, d: number, e: number) => void;
     readonly engine_trackingUrl: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
     readonly __wbindgen_export: (a: number, b: number) => number;
     readonly __wbindgen_export2: (a: number, b: number, c: number, d: number) => number;

@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { endpoint } from './routes';
 import type {
   Bootstrap, Build, CatId, Category, Check, Choice, Eta, HistoryPoint, IndexPoint, Offer, OpenState, PartStats, Plan, Power,
-  Product, RegionId, Retailer, Branch, UserLoc, EtaDef,
+  Product, RegionId, Retailer, Branch, UserLoc, EtaDef, SlotSwaps,
 } from './types';
 
 /** Typed facade over the Rust/WASM engine (crates/rigmy-wasm). */
@@ -14,6 +14,7 @@ export interface Engine {
   compat(build: Build): Check[];
   power(build: Build): Power;
   plan(build: Build, region: RegionId, picks: Record<string, string>): Plan;
+  swaps(build: Build, region: RegionId): SlotSwaps[];
   regionOf(lat: number, lon: number): RegionId;
   postcode(pc: string): UserLoc | null;
   dist(a: { lat: number; lon: number }, b: { lat: number; lon: number }): number;

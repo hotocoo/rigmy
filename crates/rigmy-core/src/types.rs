@@ -360,6 +360,26 @@ pub struct Plan {
     pub shop_totals: Vec<ShopTotal>,
 }
 
+/// One priced alternative for a slot in a build, as returned by [`crate::Catalog::swaps`].
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SwapOption {
+    pub id: String,
+    /// Lowest available price in the region; absent when the part has no usable offer.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub price: Option<f64>,
+}
+
+/// Alternative parts for one filled slot that keep the build free of compatibility errors.
+/// Not a quality ranking (the catalogue carries no manufacturer tier data): the UI presents
+/// these as "other parts that fit", priced, so the user decides if a pricier one is worth it.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SlotSwaps {
+    pub cat: CatId,
+    pub current: String,
+    /// Priced first (ascending), unpriced last (by id); the current part is excluded.
+    pub options: Vec<SwapOption>,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Preset {
     pub id: String,

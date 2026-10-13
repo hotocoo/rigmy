@@ -363,6 +363,31 @@ export class Engine {
         }
     }
     /**
+     * Swap/upgrade suggestions: for each filled slot, the other catalogue parts in the same
+     * category that keep the build free of compatibility errors, with their lowest regional
+     * price (priced ascending, unpriced last). Not a quality ranking.
+     * @param {Build} build
+     * @param {RegionId} region
+     * @returns {SlotSwaps[]}
+     */
+    swaps(build, region) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(region, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.engine_swaps(retptr, this.__wbg_ptr, addHeapObject(build), ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
      * Tracking link for a courier from `content.couriers`, or `undefined` when the courier is unknown
      * or has no `trackingUrl`. The tracking number is URL-encoded.
      * @param {string} courier

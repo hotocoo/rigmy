@@ -11,7 +11,7 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(typescript_custom_section)]
 const TS_IMPORTS: &'static str = r#"
-import type { Build, Check, Choice, Eta, EtaDef, Offer, OpenState, Plan, Power, RegionId, UserLoc } from '../lib/types';
+import type { Build, Check, Choice, Eta, EtaDef, Offer, OpenState, Plan, Power, RegionId, SlotSwaps, UserLoc } from '../lib/types';
 export interface NearbyBranch { branchId: string; km: number }
 export interface LatLon { lat: number; lon: number }
 "#;
@@ -123,6 +123,18 @@ impl Engine {
                 }
             };
         to_js(&self.cat.plan(&build(build_)?, region(region_id)?, &picks))
+    }
+
+    /// Swap/upgrade suggestions: for each filled slot, the other catalogue parts in the same
+    /// category that keep the build free of compatibility errors, with their lowest regional
+    /// price (priced ascending, unpriced last). Not a quality ranking.
+    #[wasm_bindgen(unchecked_return_type = "SlotSwaps[]")]
+    pub fn swaps(
+        &self,
+        #[wasm_bindgen(js_name = build, unchecked_param_type = "Build")] build_: JsValue,
+        #[wasm_bindgen(js_name = region, unchecked_param_type = "RegionId")] region_id: &str,
+    ) -> Result<JsValue, JsError> {
+        to_js(&self.cat.swaps(&build(build_)?, region(region_id)?))
     }
 
     /// Slowest ETA among the chosen offers, ranked by `content.etas` (the fastest ETA when empty).

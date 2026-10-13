@@ -983,3 +983,107 @@ fn plan_fee_uses_the_bulkiest_part_per_shop() {
     );
     assert_eq!(p.best.fee, 10.0);
 }
+
+#[test]
+fn swaps_empty_build_is_empty() {
+    let c = Catalog::new(catalog()).unwrap();
+    assert!(c.swaps(&Build::new(), RegionId::Kv).is_empty());
+}
+
+#[test]
+fn swaps_excludes_parts_that_break_compatibility() {
+    let c = Catalog::new(catalog()).unwrap();
+    let b = build(&[(CatId::Cpu, "cpu-9800x3d"), (CatId::Mobo, "mb-b850f")]);
+    let swaps = c.swaps(&b, RegionId::Kv);
+    let cpu = swaps
+        .iter()
+        .find(|s| s.cat == CatId::Cpu)
+        .expect("cpu slot has swaps");
+    assert_eq!(cpu.current, "cpu-9800x3d");
+    let ids: Vec<&str> = cpu.options.iter().map(|o| o.id.as_str()).collect();
+    // Same-socket AM5 parts fit; the current part is never listed.
+    assert!(ids.contains(&"cpu-9950x3d"), "{ids:?}");
+    assert!(ids.contains(&"cpu-9600x"), "{ids:?}");
+    assert!(!ids.contains(&"cpu-9800x3d"));
+    // LGA1851 parts would fail the socket check and must be excluded.
+    assert!(
+        !ids.contains(&"cpu-265k") && !ids.contains(&"cpu-245k"),
+        "{ids:?}"
+    );
+    // The board slot is judged against the chosen CPU: LGA1851 boards are excluded.
+    let mobo = swaps
+        .iter()
+        .find(|s| s.cat == CatId::Mobo)
+        .expect("mobo slot has swaps");
+    let mids: Vec<&str> = mobo.options.iter().map(|o| o.id.as_str()).collect();
+    assert!(
+        mids.contains(&"mb-x870tom") && mids.contains(&"mb-b650m"),
+        "{mids:?}"
+    );
+    assert!(
+        !mids.contains(&"mb-z890") && !mids.contains(&"mb-b860m"),
+        "{mids:?}"
+    );
+    // Every listed option really keeps the build error-free when swapped in.
+    for s in swaps.iter() {
+        for o in &s.options {
+            let mut alt = b.clone();
+            alt.insert(s.cat, o.id.clone());
+            assert!(
+                c.compat(&alt, RegionId::Kv)
+                    .iter()
+                    .all(|ch| ch.status != Tone::Error),
+                "swapping {} into {} must not introduce errors",
+                o.id,
+                s.cat
+            );
+        }
+    }
+}
+
+#[test]
+fn swaps_orders_priced_ascending_and_unpriced_last() {
+    let c = with_offers(
+        vec![retailer("r1", &[(RegionId::Kv, 0.0, Eta::NextDay)])],
+        vec![
+            offer("cpu-9800x3d", "r1", 2099.0, StockState::InStock),
+            offer("cpu-9950x3d", "r1", 3449.0, StockState::InStock),
+            // cpu-9600x deliberately unpriced.
+        ],
+    );
+    let b = build(&[(CatId::Cpu, "cpu-9800x3d"), (CatId::Mobo, "mb-b850f")]);
+    let cpu = c
+        .swaps(&b, RegionId::Kv)
+        .into_iter()
+        .find(|s| s.cat == CatId::Cpu)
+        .unwrap();
+    let got: Vec<(&str, Option<f64>)> = cpu
+        .options
+        .iter()
+        .map(|o| (o.id.as_str(), o.price))
+        .collect();
+    assert_eq!(
+        got,
+        vec![("cpu-9950x3d", Some(3449.0)), ("cpu-9600x", None)],
+        "{got:?}"
+    );
+}
+
+#[test]
+fn swaps_never_lists_market_products() {
+    let mut b = catalog();
+    let mut mkt = b.products[0].clone();
+    mkt.id = "mkt-test".into();
+    mkt.cat = None;
+    mkt.market = Some("Test".into());
+    b.products.push(mkt);
+    b.retailers
+        .push(retailer("r1", &[(RegionId::Kv, 0.0, Eta::NextDay)]));
+    b.offers
+        .push(offer("mkt-test", "r1", 10.0, StockState::InStock));
+    let c = Catalog::new(b).unwrap();
+    let bd = build(&[(CatId::Cpu, "cpu-9800x3d"), (CatId::Mobo, "mb-b850f")]);
+    for s in c.swaps(&bd, RegionId::Kv) {
+        assert!(!s.options.iter().any(|o| o.id == "mkt-test"));
+    }
+}

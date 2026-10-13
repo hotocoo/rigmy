@@ -1,0 +1,14 @@
+feat(engine): swap/upgrade suggestions for every build slot
+
+- core Catalog::swaps: for each filled slot, the other catalogue parts
+  in the same category that keep the build free of compatibility errors
+  (warnings allowed, errors excluded), each with its lowest regional
+  price; priced ascending, unpriced last; market listings never listed
+- deliberately not a quality ranking: the catalogue carries no
+  manufacturer tier data, so the UI presents "other parts that fit"
+  with real prices and a +/- delta for the user to judge
+- WASM binding + Engine interface; builder page shows a "Swap or
+  upgrade" section under the parts list, one click to swap in
+- 4 new core tests (compat exclusion, ordering, market exclusion,
+  empty build); 81 Rust tests green, fmt/clippy clean, tsc/eslint/
+  next build clean, wasm artifacts rebuilt

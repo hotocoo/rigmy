@@ -17,6 +17,7 @@ export const engine_plan: (a: number, b: number, c: number, d: number, e: number
 export const engine_postcode: (a: number, b: number, c: number, d: number) => void;
 export const engine_power: (a: number, b: number, c: number) => void;
 export const engine_regionOf: (a: number, b: number, c: number, d: number) => void;
+export const engine_swaps: (a: number, b: number, c: number, d: number, e: number) => void;
 export const engine_trackingUrl: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
 export const __wbindgen_export: (a: number, b: number) => number;
 export const __wbindgen_export2: (a: number, b: number, c: number, d: number) => number;

@@ -12,6 +12,7 @@ import type { CatId } from '@/lib/types';
 import { BuilderStage } from './BuilderStage';
 import { BuildRow } from './BuildRow';
 import { downloadCsv } from './csv';
+import { SwapList } from './swaps';
 import { PowerMeter } from './Notices';
 import { errText, partPrice, powerView, presetName, totalView } from './shared';
 import { useStudioHost } from './useStudioHost';
@@ -63,6 +64,8 @@ export function BuilderPage() {
             );
           })}
         </ul>
+
+        <SwapList d={d} build={build} region={region} />
 
         <div className={s.power}><PowerMeter pw={pw} /></div>
 

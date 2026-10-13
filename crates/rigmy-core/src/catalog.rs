@@ -747,6 +747,59 @@ impl Catalog {
             rows,
         }
     }
+
+    /// Swap/upgrade suggestions for a build. For every filled slot, lists the other catalogue
+    /// parts in the same category that keep the build free of compatibility *errors* (warnings
+    /// are allowed — they are caveats, not failures), each with its lowest regional price.
+    ///
+    /// Deliberately not a quality ranking: the catalogue has no manufacturer tier data, so the
+    /// UI shows "other parts that fit" with real prices and lets the user judge the trade.
+    pub fn swaps(&self, b: &Build, region: RegionId) -> Vec<SlotSwaps> {
+        let mut out = Vec::new();
+        for (cat, cur_id) in b {
+            let Some(cur) = self.product(cur_id) else {
+                continue;
+            };
+            if cur.cat != Some(*cat) {
+                continue; // a build slot only ever holds a catalogue part in its own category
+            }
+            let mut options: Vec<SwapOption> = Vec::new();
+            for p in &self.data.products {
+                if p.cat != Some(*cat) || p.id == *cur_id {
+                    continue;
+                }
+                let mut alt = b.clone();
+                alt.insert(*cat, p.id.clone());
+                if self
+                    .compat(&alt, region)
+                    .iter()
+                    .any(|c| c.status == Tone::Error)
+                {
+                    continue;
+                }
+                let price = self.lowest(&p.id, region).map(|o| o.raw.price);
+                options.push(SwapOption {
+                    id: p.id.clone(),
+                    price,
+                });
+            }
+            if options.is_empty() {
+                continue;
+            }
+            options.sort_by(|a, b2| match (a.price, b2.price) {
+                (Some(x), Some(y)) => x.partial_cmp(&y).unwrap_or(std::cmp::Ordering::Equal),
+                (Some(_), None) => std::cmp::Ordering::Less,
+                (None, Some(_)) => std::cmp::Ordering::Greater,
+                (None, None) => a.id.cmp(&b2.id),
+            });
+            out.push(SlotSwaps {
+                cat: *cat,
+                current: cur_id.clone(),
+                options,
+            });
+        }
+        out
+    }
 }
 
 fn pick_cheapest(it: impl Iterator<Item = Offer>) -> Option<Offer> {
