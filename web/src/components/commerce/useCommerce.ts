@@ -40,7 +40,7 @@ export function groupsOf(d: Data, choice: Choice, region: RegionId, pickup: bool
   }
   return Array.from(g.values(), (x) => {
     const del = x.r.delivery[region];
-    const feeRaw = pickup ? 0 : del ? del.fee : null;
+    const feeRaw = pickup ? 0 : del ? del.fee ?? null : null;
     const subRaw = x.items.reduce((a, i) => a + i.price, 0);
     return {
       rid: x.r.id, r: x.r, name: x.r.name, city: x.r.city, items: x.items, etaRaw: x.eta,

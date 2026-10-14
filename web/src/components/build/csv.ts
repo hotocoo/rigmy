@@ -31,7 +31,7 @@ export function buildCsv(d: Data, build: Build, region: RegionId): string {
       lo ? lo.price : '',
       lo ? d.retailerById[lo.retailerId]?.name ?? lo.retailerId : '',
       lo ? lo.status : pp.text,
-      lo ? (lo.fee == null ? 'No delivery' : lo.fee === 0 ? 'Free' : fmt(lo.fee)) : '',
+      lo ? (lo.fee == null ? 'Quoted at checkout' : lo.fee === 0 ? 'Free' : fmt(lo.fee)) : '',
       lo ? lo.url : '',
     ]);
   }

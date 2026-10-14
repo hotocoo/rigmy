@@ -43,7 +43,15 @@ fn retailer(id: &str, delivery: &[(RegionId, f64, Eta)]) -> Retailer {
         pickup: "Online only".into(),
         delivery: delivery
             .iter()
-            .map(|&(r, fee, eta)| (r, Delivery { fee, eta }))
+            .map(|&(r, fee, eta)| {
+                (
+                    r,
+                    Delivery {
+                        fee: Some(fee),
+                        eta,
+                    },
+                )
+            })
             .collect(),
         courier: None,
         platform: None,
@@ -547,8 +555,10 @@ fn shipped_content_is_valid_and_complete() {
             ("Next day", 1, 1),
             ("1–2 days", 2, 2),
             ("2–3 days", 3, 3),
-            ("3–5 days", 4, 5),
-            ("5–7 days", 5, 7),
+            ("2–5 days", 4, 5),
+            ("3–5 days", 5, 5),
+            ("4–7 days", 6, 7),
+            ("5–7 days", 7, 7),
         ]
     );
     assert_eq!((t.fastest(), t.slowest()), (Eta::SameDay, Eta::D5to7));
@@ -594,8 +604,8 @@ fn content_wire_shape_is_camel_case() {
     assert_eq!(v["guide"][9]["cat"], serde_json::Value::Null);
     assert_eq!(v["guide"][8]["cat"], "cables");
     assert_eq!(
-        v["etas"][4],
-        serde_json::json!({"label": "3–5 days", "rank": 4, "days": 5})
+        v["etas"][5],
+        serde_json::json!({"label": "3–5 days", "rank": 5, "days": 5})
     );
     assert_eq!(v["couriers"][0], serde_json::json!({"name": "Pos Laju"}));
     // And it reads back (the browser engine parses this JSON).
@@ -653,7 +663,7 @@ fn eta_table_rejects_bad_tables() {
     fewer_days[5].days = 1;
     assert_eq!(
         EtaTable::new(&fewer_days).unwrap_err().0,
-        "eta: '5–7 days' (rank 5) has fewer days (1) than the faster '3–5 days' (5)"
+        "eta: '3–5 days' (rank 5) has fewer days (1) than the faster '2–5 days' (5)"
     );
     assert!(EtaTable::new(&[]).is_err());
 }
@@ -666,8 +676,10 @@ fn eta_ranking_comes_from_the_table_not_the_enum() {
         (Eta::D1to2, 1, 2),
         (Eta::NextDay, 2, 2),
         (Eta::D2to3, 3, 3),
-        (Eta::D3to5, 4, 5),
-        (Eta::D5to7, 5, 7),
+        (Eta::D2to5, 4, 5),
+        (Eta::D3to5, 5, 5),
+        (Eta::D4to7, 6, 7),
+        (Eta::D5to7, 7, 7),
     ]))
     .unwrap();
     assert_eq!(t.max_of([Eta::NextDay, Eta::D1to2]), Eta::NextDay);
@@ -822,8 +834,8 @@ fn pre_orders_take_the_slowest_eta_in_the_table() {
     // Drop "5–7 days" to the same days as "3–5 days" and swap their ranks: the slowest is now 3–5.
     for d in &mut b.content.etas {
         match d.label {
-            Eta::D3to5 => (d.rank, d.days) = (5, 7),
-            Eta::D5to7 => (d.rank, d.days) = (4, 5),
+            Eta::D3to5 => (d.rank, d.days) = (7, 7),
+            Eta::D5to7 => (d.rank, d.days) = (5, 5),
             _ => {}
         }
     }

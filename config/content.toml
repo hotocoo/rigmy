@@ -37,7 +37,7 @@ size_multiplier = { case = 2.0 }
 # [[eta]]  delivery-time buckets. Retailer delivery terms (retailers.toml) use these labels.
 #
 #   label  required  exactly one block per label: "Same day", "Next day", "1–2 days", "2–3 days",
-#                    "3–5 days", "5–7 days" (ranges use an en dash –). A missing, duplicate or
+#                    "2–5 days", "3–5 days", "4–7 days", "5–7 days" (ranges use an en dash –). A missing, duplicate or
 #                    unknown label is an error.
 #   rank   required  speed order, 0 = fastest. Ranks must be unique. Used by the "fastest
 #                    delivery" plan and to find a build's slowest shop (`maxEta`).
@@ -67,13 +67,23 @@ rank = 3
 days = 3
 
 [[eta]]
-label = "3–5 days"
+label = "2–5 days"
 rank = 4
 days = 5
 
 [[eta]]
-label = "5–7 days"
+label = "3–5 days"
 rank = 5
+days = 5
+
+[[eta]]
+label = "4–7 days"
+rank = 6
+days = 7
+
+[[eta]]
+label = "5–7 days"
+rank = 7
 days = 7
 
 # ---------------------------------------------------------------------------------------------

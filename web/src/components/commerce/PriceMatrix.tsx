@@ -13,7 +13,7 @@ const PART_SHARE = 1.6, PART_MIN_PX = 200, RETAILER_MIN_PX = 117, TABLE_MIN_PX =
 function cellText(o: Offer | undefined) {
   if (!o) return { text: '—', sub: 'Not listed' };
   if (o.avail) return { text: fmt(o.price), sub: o.eta || '' };
-  if (o.fee == null) return { text: 'No delivery', sub: '' };
+  if (o.status === 'No delivery') return { text: 'No delivery', sub: '' };
   if (o.stock === 'Out of stock') return { text: 'Sold out', sub: '' };
   return { text: o.stock === 'Unknown' ? 'Stock unknown' : o.stock, sub: fmt(o.price) };
 }

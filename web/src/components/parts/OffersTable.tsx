@@ -50,7 +50,7 @@ export function OffersTable({ productId, regionName }: { productId: string; regi
                   </th>
                   <td style={{ color: stockColor(status) }}>{status}</td>
                   <td className={p.soft}>{o.avail && o.eta ? o.eta : '—'}</td>
-                  <td className={p.soft}>{!o.avail || o.fee == null ? '—' : o.fee ? fmt(o.fee) : 'Free'}</td>
+                  <td className={p.soft}>{!o.avail ? '—' : o.fee == null ? 'At checkout' : o.fee ? fmt(o.fee) : 'Free'}</td>
                   <td className={p.softer}><div className={p.stack}><span>{o.warranty}</span>{r?.pay && <span className={p.sub}>{r.pay}</span>}</div></td>
                   <td className={p.right}>
                     <div className={cx(p.stack, p.stackEnd)}>

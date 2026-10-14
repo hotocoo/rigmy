@@ -193,10 +193,10 @@ async fn bootstrap_serves_content_region_centers_and_featured_preset() {
     assert_eq!(featured[0]["id"], "helang");
 
     let c = &b["content"];
-    assert_eq!(c["etas"].as_array().unwrap().len(), 6);
+    assert_eq!(c["etas"].as_array().unwrap().len(), 8);
     assert_eq!(
-        c["etas"][5],
-        json!({"label": "5–7 days", "rank": 5, "days": 7})
+        c["etas"][7],
+        json!({"label": "5–7 days", "rank": 7, "days": 7})
     );
     assert_eq!(
         c["deliveryWindows"],
@@ -867,7 +867,7 @@ fn config_validation_errors() {
     );
     let e = load_err("content.toml", |s| s.replacen("rank = 4", "rank = 3", 1));
     assert!(
-        e.contains("content.toml: eta: '2–3 days' and '3–5 days' share rank 3"),
+        e.contains("content.toml: eta: '2–3 days' and '2–5 days' share rank 3"),
         "{e}"
     );
 

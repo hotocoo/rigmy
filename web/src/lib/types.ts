@@ -5,7 +5,7 @@ export type CatId = 'cpu' | 'cooler' | 'mobo' | 'ram' | 'ssd' | 'gpu' | 'case' |
 /** Category of the products a build slot takes: the second storage slot takes any SSD. */
 export const productCat = (slot: CatId): CatId => (slot === 'ssd2' ? 'ssd' : slot);
 export type RegionId = 'kv' | 'pen' | 'jhr' | 'east';
-export type Eta = 'Same day' | 'Next day' | '1–2 days' | '2–3 days' | '3–5 days' | '5–7 days';
+export type Eta = 'Same day' | 'Next day' | '1–2 days' | '2–3 days' | '2–5 days' | '3–5 days' | '4–7 days' | '5–7 days';
 export type Tone = 'ok' | 'warn' | 'error' | 'pending' | 'info';
 export type Build = Partial<Record<CatId, string>>;
 
@@ -63,7 +63,8 @@ export type CatalogPart = Product & { cat: CatId };
 /** Type guard: true for verified catalogue parts, false for market listings. */
 export const isCatalogPart = (p: Product): p is CatalogPart => !!p.cat;
 
-export interface Delivery { fee: number; eta: Eta }
+/** `fee` null: the shop delivers but publishes no fee (quoted at its checkout). */
+export interface Delivery { fee: number | null; eta: Eta }
 export interface Retailer {
   id: string;
   name: string;

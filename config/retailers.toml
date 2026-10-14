@@ -24,7 +24,9 @@
 #       max_pages   safety cap (Shopify pages hold at most 250 products); default 40
 #   [retailer.delivery.<region>]   one table per region the shop delivers to
 #                         (regions: kv, pen, jhr, east). A missing region = does not deliver there.
-#       fee     number, RM per order; multiplied per category by [delivery] size_multiplier in
+#       fee     number, RM per order; leave out when the shop publishes no fee (quoted at its
+#               checkout). The region still counts as delivered, and totals say the fee is unknown.
+#               Multiplied per category by [delivery] size_multiplier in
 #               content.toml for bulky parts (cases x2 as shipped)
 #       eta     a label from the [[eta]] table in content.toml: "Same day", "Next day", "1–2 days",
 #               "2–3 days", "3–5 days", "5–7 days"
@@ -69,6 +71,22 @@ id = "all-it"
 name = "ALL IT Hypermarket"
 city = "Kuala Lumpur"
 website = "https://www.allithypermarket.com.my"
+
+# Delivery times from ALL IT's published shipping policy
+# (https://www.allithypermarket.com.my/policies/shipping-policy, read 2026-10-14):
+# Peninsular 2–5 working days, East Malaysia 4–7, via GDex / Poslaju / Ninja Van. No fees are
+# published (quoted at the shop's checkout), so `fee` is left out.
+[retailer.delivery.kv]
+eta = "2–5 days"
+
+[retailer.delivery.pen]
+eta = "2–5 days"
+
+[retailer.delivery.jhr]
+eta = "2–5 days"
+
+[retailer.delivery.east]
+eta = "4–7 days"
 
 [retailer.import]
 kind = "shopify"

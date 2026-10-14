@@ -159,7 +159,8 @@ function NavRight({ locOpen, toggleLoc }: { locOpen: boolean; toggleLoc: () => v
   const total = useMemo(() => {
     if (!count && !extras) return fmt(0);
     const best = d.engine.plan(build, region, {}).best;
-    return best.missing >= count + extras ? '—' : fmt(best.total);
+    // Partly priced: the sum so far, marked '+' (the aria label says how many parts it covers).
+    return best.missing >= count + extras ? '—' : fmt(best.total) + (best.missing ? '+' : '');
   }, [d, build, region, count, extras]);
   const desc = describeLoc(L, reg.name, reg.short);
   return (
@@ -168,7 +169,7 @@ function NavRight({ locOpen, toggleLoc }: { locOpen: boolean; toggleLoc: () => v
         <Dot c={desc.dot} size={7} ring />
         <span className={s.ellipsis}>{desc.short}</span>
       </button>
-      <button onClick={() => go(ROUTES.cart.path)} className={s.cartBtn} aria-label={`Cart: ${count} of ${req.length} parts${extras ? ' plus ' + extras + ' extra' : ''}, ${total}`}>
+      <button onClick={() => go(ROUTES.cart.path)} className={s.cartBtn} aria-label={`Cart: ${count} of ${req.length} parts${extras ? ' plus ' + extras + ' extra' : ''}, ${total.endsWith("+") ? "at least " + total.slice(0, -1) + ", some parts not priced" : total}`}>
         <span className={s.cartCount}>{count + '/' + req.length + (extras ? '+' + extras : '')}</span><span>{total}</span>
       </button>
     </>

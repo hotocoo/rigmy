@@ -54,7 +54,7 @@ str_enum!(RegionId { Kv = "kv", Pen = "pen", Jhr = "jhr", East = "east" });
 str_enum!(
     /// Delivery estimate label. Speed rank and day counts are NOT derived from the variant order:
     /// they come from the `[[eta]]` table in `config/content.toml` (see [`crate::content::EtaTable`]).
-    Eta { SameDay = "Same day", NextDay = "Next day", D1to2 = "1–2 days", D2to3 = "2–3 days", D3to5 = "3–5 days", D5to7 = "5–7 days" }
+    Eta { SameDay = "Same day", NextDay = "Next day", D1to2 = "1–2 days", D2to3 = "2–3 days", D2to5 = "2–5 days", D3to5 = "3–5 days", D4to7 = "4–7 days", D5to7 = "5–7 days" }
 );
 str_enum!(Tone { Ok = "ok", Warn = "warn", Error = "error", Pending = "pending", Info = "info" });
 str_enum!(StockState { InStock = "In stock", LowStock = "Low stock", PreOrder = "Pre-order", OutOfStock = "Out of stock", Unknown = "Unknown" });
@@ -201,7 +201,9 @@ impl Product {
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct Delivery {
-    pub fee: f64,
+    /// RM per order; `None` = the shop delivers there but publishes no fee (quoted at its checkout).
+    #[serde(default)]
+    pub fee: Option<f64>,
     pub eta: Eta,
 }
 

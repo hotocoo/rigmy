@@ -176,7 +176,7 @@ impl Catalog {
                 Offer {
                     raw: raw.clone(),
                     avail: raw.stock.available(),
-                    fee: Some(d.fee * big),
+                    fee: d.fee.map(|f| f * big),
                     eta: Some(eta),
                     status: raw.stock.as_str().to_string(),
                     warranty,
@@ -776,7 +776,8 @@ impl Catalog {
             let mut unknown_fees = 0;
             for (rid, m) in &shops {
                 match self.retailer(rid).and_then(|r| r.delivery.get(&region)) {
-                    Some(d) => fee += d.fee * m,
+                    Some(Delivery { fee: Some(f), .. }) => fee += f * m,
+                    Some(_) => unknown_fees += 1,
                     None => unknown_fees += 1,
                 }
             }

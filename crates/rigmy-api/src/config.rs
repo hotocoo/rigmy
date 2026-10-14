@@ -330,7 +330,7 @@ impl Config {
             }
             if r.delivery
                 .values()
-                .any(|d| !d.fee.is_finite() || d.fee < 0.0)
+                .any(|d| d.fee.is_some_and(|f| !f.is_finite() || f < 0.0))
             {
                 bail!(
                     "retailers.toml: retailer '{}' has a negative or invalid delivery fee",

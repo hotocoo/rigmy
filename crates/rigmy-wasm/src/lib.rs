@@ -266,8 +266,8 @@ mod tests {
                 (r, d)
             })
             .collect();
-        assert_eq!(table, [(0, 0), (1, 1), (2, 2), (3, 3), (4, 5), (5, 7)]);
-        assert_eq!(e.cat.etas().defs().len(), 6);
+        assert_eq!(table, [(0, 0), (1, 1), (2, 2), (3, 3), (4, 5), (5, 5), (6, 7), (7, 7)]);
+        assert_eq!(e.cat.etas().defs().len(), 8);
     }
 
     #[test]
