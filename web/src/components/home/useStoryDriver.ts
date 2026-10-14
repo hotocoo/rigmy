@@ -8,7 +8,7 @@ import { useRig } from '@/lib/store';
 import { ease, glow } from '@/lib/tokens';
 import type { Build, CatId } from '@/lib/types';
 import type { StudioRef } from '@/studio/Studio';
-import type { StudioBuild, StudioMsg } from '@/studio/types';
+import { isStudioCat, type StudioBuild, type StudioMsg } from '@/studio/types';
 import { CHAPTER } from './config';
 
 /** Scroll smoothing per frame, and the thresholds below which a value is not re-sent to the studio. */
@@ -34,7 +34,7 @@ function useStudioBuild(hb: Build): StudioBuild {
     const out: StudioBuild = {};
     for (const c of d.categories) {
       const id = hb[c.id], p = id ? d.byId[id] : null;
-      if (!id || !p) continue;
+      if (!id || !p || !isStudioCat(c.id)) continue;
       const lo = d.engine.lowest(id, region);
       out[c.id] = { id, label: p.name, price: lo ? fmt(lo.price) : '', sub: keySpecs(p), vis: p.vis };
     }
@@ -123,7 +123,7 @@ export function useStoryDriver(hb: Build) {
       if (Math.abs(st.sp - st.lastP) > EPS.p) { st.lastP = st.sp; post({ rig: 'scroll', p: st.sp }); }
       if (Math.abs(ex - st.lastEx) > EPS.ex) { st.lastEx = ex; post({ rig: 'explode', v: ex }); }
       if (Math.abs(sh - st.lastShift) > EPS.shift) { st.lastShift = sh; post({ rig: 'frame', shiftX: sh }); }
-      if (sel !== st.lastSel) { st.lastSel = sel; post({ rig: 'select', part: sel }); }
+      if (sel !== st.lastSel) { st.lastSel = sel; post({ rig: 'select', part: isStudioCat(sel) ? sel : null }); }
       if (st.ptr) { post({ rig: 'pointer', x: st.ptr.x, y: st.ptr.y }); st.ptr = null; }
     };
     raf = requestAnimationFrame(tick);

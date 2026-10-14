@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { Product } from '@/lib/types';
 import Studio, { type StudioRef } from '@/studio/Studio';
-import type { PartVis, StudioCat } from '@/studio/types';
+import { isStudioCat, type PartVis, type StudioCat } from '@/studio/types';
 import s from './studio.module.css';
 
 /**
@@ -22,6 +22,8 @@ export function SoloStudio({ product, installed = false }: { product: Product | 
     ref.current.send({ rig: 'solo', cat: p.cat as StudioCat, item: { id: p.id, label: p.name, vis: p.vis as PartVis, installed: inst.current } });
   }, []);
   useEffect(() => { cur.current = product; inst.current = installed; push(); }, [product, installed, push]);
+  // Parts the studio has no model for (monitor, case fans) show their glyph instead of an empty stage.
+  if (product && !isStudioCat(product.cat)) return <div className={s.fill}><span className={s.glyph} aria-hidden>{product.glyph}</span></div>;
   return (
     <div className={s.fill}>
       <Studio ref={ref} mode="solo" className={s.canvas} onReady={() => { ready.current = true; last.current = null; push(); }} />

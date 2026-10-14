@@ -24,6 +24,7 @@ import { lastBrowseCat, rememberBrowseCat } from './lastCategory';
 import { listedPrice } from '@/components/build/shared';
 import b from './browse.module.css';
 import s from './parts.module.css';
+import { productCat } from '@/lib/types';
 
 /** Browse one category (/parts/[cat]): category tabs, facet + sort filters, part rows and a live 3D preview. */
 export function BrowsePage() {
@@ -57,7 +58,7 @@ function BrowseCategory() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [paging, setPaging] = useState({ n: PAGE_SIZE, sig: '' });
 
-  const all = d.products.filter((p): p is CatalogPart => p.cat === cat);
+  const all = d.products.filter((p): p is CatalogPart => !!cat && p.cat === productCat(cat));
   const defs = d.specdef[cat as CatId] ?? [];
   const specFacets = buildFacets(defs, all);
   const needle = q.trim().toLowerCase();
@@ -87,7 +88,7 @@ function BrowseCategory() {
   const facets = [ALL_FACET, ...new Set(all.map((p) => p.facet))];
   const catPart = (id?: string | null): CatalogPart | undefined => {
     const p = id ? d.byId[id] : undefined;
-    return p && isCatalogPart(p) && p.cat === cat ? p : undefined;
+    return p && isCatalogPart(p) && !!cat && p.cat === productCat(cat) ? p : undefined;
   };
   const preview = catPart(previewId) || catPart(build[cat]) || all.find((p) => facet === ALL_FACET || p.facet === facet);
   const pickTab = (id: string) => {
@@ -153,7 +154,7 @@ function BrowseCategory() {
               comparing={(r) => compare.includes(r.p.id)}
               onCompare={(r) => toggleCompare(r.p.id)}
               onDetails={(r) => go(href.part(r.p.id))}
-              onAdd={(r) => addPart(r.p)}
+              onAdd={(r) => addPart(r.p, cat)}
             />
           ) : list.map(({ p }) => (
             <BrowseRow
@@ -166,7 +167,7 @@ function BrowseCategory() {
               onPreview={() => set({ previewId: p.id })}
               onCompare={() => toggleCompare(p.id)}
               onDetails={() => go(href.part(p.id))}
-              onAdd={() => addPart(p)}
+              onAdd={() => addPart(p, cat)}
             />
           ))}
           {sorted.length > shown && (
@@ -180,7 +181,7 @@ function BrowseCategory() {
             <Button wide className={b.compareCta} onClick={() => go(ROUTES.compare.path)}>{'Compare ' + compare.length + ' parts'} →</Button>
           )}
         </div>
-        {preview && view === 'list' && <BrowsePreview p={preview} build={build} region={region} onAdd={() => addPart(preview)} onDetails={() => go(href.part(preview.id))} />}
+        {preview && view === 'list' && <BrowsePreview p={preview} build={build} region={region} onAdd={() => addPart(preview, cat)} onDetails={() => go(href.part(preview.id))} />}
       </div>
     </div>
   );

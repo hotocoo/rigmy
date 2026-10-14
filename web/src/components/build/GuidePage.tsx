@@ -15,6 +15,7 @@ import { StudioStage } from './StudioStage';
 import { useStudioHost } from './useStudioHost';
 import g from './guide.module.css';
 import l from './layout.module.css';
+import { requiredCats } from '@/lib/content';
 
 export function GuidePage() {
   const d = useData();
@@ -23,7 +24,7 @@ export function GuidePage() {
   const host = useStudioHost('guide');
   const steps = useGuide();
   const n = steps.length;
-  const count = d.categories.filter((c) => build[c.id]).length;
+  const count = requiredCats(d).filter((c) => build[c.id]).length;
   const totalMin = steps.reduce((a, st) => a + st.minutes, 0);
   const i = Math.max(0, Math.min(guideStep, n - 1)), st = steps[i];
   const partOf = (cat: GuideStepDef['cat']): Product | null => (cat && cat !== 'cables' && build[cat] ? d.byId[build[cat]!] || null : null);

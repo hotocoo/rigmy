@@ -219,7 +219,7 @@ impl Catalog {
         build
             .get(&cat)
             .and_then(|id| self.product(id))
-            .filter(|p| p.cat == Some(cat))
+            .filter(|p| p.cat == Some(cat.product_cat()))
     }
 
     pub fn power(&self, build: &Build) -> Power {

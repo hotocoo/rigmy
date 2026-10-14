@@ -1,3 +1,4 @@
 /* Solo 3D viewer: fills its positioned stage. */
 .fill { position: absolute; inset: 0; }
 .canvas { width: 100%; height: 100%; display: block; }
+.glyph { position: absolute; inset: 0; display: grid; place-items: center; font: 600 clamp(28px, 6vw, 64px)/1 var(--mono); letter-spacing: -0.02em; color: var(--fg-3); }

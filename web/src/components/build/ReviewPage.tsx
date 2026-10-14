@@ -17,6 +17,8 @@ import { StageCaption, StudioStage } from './StudioStage';
 import { useStudioHost } from './useStudioHost';
 import l from './layout.module.css';
 import r from './review.module.css';
+import { requiredCats } from '@/lib/content';
+import { isStudioCat } from '@/studio/types';
 
 const plural = (n: number, one: string, many: string) => n + ' ' + (n === 1 ? one : many);
 
@@ -29,8 +31,8 @@ export function ReviewPage() {
   const checks = useMemo(() => d.engine.compat(build), [d, build]);
   const plan = useMemo(() => d.engine.plan(build, region, {}), [d, build, region]);
   const pw = useMemo(() => powerView(d.engine.power(build)), [d, build]);
-  const total = d.categories.length;
-  const count = d.categories.filter((c) => build[c.id] && d.byId[build[c.id]!]).length;
+  const total = requiredCats(d).length;
+  const count = requiredCats(d).filter((c) => build[c.id] && d.byId[build[c.id]!]).length;
   const missing = total - count;
   const errs = checks.filter((c) => c.status === 'error');
   const okN = checks.filter((c) => c.status === 'ok').length;
@@ -54,7 +56,7 @@ export function ReviewPage() {
           <Text v="headline" as="h1" id="review-title" c={headColor}>{head}</Text>
         </header>
 
-        <ReviewChecks checks={checks} onFix={applyFix} onFocus={(c) => { if (c.parts[0]) host.post({ rig: 'select', part: c.parts[0] }); }} />
+        <ReviewChecks checks={checks} onFix={applyFix} onFocus={(c) => { if (isStudioCat(c.parts[0])) host.post({ rig: 'select', part: c.parts[0] }); }} />
 
         <div className={r.power}><PowerMeter pw={pw} /><PerformanceCard build={build} /></div>
 

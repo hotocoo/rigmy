@@ -48,3 +48,6 @@ export const trackingUrl = (d: Data, courier: string | null | undefined, trackin
 export function cableRunsFor(d: Data, has: Partial<Record<CatId, boolean>>) {
   return d.content.cableRuns.filter((r) => has[r.requires]);
 }
+
+/** The slots a complete build needs (optional extras like a monitor don't count toward completion). */
+export const requiredCats = (d: Pick<Data, 'categories'>) => d.categories.filter((c) => !c.optional);

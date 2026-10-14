@@ -89,6 +89,27 @@
       "label": "Power",
       "long": "Power supply",
       "idx": "08"
+    },
+    {
+      "id": "ssd2",
+      "label": "Storage 2",
+      "long": "Second drive",
+      "idx": "09",
+      "optional": true
+    },
+    {
+      "id": "monitor",
+      "label": "Monitor",
+      "long": "Monitor",
+      "idx": "10",
+      "optional": true
+    },
+    {
+      "id": "fans",
+      "label": "Case fans",
+      "long": "Case fans",
+      "idx": "11",
+      "optional": true
     }
   ],
   "specdef": {
@@ -344,6 +365,74 @@
         "fan",
         "Fan"
       ]
+    ],
+    "monitor": [
+      [
+        "size",
+        "Size",
+        "in"
+      ],
+      [
+        "res",
+        "Resolution"
+      ],
+      [
+        "hz",
+        "Refresh rate",
+        "Hz",
+        "high"
+      ],
+      [
+        "panel",
+        "Panel"
+      ],
+      [
+        "curved",
+        "Shape"
+      ]
+    ],
+    "fans": [
+      [
+        "size",
+        "Size",
+        "mm"
+      ],
+      [
+        "count",
+        "Fans in pack"
+      ],
+      [
+        "rgb",
+        "Lighting"
+      ]
+    ],
+    "ssd2": [
+      [
+        "cap",
+        "Capacity"
+      ],
+      [
+        "iface",
+        "Interface"
+      ],
+      [
+        "read",
+        "Seq. read",
+        "MB/s",
+        "high"
+      ],
+      [
+        "write",
+        "Seq. write",
+        "MB/s",
+        "high"
+      ],
+      [
+        "tbw",
+        "Endurance",
+        "TBW",
+        "high"
+      ]
     ]
   },
   "facet": {
@@ -354,7 +443,10 @@
     "ssd": "Interface",
     "gpu": "Memory",
     "case": "Size",
-    "psu": "Wattage"
+    "psu": "Wattage",
+    "monitor": "Resolution",
+    "fans": "Size",
+    "ssd2": "Interface"
   },
   "products": [
     {

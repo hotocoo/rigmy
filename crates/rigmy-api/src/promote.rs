@@ -110,6 +110,8 @@ pub fn promote(label: &str, title: &str) -> Option<Promoted> {
         "Power Supply" => psu(&t),
         "Case" => case(&t),
         "Cooler" => cooler(&t),
+        "Monitor" => monitor(&t),
+        "Case fans" | "Fans" => fans(&t),
         _ => None,
     }
 }
@@ -588,6 +590,94 @@ fn cooler(t: &str) -> Option<Promoted> {
     None
 }
 
+fn monitor(t: &str) -> Option<Promoted> {
+    static SKIP: LazyLock<Regex> =
+        LazyLock::new(|| re(r"(?i)\b(portable|stand|arm|mount|bracket|light ?bar)\b"));
+    static SIZE: LazyLock<Regex> =
+        LazyLock::new(|| re(r#"(?i)\b(\d{2}(?:\.\d{1,2})?)\s?(?:''|"|”|-?inch\b)"#));
+    static HZ: LazyLock<Regex> = LazyLock::new(|| re(r"(?i)\b(\d{2,3})\s?Hz\b"));
+    static RES: LazyLock<Regex> =
+        LazyLock::new(|| re(r"(?i)\b(FHD|1080p|DQHD|WQHD|QHD|1440p|2K|UHD|4K|2160p|5K)\b"));
+    static PANEL: LazyLock<Regex> = LazyLock::new(|| re(r"(?i)\b(QD-OLED|WOLED|OLED|IPS|VA|TN)\b"));
+    if SKIP.is_match(t) {
+        return None;
+    }
+    // Two sizes a few tenths apart ("27'' 26.5''") are one panel's nominal and viewable size.
+    let sizes = distinct(&SIZE, t, |c| c[1].parse::<f64>().ok());
+    let size = sizes.iter().cloned().reduce(f64::max)?;
+    if sizes.iter().any(|v| size - v > 1.0) {
+        return None;
+    }
+    let hz = one(distinct(&HZ, t, |c| c[1].parse::<u32>().ok()))?;
+    let res = one(distinct(&RES, t, |c| {
+        Some(match c[1].to_ascii_uppercase().as_str() {
+            "FHD" | "1080P" => "1080p",
+            "QHD" | "WQHD" | "1440P" | "2K" => "1440p",
+            "DQHD" => "Dual QHD",
+            "UHD" | "4K" | "2160P" => "4K",
+            _ => "5K",
+        })
+    }))?;
+    let panel = PANEL
+        .captures(t)
+        .map(|c| match c[1].to_ascii_uppercase().as_str() {
+            "WOLED" => "OLED".to_string(),
+            p => p.to_string(),
+        });
+    let mut specs = Map::new();
+    specs.insert("size".into(), json!(size));
+    specs.insert("res".into(), json!(res));
+    specs.insert("hz".into(), json!(hz));
+    if let Some(p) = &panel {
+        specs.insert("panel".into(), json!(p));
+    }
+    if t.to_ascii_lowercase().contains("curved") {
+        specs.insert("curved".into(), json!("Curved"));
+    }
+    Some(Promoted {
+        cat: Some(CatId::Monitor),
+        glyph: format!("{size}\""),
+        facet: res.to_string(),
+        specs,
+        ..Default::default()
+    })
+}
+
+fn fans(t: &str) -> Option<Promoted> {
+    static SIZE: LazyLock<Regex> = LazyLock::new(|| re(r"(?i)\b(92|120|140|200)\s?mm\b"));
+    static PACK: LazyLock<Regex> = LazyLock::new(|| {
+        re(r"(?i)\b(single|dual|triple|[1-9]\s?-?\s?pack|[1-9]\s?in\s?1|x\s?[1-9])\b")
+    });
+    let size = one(distinct(&SIZE, t, |c| c[1].parse::<u32>().ok()))?;
+    let packs = distinct(&PACK, t, |c| {
+        let v = c[1].to_ascii_lowercase().replace([' ', '-'], "");
+        Some(match v.as_str() {
+            "single" => 1,
+            "dual" => 2,
+            "triple" => 3,
+            _ => v.chars().find(|ch| ch.is_ascii_digit())?.to_digit(10)?,
+        })
+    });
+    // "Single / Triple Pack" or several models: one listing price for several products.
+    if packs.len() > 1 || t.contains(" / ") {
+        return None;
+    }
+    let n = packs.into_iter().next().unwrap_or(1);
+    let mut specs = Map::new();
+    specs.insert("size".into(), json!(size));
+    specs.insert("count".into(), json!(n));
+    if t.to_ascii_lowercase().contains("argb") {
+        specs.insert("rgb".into(), json!("ARGB"));
+    }
+    Some(Promoted {
+        cat: Some(CatId::Fans),
+        glyph: format!("{n}×{size}"),
+        facet: format!("{size} mm"),
+        specs,
+        ..Default::default()
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -786,6 +876,42 @@ mod tests {
         assert_eq!(a.ctype.as_deref(), Some("air"));
         let l = p("Cooler", "NZXT Kraken Elite 360 RGB AIO Liquid Cooler").unwrap();
         assert_eq!((l.ctype.as_deref(), l.rad), (Some("aio"), Some(360.0)));
+        let m = p(
+            "Monitor",
+            "GIGABYTE M27QA 27'' QHD 180Hz Super Speed IPS Gaming Monitor",
+        )
+        .unwrap();
+        assert_eq!(m.specs["res"], json!("1440p"));
+        assert_eq!(
+            (m.specs["hz"].clone(), m.specs["panel"].clone()),
+            (json!(180), json!("IPS"))
+        );
+        let o = p(
+            "Monitor",
+            "ASUS ROG OLED XG27UCDMG 27'' 26.5'' QD-OLED 4K 240Hz",
+        )
+        .unwrap();
+        assert_eq!(o.specs["size"], json!(27.0));
+        assert!(p(
+            "Monitor",
+            "Next Level Racing Round Tube Freestanding Single Monitor Stand"
+        )
+        .is_none());
+        assert!(p(
+            "Monitor",
+            "Acer PD163Q Portable Monitor 15.6\" Dual IPS / FHD 60Hz"
+        )
+        .is_none());
+        let f = p(
+            "Case fans",
+            "ROG Eurux GR120 120mm ARGB Fan Single Pack Black",
+        )
+        .unwrap();
+        assert_eq!(
+            (f.specs["size"].clone(), f.specs["count"].clone()),
+            (json!(120), json!(1))
+        );
+        assert!(p("Case fans", "ID-COOLING AS-120-ARGB-K / AS-120-ARGB-W Single / Triple Pack ARGB 120mm PWM Casing Fan").is_none());
         assert!(p(
             "Cooler",
             "THERMALRIGHT Peerless Vision / 240 / 360 ARGB AIO Liquid CPU Cooler"

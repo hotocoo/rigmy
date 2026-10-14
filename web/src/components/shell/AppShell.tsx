@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Dot, Eyebrow, Meta, Text } from '@/components/ui';
-import { regionById } from '@/lib/content';
+import { regionById, requiredCats } from '@/lib/content';
 import { cx } from '@/lib/cx';
 import { DataProvider, useData, useDataStatus } from '@/lib/data';
 import { fmt } from '@/lib/format';
@@ -152,12 +152,14 @@ function NavRight({ locOpen, toggleLoc }: { locOpen: boolean; toggleLoc: () => v
   const build = useRig((x) => x.build), region = useRig((x) => x.region);
   const L = useUserLoc();
   const reg = regionById(d, region);
-  const count = d.categories.filter((c) => build[c.id]).length;
+  const req = requiredCats(d);
+  const count = req.filter((c) => build[c.id]).length;
+  const extras = d.categories.filter((c) => c.optional && build[c.id]).length;
   const total = useMemo(() => {
-    if (!count) return fmt(0);
+    if (!count && !extras) return fmt(0);
     const best = d.engine.plan(build, region, {}).best;
-    return best.missing >= count ? '—' : fmt(best.total);
-  }, [d, build, region, count]);
+    return best.missing >= count + extras ? '—' : fmt(best.total);
+  }, [d, build, region, count, extras]);
   const desc = describeLoc(L, reg.name, reg.short);
   return (
     <>
@@ -165,8 +167,8 @@ function NavRight({ locOpen, toggleLoc }: { locOpen: boolean; toggleLoc: () => v
         <Dot c={desc.dot} size={7} ring />
         <span className={s.ellipsis}>{desc.short}</span>
       </button>
-      <button onClick={() => go(ROUTES.cart.path)} className={s.cartBtn} aria-label={`Cart: ${count} of ${d.categories.length} parts, ${total}`}>
-        <span className={s.cartCount}>{count + '/' + d.categories.length}</span><span>{total}</span>
+      <button onClick={() => go(ROUTES.cart.path)} className={s.cartBtn} aria-label={`Cart: ${count} of ${req.length} parts${extras ? ' plus ' + extras + ' extra' : ''}, ${total}`}>
+        <span className={s.cartCount}>{count + '/' + req.length + (extras ? '+' + extras : '')}</span><span>{total}</span>
       </button>
     </>
   );

@@ -1,7 +1,9 @@
 // Domain types shared by the Next.js app, the Rust API (serde camelCase) and the WASM engine.
 // This file is the contract: crates/rigmy-core mirrors every shape here.
 
-export type CatId = 'cpu' | 'cooler' | 'mobo' | 'ram' | 'ssd' | 'gpu' | 'case' | 'psu';
+export type CatId = 'cpu' | 'cooler' | 'mobo' | 'ram' | 'ssd' | 'gpu' | 'case' | 'psu' | 'ssd2' | 'monitor' | 'fans';
+/** Category of the products a build slot takes: the second storage slot takes any SSD. */
+export const productCat = (slot: CatId): CatId => (slot === 'ssd2' ? 'ssd' : slot);
 export type RegionId = 'kv' | 'pen' | 'jhr' | 'east';
 export type Eta = 'Same day' | 'Next day' | '1–2 days' | '2–3 days' | '3–5 days' | '5–7 days';
 export type Tone = 'ok' | 'warn' | 'error' | 'pending' | 'info';
@@ -10,7 +12,8 @@ export type Build = Partial<Record<CatId, string>>;
 export interface LatLon { lat: number; lon: number }
 /** A delivery/price region. `center` is used as the approximate user position until they share a location. */
 export interface Region { id: RegionId; name: string; short: string; center: LatLon & { label: string } }
-export interface Category { id: CatId; label: string; long: string; idx: string }
+/** `optional`: an extra slot a build is complete without (second drive, monitor, case fans). */
+export interface Category { id: CatId; label: string; long: string; idx: string; optional?: boolean }
 /** [specKey, label, unit?, better?] — better is 'high' | 'low' for comparison highlighting. */
 export type SpecDef = [string, string, string?, ('high' | 'low')?];
 

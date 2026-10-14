@@ -27,8 +27,29 @@ macro_rules! str_enum {
 
 str_enum!(
     /// Part category, in build order.
-    CatId { Cpu = "cpu", Cooler = "cooler", Mobo = "mobo", Ram = "ram", Ssd = "ssd", Gpu = "gpu", Case = "case", Psu = "psu" }
+    CatId { Cpu = "cpu", Cooler = "cooler", Mobo = "mobo", Ram = "ram", Ssd = "ssd", Gpu = "gpu", Case = "case", Psu = "psu", Ssd2 = "ssd2", Monitor = "monitor", Fans = "fans" }
 );
+impl CatId {
+    /// Category of the products a build slot takes: the second storage slot takes any SSD.
+    pub fn product_cat(self) -> CatId {
+        match self {
+            CatId::Ssd2 => CatId::Ssd,
+            c => c,
+        }
+    }
+    /// The eight slots the compatibility checks, the 3D studio and the build guide cover.
+    pub const CORE: &'static [CatId] = &[
+        CatId::Cpu,
+        CatId::Cooler,
+        CatId::Mobo,
+        CatId::Ram,
+        CatId::Ssd,
+        CatId::Gpu,
+        CatId::Case,
+        CatId::Psu,
+    ];
+}
+
 str_enum!(RegionId { Kv = "kv", Pen = "pen", Jhr = "jhr", East = "east" });
 str_enum!(
     /// Delivery estimate label. Speed rank and day counts are NOT derived from the variant order:
@@ -97,6 +118,9 @@ pub struct Category {
     pub label: String,
     pub long: String,
     pub idx: String,
+    /// Extra slot a build is complete without (second drive, monitor, case fans).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub optional: bool,
 }
 
 /// `[specKey, label, unit?, better?]` — kept as a raw JSON array to match the TS tuple exactly.

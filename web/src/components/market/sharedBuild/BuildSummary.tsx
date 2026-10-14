@@ -15,6 +15,7 @@ import { MarketHeader, MarketPage, SectionHead, StatTiles, type StatTile } from 
 import { BuildParts, CheckPills } from './BuildParts';
 import m from '../market.module.css';
 import b from './sharedBuild.module.css';
+import { requiredCats } from '@/lib/content';
 
 /** With no PSU chosen the power bar is scaled to 1000 W, the top of the common consumer PSU range. */
 const POWER_SCALE_W = 1000;
@@ -44,7 +45,7 @@ export function BuildSummary({ sb }: { sb: SavedBuild }) {
 
   const tiles: StatTile[] = [
     { label: 'Lowest total', value: priced ? fmt(best.total) : '—', c: color.fg, note: priced ? 'Across ' + plural(best.shops, 'shop') + (best.fee ? ' · incl. ' + fmt(best.fee) + ' delivery' : '') + (best.unknownFees ? ' · some delivery fees unknown' : '') : 'No shop lists these parts in stock yet' },
-    { label: 'Parts', value: count + '/' + d.categories.length, c: count === d.categories.length ? tone.ok : tone.warn, note: best.missing ? plural(best.missing, 'part') + ' not in stock in ' + region.name : 'All in stock in ' + region.name },
+    { label: 'Parts', value: count + '/' + requiredCats(d).length, c: count >= requiredCats(d).length ? tone.ok : tone.warn, note: best.missing ? plural(best.missing, 'part') + ' not in stock in ' + region.name : 'All in stock in ' + region.name },
     { label: 'Compatibility', value: checks.length ? okN + '/' + checks.length : '—', c: errN ? tone.error : warnN ? tone.warn : tone.ok, note: errN ? plural(errN, 'problem') + ' to fix' : warnN ? plural(warnN, 'check') + ' to look at' : 'Every check passes' },
     { label: 'Estimated power', value: pw.est + ' W', c: powerColor || color.fg, note: pw.rec + ' W PSU recommended' },
   ];

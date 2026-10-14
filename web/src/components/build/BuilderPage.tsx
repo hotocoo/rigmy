@@ -18,6 +18,7 @@ import { errText, partPrice, powerView, presetName, totalView } from './shared';
 import { useStudioHost } from './useStudioHost';
 import s from './builder.module.css';
 import l from './layout.module.css';
+import { requiredCats } from '@/lib/content';
 
 export function BuilderPage() {
   const d = useData();
@@ -29,7 +30,7 @@ export function BuilderPage() {
   const checks = useMemo(() => d.engine.compat(build), [d, build]);
   const plan = useMemo(() => d.engine.plan(build, region, {}), [d, build, region]);
   const pw = useMemo(() => powerView(d.engine.power(build)), [d, build]);
-  const count = d.categories.filter((c) => build[c.id] && d.byId[build[c.id]!]).length;
+  const count = requiredCats(d).filter((c) => build[c.id] && d.byId[build[c.id]!]).length;
   const errs = checks.filter((c) => c.status === 'error');
   const reg = useRegion();
   const tot = totalView(d, build, region, plan.best, count);
@@ -41,7 +42,7 @@ export function BuilderPage() {
       <section className={l.side} aria-labelledby="build-name">
         <header className={s.head}>
           <div className={s.headText}>
-            <Eyebrow>{'Your build · ' + count + '/' + d.categories.length}</Eyebrow>
+            <Eyebrow>{'Your build · ' + count + '/' + requiredCats(d).length}</Eyebrow>
             <Text v="name" as="h1" id="build-name">{buildName}</Text>
           </div>
           <div className={s.headTools}>

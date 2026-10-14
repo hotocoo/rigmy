@@ -22,9 +22,10 @@ export function useBrowse() {
 export function useAddPart() {
   const go = useGo();
   const setPart = useRig((s) => s.setPart);
-  return useCallback((p: CatalogPart) => {
-    setPart(p.cat, p.id);
-    go(ROUTES.build.path, { sel: p.cat });
+  // `slot` differs from the part's category for extra slots (the second drive takes an SSD).
+  return useCallback((p: CatalogPart, slot: CatId = p.cat) => {
+    setPart(slot, p.id);
+    go(ROUTES.build.path, { sel: slot });
     setTimeout(() => toast((p.short || p.name) + ' added to your build'), ADD_TOAST_DELAY_MS);
   }, [go, setPart]);
 }

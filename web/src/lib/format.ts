@@ -92,6 +92,9 @@ export function keySpecs(p: Product) {
       case 'gpu': return [s.vram == null ? null : s.vram + ' GB' + (s.mem ? ' ' + s.mem : ''), u(s.tgp, ' W'), u(s.length, ' mm')];
       case 'case': return [u(s.type), u(s.maxGpu, ' mm', 'GPU up to '), u(s.radTop, ' top'), p.source ? u(s.ffs) : null];
       case 'psu': return [u(s.watt, ' W'), u(s.eff), u(s.mod)];
+      case 'ssd2': return [u(s.cap), u(s.iface)];
+      case 'monitor': return [u(s.size, '"'), u(s.res), u(s.hz, ' Hz'), u(s.panel), u(s.curved)];
+      case 'fans': return [s.count == null || s.size == null ? null : s.count + ' × ' + s.size + ' mm', u(s.rgb)];
     }
     return [];
   })();

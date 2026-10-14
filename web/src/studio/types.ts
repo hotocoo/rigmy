@@ -10,6 +10,9 @@ export type StudioMode = 'studio' | 'hero' | 'solo';
 
 /** Component categories the studio understands (same ids as `CatId` in lib/types). */
 export type StudioCat = 'cpu' | 'cooler' | 'mobo' | 'ram' | 'ssd' | 'gpu' | 'case' | 'psu';
+/** Categories the studio has models for (extra slots such as a monitor or a second drive have none). */
+export const STUDIO_CATS: readonly StudioCat[] = ['cpu', 'cooler', 'mobo', 'ram', 'ssd', 'gpu', 'case', 'psu'];
+export const isStudioCat = (c: string | null | undefined): c is StudioCat => !!c && (STUDIO_CATS as readonly string[]).includes(c);
 /** Anything that can be selected / picked / flagged: a category, or the cable runs. */
 export type PickTarget = StudioCat | 'cables';
 /** Internal scene parts. `case` is split into `case` (chassis), `fans` (front intake) and `glass` (side panel). */

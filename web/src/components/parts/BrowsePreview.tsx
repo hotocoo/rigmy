@@ -10,6 +10,7 @@ import { priceOf, specRows } from './derive';
 import { SoloStudio } from './SoloStudio';
 import b from './browse.module.css';
 import s from './parts.module.css';
+import { isStudioCat } from '@/studio/types';
 
 /** Sticky live 3D preview of the selected part with its price, key specs and build actions. */
 export function BrowsePreview({ p, build, region, onAdd, onDetails }: { p: CatalogPart; build: Build; region: RegionId; onAdd: () => void; onDetails: () => void }) {
@@ -23,7 +24,7 @@ export function BrowsePreview({ p, build, region, onAdd, onDetails }: { p: Catal
     <Panel as="aside" className={b.preview}>
       <div className={b.stage}>
         <SoloStudio product={p} />
-        <Text v="eyebrowSm" c={color.blueSoft} className={b.stageLabel}>Live preview · drag to rotate</Text>
+        <Text v="eyebrowSm" c={color.blueSoft} className={b.stageLabel}>{isStudioCat(p.cat) ? 'Live preview · drag to rotate' : 'Preview'}</Text>
       </div>
       <div className={b.previewBody}>
         <div className={b.previewTitle}>

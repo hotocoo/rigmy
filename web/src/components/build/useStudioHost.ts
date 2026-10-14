@@ -6,7 +6,7 @@ import { useData } from '@/lib/data';
 import { fmt, keySpecs } from '@/lib/format';
 import { useRig } from '@/lib/store';
 import type { StudioRef } from '@/studio/Studio';
-import type { CableRunId, PartId, PartVis, PickTarget, StudioBuild, StudioCat, StudioMsg } from '@/studio/types';
+import { isStudioCat, type CableRunId, type PartId, type PartVis, type PickTarget, type StudioBuild, type StudioCat, type StudioMsg } from '@/studio/types';
 import { cableNote } from './shared';
 
 export type HostPage = 'builder' | 'cables' | 'guide' | 'review';
@@ -37,6 +37,7 @@ export function useStudioHost(page: HostPage) {
   const studioBuild = useCallback((): StudioBuild => {
     const s = useRig.getState(), out: StudioBuild = {};
     for (const c of d.categories) {
+      if (!isStudioCat(c.id)) continue;
       const id = s.build[c.id];
       const p = id ? d.byId[id] : null;
       if (!p) continue;
@@ -48,7 +49,7 @@ export function useStudioHost(page: HostPage) {
 
   const issueParts = useCallback((): PickTarget[] => {
     const set = new Set<PickTarget>();
-    d.engine.compat(useRig.getState().build).forEach((c) => { if (c.status === 'error') c.parts.forEach((p) => set.add(p)); });
+    d.engine.compat(useRig.getState().build).forEach((c) => { if (c.status === 'error') c.parts.forEach((p) => { if (isStudioCat(p)) set.add(p); }); });
     return [...set];
   }, [d]);
 
@@ -57,7 +58,7 @@ export function useStudioHost(page: HostPage) {
     if (!st) return;
     post({ rig: 'explode', v: 0 });
     post({ rig: 'stage', show: st.show as PartId[] });
-    later(() => post({ rig: 'select', part: st.cat === 'case' ? null : st.cat }), delay);
+    later(() => post({ rig: 'select', part: st.cat === 'case' || (st.cat !== 'cables' && !isStudioCat(st.cat)) ? null : st.cat }), delay);
   }, [steps, post, later]);
 
   const pushAll = useCallback(() => {
@@ -68,7 +69,7 @@ export function useStudioHost(page: HostPage) {
     if (page === 'builder') {
       if (s.explode) post({ rig: 'explode', v: s.explode, stagger: true });
       if (s.xray) post({ rig: 'xray', v: true });
-      if (s.sel) post({ rig: 'select', part: s.sel });
+      if (isStudioCat(s.sel)) post({ rig: 'select', part: s.sel });
     }
     if (page === 'cables') {
       post({ rig: 'xray', v: true });
@@ -98,7 +99,7 @@ export function useStudioHost(page: HostPage) {
       if (page === 'builder' || page === 'review') post({ rig: 'issues', parts: issueParts() });
     }
     if (page === 'builder') {
-      if (sel !== ps.sel) post({ rig: 'select', part: sel });
+      if (sel !== ps.sel) post({ rig: 'select', part: isStudioCat(sel) ? sel : null });
       if (explode !== ps.explode) post({ rig: 'explode', v: explode, stagger: true });
       if (xray !== ps.xray) post({ rig: 'xray', v: xray });
     }

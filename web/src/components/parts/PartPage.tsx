@@ -12,7 +12,7 @@ import { ROUTES } from '@/lib/routes';
 import { useRig } from '@/lib/store';
 import { color } from '@/lib/tokens';
 import type { CatalogPart, PartStats, Product } from '@/lib/types';
-import type { PartVis } from '@/studio/types';
+import { isStudioCat, type PartVis } from '@/studio/types';
 import { PageEmpty } from './bits';
 import { useBrowse } from './hooks';
 import { lastBrowseCat } from './lastCategory';
@@ -71,11 +71,11 @@ function PartView({ P }: { P: CatalogPart }) {
           <SoloStudio product={P} installed={pose === 'installed'} />
           <div className={p.stageCaption}>
             <Text v="eyebrow" c={color.blueSoft}>{cd.long} · 3D</Text>
-            <span className={p.hint}>Drag to rotate · scroll to zoom</span>
+            {isStudioCat(P.cat) && <span className={p.hint}>Drag to rotate · scroll to zoom</span>}
           </div>
           <div className={p.stageTools}>
             {P.cat === 'gpu' && <Segmented variant="glass" label="Card pose" value={pose} onChange={setPose} items={[{ id: 'showcase', label: 'Showcase' }, { id: 'installed', label: 'Installed' }]} />}
-            <ArButton build={() => ({ [P.cat]: { id: P.id, label: P.name, vis: P.vis as PartVis } })} />
+            {isStudioCat(P.cat) && <ArButton build={() => ({ [P.cat]: { id: P.id, label: P.name, vis: P.vis as PartVis } })} />}
           </div>
         </div>
         <PartSummary P={P} stats={stats} />
