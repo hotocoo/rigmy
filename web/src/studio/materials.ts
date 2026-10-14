@@ -89,6 +89,8 @@ export class TexCache {
 export interface Kit {
   tex: TexCache;
   brand: Brand;
+  /** The scene is mirrored on x (stage.ts `handed`): canvas artwork is drawn mirrored so text reads correctly. */
+  mirrored?: boolean;
   /** Called when a part is finalized (meshes and materials complete), so the scene can pre-compile its shaders. */
   onPartReady?: (p: Part) => void;
 }

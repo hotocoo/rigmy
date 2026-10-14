@@ -109,6 +109,13 @@ function dressStage(renderer: THREE.WebGLRenderer, host: HTMLElement, kit: Kit, 
   renderer.domElement.style.outline = 'none';
   host.appendChild(renderer.domElement);
   const scene = new THREE.Scene();
+  // Parts are modelled with the board at -x and the side window at +x, which seen from the front is the mirror image
+  // of a standard ATX tower (window on the left). Studio and hero mirror the whole scene so the build has real-world
+  // handedness; three.js flips face winding for negative-determinant transforms, so shading is unaffected. Solo shows
+  // one part on a turntable, where handedness doesn't matter. World-space values written into the scene go through
+  // scene.worldToLocal(); camera poses live outside the scene and use `handed` directly.
+  const handed = opts.mode === 'solo' ? 1 : -1;
+  scene.scale.x = handed; scene.updateMatrixWorld();
   const camera = new THREE.PerspectiveCamera(CAMERA.fov, 1, CAMERA.near, CAMERA.far);
   camera.position.set(...CAMERA.start);
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -271,7 +278,7 @@ function dressStage(renderer: THREE.WebGLRenderer, host: HTMLElement, kit: Kit, 
   }
 
   return {
-    renderer, scene, camera, controls, root, key, fill, hemi, spot, rimLight, rim2, inner, areaTop, areaFront,
+    renderer, scene, handed, camera, controls, root, key, fill, hemi, spot, rimLight, rim2, inner, areaTop, areaFront,
     moodC, moodT, backdrop, backdropU, rimMat, halo, haloMat, contact, gridU, dustU, DUSTK, coneU, cone,
     scanner, scanMat, scanFillMat, makeBracket, sizePlinth, resize, render, gpuBusy, markGpu, setQuality, warmup, dispose,
   };

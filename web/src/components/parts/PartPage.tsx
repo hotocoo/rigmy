@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import { ArButton } from '@/components/build/ArButton';
 import { BackLink, Text } from '@/components/ui';
 import { regionById } from '@/lib/content';
 import { useGo } from '@/components/shell/useGo';
@@ -9,6 +10,7 @@ import { ROUTES } from '@/lib/routes';
 import { useRig } from '@/lib/store';
 import { color } from '@/lib/tokens';
 import type { CatalogPart, PartStats, Product } from '@/lib/types';
+import type { PartVis } from '@/studio/types';
 import { PageEmpty } from './bits';
 import { useBrowse } from './hooks';
 import { lastBrowseCat } from './lastCategory';
@@ -67,6 +69,9 @@ function PartView({ P }: { P: CatalogPart }) {
           <div className={p.stageCaption}>
             <Text v="eyebrow" c={color.blueSoft}>{cd.long} · 3D</Text>
             <span className={p.hint}>Drag to rotate · scroll to zoom</span>
+          </div>
+          <div className={p.stageTools}>
+            <ArButton build={() => ({ [P.cat]: { id: P.id, label: P.name, vis: P.vis as PartVis } })} />
           </div>
         </div>
         <PartSummary P={P} stats={stats} />

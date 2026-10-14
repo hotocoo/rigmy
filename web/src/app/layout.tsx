@@ -9,6 +9,10 @@ export const metadata: Metadata = {
   description: "Build a PC, check compatibility and compare Malaysian retailer prices in ringgit.",
 };
 
+/** Pages render inside AppShell once the client has loaded catalogue data, so there is no server-rendered segment
+ *  for instant-navigation validation to inspect. */
+export const instant = false;
+
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

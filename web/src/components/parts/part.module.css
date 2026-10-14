@@ -4,6 +4,7 @@
 .hero { display: flex; flex-wrap: wrap; align-items: stretch; gap: 24px; }
 .stage { flex: 999 1 560px; position: relative; min-height: 540px; overflow: hidden; background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--radius); }
 .stageCaption { position: absolute; left: 18px; top: 16px; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+.stageTools { position: absolute; right: 16px; top: 14px; display: flex; gap: 6px; }
 .hint { font: 400 12px/1.4 var(--sans); color: var(--muted); }
 .summary { flex: 1 1 380px; display: flex; flex-direction: column; gap: 20px; padding: 4px 0; min-width: 0; }
 .titleBlock { display: flex; flex-direction: column; gap: 10px; }

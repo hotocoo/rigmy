@@ -56,7 +56,7 @@ export function createBuilder(st: SceneState, cam: CameraRig, ix: Interaction) {
     gridU.uPulse.value = st.T + delay / 1000;
     st.later(() => {
       const box = cat ? st.partCenter(cat) : null; if (!box || box.isEmpty()) return;
-      const s = box.getSize(new V3()); box.expandByScalar(SCAN.pad); scanner.scale.set(s.x + SCAN.grow, 1, s.z + SCAN.grow); const c = box.getCenter(new V3()); scanner.position.set(c.x, box.min.y, c.z); scanner.visible = true;
+      const s = box.getSize(new V3()); box.expandByScalar(SCAN.pad); scanner.scale.set(s.x + SCAN.grow, 1, s.z + SCAN.grow); const c = scene.worldToLocal(box.getCenter(new V3())); scanner.position.set(c.x, box.min.y, c.z); scanner.visible = true;
       st.tween(SCAN.ms, (k) => { scanner.position.y = box.min.y + (box.max.y - box.min.y) * k; const o = Math.sin(Math.PI * k); scanMat.opacity = o * SCAN.line; scanFillMat.opacity = o * SCAN.fill; if (k >= 1) scanner.visible = false; }, { e: E.inOut });
     }, delay);
   }

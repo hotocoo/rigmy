@@ -83,6 +83,7 @@ const LCD = { size: 256, ringR: 98, ringW: 9, arcTurns: 0.58, value: { text: '41
 export function screenTex(kit: Kit): THREE.CanvasTexture {
   const c = document.createElement('canvas'); c.width = c.height = LCD.size; const g = c.getContext('2d');
   if (g) {
+    if (kit.mirrored) { g.translate(LCD.size, 0); g.scale(-1, 1); }
     const mid = LCD.size / 2, top = -Math.PI / 2, accent = '#' + kit.brand.accent.toString(16).padStart(6, '0');
     g.fillStyle = LCD_COLOR.bg; g.fillRect(0, 0, LCD.size, LCD.size);
     g.lineWidth = LCD.ringW; g.strokeStyle = LCD_COLOR.track; g.beginPath(); g.arc(mid, mid, LCD.ringR, 0, Math.PI * 2); g.stroke();

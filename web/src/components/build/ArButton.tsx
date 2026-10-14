@@ -19,7 +19,7 @@ export function ArButton({ build }: { build: () => StudioBuild }) {
 
   async function start() {
     const b = build();
-    if (!b.case && !b.mobo) { setPhase('error'); setMsg('Add a case or motherboard first.'); return; }
+    if (!Object.keys(b).length) { setPhase('error'); setMsg('Add a part first.'); return; }
     setPhase('working'); setMsg('');
     const ar = await import('@/studio/ar');
     const { model, tex } = ar.buildArModel(b, useRig.getState().cables);

@@ -33,11 +33,11 @@ const INNER_SEL_OFFSET: Vec3 = [0.06, 0.02, 0];
 
 export function createFrame(st: SceneState, cam: CameraRig, ix: Interaction): (dt: number) => void {
   const { S, canvas, brand } = st;
-  const { camera, controls, spot, inner, rimLight, rimMat, moodC, moodT, backdrop, backdropU, gridU, dustU, coneU, cone } = S;
+  const { scene, camera, controls, spot, inner, rimLight, rimMat, moodC, moodT, backdrop, backdropU, gridU, dustU, coneU, cone } = S;
   const WARM = new THREE.Color(SCENE_COLOR.issueWarm), WHITE = new THREE.Color(SCENE_COLOR.white);
   const INNER_COOL = new THREE.Color(SCENE_COLOR.innerCool), INNER_WARM = new THREE.Color(SCENE_COLOR.innerWarm);
   const CONE_BASE = new THREE.Color(SCENE_COLOR.cone);
-  const DOWN = new V3(0, -1, 0), INNER_OFF = new V3(...INNER_SEL_OFFSET), wantIdle = new V3(), tmpV = new V3(), tmpS = new V3();
+  const DOWN = new V3(0, -1, 0), INNER_OFF = new V3(...INNER_SEL_OFFSET), wantIdle = new V3(), tmpV = new V3(), tmpS = new V3(), tmpB = new V3();
   const approach = (dt: number, rate: number): number => Math.min(1, dt * rate);
   let vw = 0, vh = 0, vs: number | null = null;
 
@@ -61,21 +61,21 @@ export function createFrame(st: SceneState, cam: CameraRig, ix: Interaction): (d
     }
     {
       const warm = st.issues.length && st.mode !== 'hero'; moodC.lerp(moodT, approach(dt, RATE.mood)); const tint = warm ? WARM : moodC;
-      backdropU.uTint.value.lerp(tint, approach(dt, RATE.tint)); backdropU.uTime.value = T; backdrop.position.copy(camera.position);
+      backdropU.uTint.value.lerp(tint, approach(dt, RATE.tint)); backdropU.uTime.value = T; backdrop.position.copy(scene.worldToLocal(tmpB.copy(camera.position)));
       gridU.uTime.value = T; gridU.uColor.value.lerp(tint, approach(dt, RATE.tint));
       dustU.uTime.value = T; dustU.uColor.value.copy(moodC).lerp(WHITE, MIX.dustWhite);
       coneU.uTime.value = T; coneU.uColor.value.copy(CONE_BASE).lerp(moodC, MIX.coneMood);
       rimLight.color.copy(moodC).lerp(WHITE, MIX.rimWhite);
       const dir = tmpS.copy(spot.target.position).sub(spot.position).normalize();
       cone.position.copy(spot.position); cone.quaternion.setFromUnitVectors(DOWN, dir);
-      dustU.uSpot.value.copy(spot.position); dustU.uDir.value.copy(dir);
+      dustU.uSpot.value.copy(spot.position).applyMatrix4(scene.matrixWorld); dustU.uDir.value.copy(dir).transformDirection(scene.matrixWorld);
       dustU.uScale.value = canvas.height / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))) * DUST_SCALE;
       if (st.mode === 'studio') { const idle = !st.reducedMotion && !selected && T - st.lastInteract > IDLE.after; controls.autoRotate = idle; controls.autoRotateSpeed += ((idle ? IDLE.speed : 0) - controls.autoRotateSpeed) * approach(dt, RATE.autoRotate); }
     }
     ix.updateBrackets(dt);
     // contextual interior light: follows focus, warms on issues
     if (st.L) {
-      const want = selected ? sel.getCenter(tmpV) : innerIdle(st.L, wantIdle);
+      const want = selected ? scene.worldToLocal(sel.getCenter(tmpV)) : innerIdle(st.L, wantIdle);
       if (selected && !sel.isEmpty()) inner.position.lerp(want.add(INNER_OFF), approach(dt, RATE.inner));
       else if (st.mode !== 'solo') inner.position.lerp(want, approach(dt, RATE.inner));
       const warm = st.issues.length ? 1 : 0;

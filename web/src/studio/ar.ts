@@ -23,7 +23,7 @@ export async function arSupport(): Promise<ArSupport> {
 /** The assembled build (no explode, no stage dressing), floor at y = 0 and centred on x/z. Caller disposes `tex`. */
 export function buildArModel(build: StudioBuild, cables: CableOpts): { model: THREE.Group; tex: TexCache } {
   const tex = new TexCache();
-  const kit: Kit = { tex, brand: { accent: BRAND_FALLBACK.accent, bg: BRAND_FALLBACK.bg.studio, mono: BRAND_FALLBACK.mono } };
+  const kit: Kit = { tex, brand: { accent: BRAND_FALLBACK.accent, bg: BRAND_FALLBACK.bg.studio, mono: BRAND_FALLBACK.mono }, mirrored: true };
   const lay = computeLayout(build);
   const model = new THREE.Group(); model.name = 'rigmy_build';
   for (const id of ORDER) {
@@ -42,7 +42,28 @@ export function buildArModel(build: StudioBuild, cables: CableOpts): { model: TH
   const box = new THREE.Box3().setFromObject(model), c = box.getCenter(new THREE.Vector3());
   const wrap = new THREE.Group(); wrap.name = 'rigmy_ar';
   model.position.set(-c.x, -box.min.y, -c.z); wrap.add(model);
-  return { model: wrap, tex };
+  // Real-world handedness: window on the left seen from the front (see `handed` in stage.ts). Baked into the
+  // geometry rather than left as a negative node scale, which AR viewers don't all honour.
+  wrap.scale.x = -1;
+  return { model: bake(wrap), tex };
+}
+
+/** Flatten `root` into world-space meshes with identity transforms, fixing triangle winding where the transform mirrors. */
+function bake(root: THREE.Object3D): THREE.Group {
+  root.updateMatrixWorld(true);
+  const out = new THREE.Group(); out.name = root.name;
+  root.traverse((o) => {
+    if (!(o instanceof THREE.Mesh)) return;
+    const g = (o.geometry as THREE.BufferGeometry).clone().applyMatrix4(o.matrixWorld);
+    if (o.matrixWorld.determinant() < 0) {
+      if (!g.index) g.setIndex([...Array(g.getAttribute('position').count).keys()]);
+      const ix = g.index!;
+      for (let i = 0; i < ix.count; i += 3) { const b = ix.getX(i + 1); ix.setX(i + 1, ix.getX(i + 2)); ix.setX(i + 2, b); }
+    }
+    const m = new THREE.Mesh(g, o.material); m.name = o.name; out.add(m);
+  });
+  root.traverse((o) => { if (o instanceof THREE.Mesh) (o.geometry as THREE.BufferGeometry).dispose(); });
+  return out;
 }
 
 export async function exportGlb(model: THREE.Object3D): Promise<Blob> {

@@ -20,7 +20,7 @@ const VIEW: { dirs: Record<ViewName, Vec3>; dist: number; explodeK: number } = {
 /** Studio focus pose per category: view direction, distance as a multiple of the part's bounding radius, minimum distance. */
 const FOCUS: Record<PickTarget, { dir: Vec3; radiusK: number; minDist: number }> = {
   cables: { dir: [1, 0.12, 0.35], radiusK: 1.35, minDist: 0.5 },
-  gpu: { dir: [1, 0.22, 0.32], radiusK: 2.4, minDist: 0.5 },
+  gpu: { dir: [1, 0.55, 0.3], radiusK: 2.4, minDist: 0.5 },
   cpu: { dir: [1, 0.3, 0.45], radiusK: 5, minDist: 0.3 },
   cooler: { dir: [1, 0.14, 0.42], radiusK: 1.25, minDist: 0.5 },
   ram: { dir: [1, 0.2, 0.6], radiusK: 3.2, minDist: 0.32 },
@@ -51,6 +51,9 @@ export function createCamera(st: SceneState) {
   let camTween: object | null = null;
   const sph0 = new THREE.Spherical(), sph1 = new THREE.Spherical();
   const UP = new V3(0, 1, 0);
+  /** Scene handedness (stage.ts): pose directions are authored for the unmirrored model, so their x follows it. */
+  const hx = st.S.handed;
+  const dirOf = (d: Vec3): THREE.Vector3 => new V3(d[0] * hx, d[1], d[2]).normalize();
 
   function flyTo(target: THREE.Vector3, pos: THREE.Vector3, dur = CAM.flightMs): Promise<void> {
     const id = {}; camTween = id; st.lastInteract = st.T + dur / 1000;
@@ -77,7 +80,7 @@ export function createCamera(st: SceneState) {
   function homeTarget(): THREE.Vector3 { return new V3(0, st.L ? st.L.h * CAM.targetK + FLOOR_Y : CAM.emptyY, 0); }
   function viewPose(name: ViewName): [THREE.Vector3, THREE.Vector3] {
     const d = VIEW.dirs[name] || VIEW.dirs.hero;
-    const t = homeTarget(); const dir = new V3(...d).normalize();
+    const t = homeTarget(); const dir = dirOf(d);
     return [t, t.clone().addScaledVector(dir, VIEW.dist * caseScale() * aspectK() * (1 + VIEW.explodeK * st.explodeG))];
   }
   function focus(cat: PickTarget | null, dur = CAM.flightMs): Promise<void> | undefined {
@@ -85,13 +88,13 @@ export function createCamera(st: SceneState) {
     if (!cat || cat === 'case') { const [t, p] = viewPose('hero'); return flyTo(t, p, dur); }
     const box = st.partCenter(cat); if (box.isEmpty()) return;
     const c = box.getCenter(new V3()), r = box.getBoundingSphere(new THREE.Sphere()).radius;
-    const f = FOCUS[cat]; const dir = new V3(...f.dir).normalize();
+    const f = FOCUS[cat]; const dir = dirOf(f.dir);
     const dist = Math.max(f.minDist, r * f.radiusK) * aspectK() * (1 + FOCUS_EXPLODE_K * st.explodeG);
     return flyTo(c, c.clone().addScaledVector(dir, dist), dur);
   }
   function studioIntro(): void {
     const [t, p] = viewPose('hero');
-    const far = t.clone().add(p.clone().sub(t).applyAxisAngle(UP, INTRO.swing).multiplyScalar(INTRO.distK)); far.y = t.y + INTRO.lift;
+    const far = t.clone().add(p.clone().sub(t).applyAxisAngle(UP, INTRO.swing * hx).multiplyScalar(INTRO.distK)); far.y = t.y + INTRO.lift;
     camera.position.copy(far); controls.target.copy(t);
     void flyTo(t, p, INTRO.ms);
   }
@@ -104,14 +107,14 @@ export function createCamera(st: SceneState) {
   function updateHero(dt: number, selection: THREE.Box3 | null): void {
     if (st.mode !== 'hero' || !st.L) return;
     const H = HERO, out = 1 - st.intro.k;
-    const az = H.az.base + st.heroP * H.az.scroll + Math.sin(st.T * H.az.swaySpeed) * H.az.sway + st.ptr.x * H.az.pointer + out * H.az.intro;
+    const az = H.az.base + st.heroP * H.az.scroll + Math.sin(st.T * H.az.swaySpeed) * H.az.sway + st.ptr.x * H.az.pointer * hx + out * H.az.intro;
     const el = H.el.base - st.ptr.y * H.el.pointer + st.explodeG * H.el.explode + out * H.el.intro;
     let dist = H.dist.base * caseScale() * aspectK() * (1 + H.dist.explode * st.explodeG) * (1 + out * H.dist.intro);
     const tgt = homeTarget();
     if (selection && !selection.isEmpty()) { const c = selection.getCenter(new V3()); tgt.lerp(c, H.select.pull); dist *= H.select.dist; }
     const f = Math.min(1, dt * H.follow);
     heroCam.az += (az - heroCam.az) * f; heroCam.el += (el - heroCam.el) * f; heroCam.dist += (dist - heroCam.dist) * f; heroCam.t.lerp(tgt, f);
-    camera.position.set(Math.sin(heroCam.az) * Math.cos(heroCam.el), Math.sin(heroCam.el), Math.cos(heroCam.az) * Math.cos(heroCam.el)).multiplyScalar(heroCam.dist).add(heroCam.t);
+    camera.position.set(hx * Math.sin(heroCam.az) * Math.cos(heroCam.el), Math.sin(heroCam.el), Math.cos(heroCam.az) * Math.cos(heroCam.el)).multiplyScalar(heroCam.dist).add(heroCam.t);
     controls.target.copy(heroCam.t);
   }
 

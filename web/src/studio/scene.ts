@@ -39,7 +39,7 @@ export function runScene(wrap: HTMLElement, opts: StudioOptions, device: { brand
   const { brand } = device;
   const startLevel = device.lowPower ? QUALITY_LEVELS.length - 1 : 0;
   const tex = new TexCache();
-  const kit: Kit = { tex, brand };
+  const kit: Kit = { tex, brand, mirrored: opts.mode !== 'solo' };
   let S: ReturnType<typeof createStage>;
   try {
     S = createStage(wrap, kit, {

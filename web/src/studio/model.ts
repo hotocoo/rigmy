@@ -120,7 +120,7 @@ const BUILD: Record<ModelPart, Builder> = {
       const f = makeFan(p, fs, { frameless: true, frame: white ? 'alu' : 'dark_alu', rgb: !!v.rgb, blades: 11, bladeMat: white ? 'white' : 'blade', cap: white ? 'white' : 'dark_alu', speed: 0.9 });
       f.rotation.y = Math.PI / 2; f.position.set(T / 2 + 0.0035, 0, -span / 2 + fs / 2 + i * (fs + 0.006) + (v.shift || 0)); p.group.add(f);
     }
-    add(p, B(0.002, 0.0032, L * 0.52), p.glow(p.accent, 2.6), T / 2 + 0.0012, H / 2 - 0.009, -L * 0.12, 'gpu_lightbar');
+    add(p, B(T * 0.42, 0.002, L * 0.52), p.glow(p.accent, 2.6), T * 0.08, H / 2 + 0.001, -L * 0.12, 'gpu_lightbar');
     add(p, B(0.0026, H - 0.004, L - 0.006), 'dark_alu', -T / 2 + 0.0013, 0, 0, 'gpu_backplate');
     const fins: THREE.BufferGeometry[] = []; for (let z = -L / 2 + 0.01; z < L / 2 - 0.01; z += 0.0042) { const g = B(0.0125, H - 0.016, 0.0006); g.translate(-T / 2 + 0.0026 + 0.0068, 0, z); fins.push(g); }
     add(p, merge(fins), 'alu', 0, 0, 0, 'gpu_fin_stack');
