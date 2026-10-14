@@ -137,7 +137,12 @@ async fn import_feed_writes_offers_and_market_listings() {
         ("logitech-g316-x-75", 389.0, StockState::InStock),
         ("corsair-rm850x", 699.0, StockState::InStock),
     ] {
-        let pid = format!("mkt-all-it-{handle}");
+        // A promoted listing with a model number lives under its model's shared id.
+        let pid = if handle == "corsair-rm850x" {
+            "lst-psu-corsair-rm850x".to_string()
+        } else {
+            format!("mkt-all-it-{handle}")
+        };
         let p = db::products(&conn)
             .unwrap()
             .into_iter()
@@ -346,4 +351,67 @@ async fn capacity_variants_price_the_part_capacity() {
         (price - 619.0).abs() < 1e-9,
         "2TB part must get the 2TB price, got {price}"
     );
+}
+
+#[tokio::test]
+async fn same_model_at_two_shops_is_one_part_with_two_offers() {
+    let cfg = config();
+    let mut conn = db::open(":memory:").unwrap();
+    seed::seed(&mut conn, &cfg, now()).unwrap();
+    let feed = |title: &str, price: &str| {
+        format!(
+            r#"{{"products": [{{"handle": "cpu", "title": "{title}", "product_type": "CPU", "vendor": "AMD",
+            "variants": [{{"price": "{price}", "available": true}}]}}]}}"#
+        )
+    };
+    for (rid, origin, title, price) in [
+        (
+            "all-it",
+            ORIGIN,
+            "AMD Ryzen 9 9900X AM5 Processor",
+            "1999.00",
+        ),
+        (
+            "emarque",
+            "https://emarque.co",
+            "AMD Ryzen 9 9900X with Radeon Graphics / 12 Cores & 24 Threads / Socket AM5",
+            "1949.00",
+        ),
+    ] {
+        let mut r = BTreeMap::new();
+        r.insert(format!("{origin}/robots.txt"), ROBOTS.to_string());
+        r.insert(
+            format!("{origin}/products.json?limit=250&page=1"),
+            feed(title, price),
+        );
+        r.insert(
+            format!("{origin}/products.json?limit=250&page=2"),
+            r#"{"products": []}"#.to_string(),
+        );
+        import::run(&mut conn, &cfg, rid, &mut FixtureFetcher::new(r), now())
+            .await
+            .unwrap();
+    }
+    let offers: Vec<(String, f64)> = conn
+        .prepare("SELECT retailer_id, price FROM offers_latest WHERE product_id = 'lst-cpu-amd-9900x' ORDER BY retailer_id")
+        .unwrap()
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect();
+    assert_eq!(
+        offers,
+        vec![
+            ("all-it".to_string(), 1999.0),
+            ("emarque".to_string(), 1949.0)
+        ]
+    );
+    let rows: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM products WHERE id LIKE '%9900x%' OR json LIKE '%9900X%'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(rows, 1, "one product row for the model");
 }

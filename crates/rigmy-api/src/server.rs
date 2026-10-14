@@ -289,7 +289,7 @@ async fn create_build(
     let products = db::products(&c)?;
     for (cat, id) in &build {
         match products.iter().find(|p| &p.id == id) {
-            Some(p) if p.cat == Some(*cat) => {}
+            Some(p) if p.cat == Some(cat.product_cat()) => {}
             Some(_) => return Err(ApiError::bad(format!("product '{id}' is not a {cat}"))),
             None => return Err(ApiError::bad(format!("unknown product '{id}'"))),
         }

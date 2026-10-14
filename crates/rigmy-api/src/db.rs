@@ -290,6 +290,27 @@ pub fn snapshots(
     Ok(out)
 }
 
+/// Move a listing's offers and price history to another product id and drop the old product
+/// row (a promoted listing joining its model's shared id). No-op when `from == to` or `from`
+/// has no rows.
+pub fn move_listing(conn: &Connection, from: &str, to: &str) -> Result<()> {
+    if from == to {
+        return Ok(());
+    }
+    for table in ["snapshots", "offers_latest"] {
+        conn.execute(
+            &format!("UPDATE OR IGNORE {table} SET product_id = ?2 WHERE product_id = ?1"),
+            params![from, to],
+        )?;
+        conn.execute(
+            &format!("DELETE FROM {table} WHERE product_id = ?1"),
+            params![from],
+        )?;
+    }
+    conn.execute("DELETE FROM products WHERE id = ?1", params![from])?;
+    Ok(())
+}
+
 /// Remove one shop's latest offer for a product (price history is kept). Returns rows removed.
 pub fn delete_offer(conn: &Connection, product_id: &str, retailer_id: &str) -> Result<usize> {
     Ok(conn.execute(

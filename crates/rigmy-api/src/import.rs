@@ -14,7 +14,7 @@ use std::time::Duration;
 
 use anyhow::{bail, Context, Result};
 use rigmy_core::time::{iso_from_ms, myt_day_start};
-use rigmy_core::{Product, RawOffer, StockState};
+use rigmy_core::{CatId, Product, RawOffer, StockState};
 use rusqlite::{params, Connection};
 use serde::Deserialize;
 
@@ -433,6 +433,47 @@ fn series_words(name: &str, brand: &str) -> Vec<String> {
         .collect()
 }
 
+/// Shared id for a promoted listing: category + brand + every model-number token of the title (a
+/// CPU's model for CPUs)
+/// (+ capacity for drives and memory, which share model numbers across sizes). `None` when the
+/// title has no model number, so a listing is never merged with another on a guess.
+pub fn canonical_id(
+    cat: CatId,
+    brand: &str,
+    title: &str,
+    glyph: &str,
+    facet: &str,
+) -> Option<String> {
+    let slug = |s: &str| -> String {
+        s.to_ascii_lowercase()
+            .split(|c: char| !c.is_ascii_alphanumeric())
+            .filter(|w| !w.is_empty())
+            .collect::<Vec<_>>()
+            .join("-")
+    };
+    // A CPU's model ("9900X", "265KF") names it outright; other parts use their model-number tokens.
+    let mut toks = if cat == CatId::Cpu {
+        vec![slug(glyph)]
+    } else {
+        model_tokens(title)
+    };
+    toks.sort();
+    toks.dedup();
+    if toks.is_empty() || slug(brand).is_empty() {
+        return None;
+    }
+    let size = match cat {
+        CatId::Ssd | CatId::Ram => format!("-{}", slug(facet)),
+        _ => String::new(),
+    };
+    Some(format!(
+        "lst-{}-{}-{}{size}",
+        cat.as_str(),
+        slug(brand),
+        toks.join("-")
+    ))
+}
+
 /// Conservative match of a discovered listing against the verified catalog: the brand must
 /// agree AND every model-number token of the catalog part must appear as a whole word in the
 /// listing title (so "b850f" never matches a "B850M-A" board). Ties go to the part with the
@@ -446,7 +487,12 @@ pub fn match_seed(seeds: &[Product], title: &str, vendor: &str) -> Option<(Strin
         if sb.len() < 3 || nv.len() < 3 || !(nv.contains(&sb) || sb.contains(&nv)) {
             continue;
         }
-        let toks = model_tokens(&s.name);
+        // A CPU's model ("9600X", "265K") is short enough to look like a spec to model_tokens.
+        let toks = if s.cat == Some(CatId::Cpu) && s.glyph.chars().any(|c| c.is_ascii_digit()) {
+            vec![s.glyph.to_ascii_lowercase()]
+        } else {
+            model_tokens(&s.name)
+        };
         if toks.is_empty() || !toks.iter().all(|t| tw.contains(t)) {
             continue;
         }
@@ -535,6 +581,8 @@ pub async fn run(
     let settings = &cfg.sources.settings;
     let day = myt_day_start(now);
     let mut sum = ImportSummary::default();
+    // Shared-id products this feed backed in this run (see `canonical_id`).
+    let mut shared_seen: std::collections::HashSet<String> = std::collections::HashSet::new();
     let mut page = 1u32;
     loop {
         let url = match import.kind {
@@ -640,11 +688,11 @@ pub async fn run(
                     token,
                 });
             } else {
-                let pid = format!("mkt-{}-{}", rconf.id, it.slug);
+                let mkt_id = format!("mkt-{}-{}", rconf.id, it.slug);
                 let label = market_label(Some(&it.product_type), &it.title);
                 let label_for_promote = label.clone();
                 let product = Product {
-                    id: pid.clone(),
+                    id: mkt_id.clone(),
                     cat: None,
                     market: Some(label.clone()),
                     brand: it.brand.clone(),
@@ -685,11 +733,30 @@ pub async fn run(
                         sum.promoted += 1;
                     }
                 }
+                // One product per model across shops: a promoted listing that names a model number
+                // shares its id with the same model's listings elsewhere, so their offers compare.
+                let canonical = product
+                    .cat
+                    .filter(|_| product.source.is_some())
+                    .and_then(|c| {
+                        canonical_id(c, &product.brand, &it.title, &product.glyph, &product.facet)
+                    });
+                let pid = match canonical {
+                    Some(cid) => {
+                        db::move_listing(conn, &mkt_id, &cid)?;
+                        product.id = cid.clone();
+                        cid
+                    }
+                    None => mkt_id,
+                };
                 conn.execute(
                     "INSERT INTO products(id, cat, sort, json) VALUES(?1, '', ?2, ?3)
                      ON CONFLICT(id) DO UPDATE SET json = excluded.json",
                     params![pid, i64::MAX, serde_json::to_string(&product)?],
                 )?;
+                if pid.starts_with("lst-") {
+                    shared_seen.insert(pid.clone());
+                }
                 let o = offer(pid);
                 db::upsert_offer(conn, &o)?;
                 db::upsert_snapshot(conn, &o.product_id, &rconf.id, day, it.price, it.avail)?;
@@ -714,6 +781,19 @@ pub async fn run(
             sum.dropped += db::delete_offer(conn, &s.id, &rconf.id)? as u32;
         }
     }
+    // Same for shared-id products: drop this shop's offer where it no longer lists the model,
+    // then any shared product no shop lists any more.
+    let stale: Vec<String> = conn
+        .prepare("SELECT product_id FROM offers_latest WHERE retailer_id = ?1 AND product_id LIKE 'lst-%'")?
+        .query_map([&rconf.id], |r| r.get(0))?
+        .collect::<Result<_, _>>()?;
+    for pid in stale.iter().filter(|p| !shared_seen.contains(*p)) {
+        sum.dropped += db::delete_offer(conn, pid, &rconf.id)? as u32;
+    }
+    conn.execute(
+        "DELETE FROM products WHERE id LIKE 'lst-%' AND id NOT IN (SELECT product_id FROM offers_latest)",
+        [],
+    )?;
     Ok(sum)
 }
 
@@ -729,7 +809,7 @@ mod tests {
             market: None,
             brand: brand.into(),
             name: name.into(),
-            glyph: "cpu".into(),
+            glyph: name.rsplit(' ').next().unwrap_or_default().into(),
             short: None,
             facet: "x".into(),
             warranty_y: 3,
@@ -948,6 +1028,10 @@ Allow: /
             ),
             Some(("mb-b850f".to_string(), "b850f".to_string()))
         );
+        // Short CPU models match on the catalogue glyph.
+        let cpus = vec![seed_product("cpu-9600x", "AMD", "AMD Ryzen 5 9600X")];
+        assert!(match_seed(&cpus, "AMD Ryzen 5 9600X 6-Core AM5 Processor", "AMD").is_some());
+        assert!(match_seed(&cpus, "AMD Ryzen 5 9600 6-Core AM5 Processor", "AMD").is_none());
         // Same chipset, different series: a ROG Maximus is not a TUF.
         let tuf = vec![seed_product(
             "mb-z890",

@@ -1003,3 +1003,18 @@ fn config_validation_errors() {
     cfg.retailers.retailer[0].courier = Some("GDEX".into());
     cfg.validate().unwrap();
 }
+
+#[tokio::test]
+async fn build_with_a_second_drive_saves() {
+    let app = app_with(&config(), |_| {});
+    // The second storage slot takes any SSD; an SSD in the CPU slot is still rejected.
+    let ok = json!({"name": "Two drives", "build": {"ssd": "ssd-990", "ssd2": "ssd-nm790"}, "region": "kv"});
+    let (s, b) = call(&app, "POST", "/api/builds", Some(ok)).await;
+    assert_eq!(s, StatusCode::CREATED);
+    assert_eq!(b["build"]["ssd2"], "ssd-nm790");
+    let bad = json!({"name": "x", "build": {"cpu": "ssd-nm790"}, "region": "kv"});
+    assert_eq!(
+        call(&app, "POST", "/api/builds", Some(bad)).await.0,
+        StatusCode::BAD_REQUEST
+    );
+}

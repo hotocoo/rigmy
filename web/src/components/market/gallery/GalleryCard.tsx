@@ -2,7 +2,7 @@
 
 import { Meta, Price, Text } from '@/components/ui';
 import { useData } from '@/lib/data';
-import { dFmt, plural } from '@/lib/format';
+import { dFmt, fmt, plural } from '@/lib/format';
 import { color } from '@/lib/tokens';
 import type { CardSummary } from './summarize';
 import g from './gallery.module.css';
@@ -37,10 +37,10 @@ export function GalleryCard({ s, open }: { s: CardSummary; open: (id: string) =>
         )}
         {gone > 0 && <Meta>{plural(gone, 'part') + ' no longer in the catalogue'}</Meta>}
         <span className={g.foot}>
-          <Price value={total ?? (listed.count ? listed.total : null)} empty="No price yet" v="price22" emptyV="meta" />
+          <Price value={total} empty="No price yet" v="price22" emptyV="meta" />
           <Meta>{total != null
             ? (priced < parts.length ? priced + ' of ' + parts.length + ' parts priced' : 'Lowest in-stock total')
-            : listed.count ? 'Listed prices for ' + listed.count + ' of ' + parts.length + ' parts · delivery not listed by the shops'
+            : listed.count ? 'Listed: ' + fmt(listed.total) + ' for ' + listed.count + ' of ' + parts.length + ' parts · delivery not listed by the shops'
               : 'No shop lists these parts in stock'}</Meta>
         </span>
       </button>

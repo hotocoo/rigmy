@@ -18,6 +18,7 @@ import { useTrending, YEAR_DAYS } from './trending/useTrending';
 import { MIN_TREND_DAYS, trackingMsg } from './util';
 import m from './market.module.css';
 import t from './trending/trending.module.css';
+import { productCat } from '@/lib/types';
 
 const LOADING = 'Loading price history…';
 const NEEDS_HISTORY = 'Needs ' + MIN_TREND_DAYS + ' days of price history';
@@ -80,7 +81,7 @@ export function Trending() {
       <MarketHeader eyebrow={'Market · ' + dateTxt + ' · ' + regionName + ' prices'} title="What's moving in PC parts" lede={lede} />
       <div data-rv="1" className={m.chips} role="group" aria-label="Category">
         <Chip on={trCat === 'all'} onClick={() => set({ trCat: 'all' })}>All parts</Chip>
-        {d.categories.map((c) => <Chip key={c.id} on={trCat === c.id} onClick={() => set({ trCat: c.id })}>{c.label}</Chip>)}
+        {d.categories.filter((c) => productCat(c.id) === c.id).map((c) => <Chip key={c.id} on={trCat === c.id} onClick={() => set({ trCat: c.id })}>{c.label}</Chip>)}
       </div>
 
       <StatTiles tiles={tiles} />
