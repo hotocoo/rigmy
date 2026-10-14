@@ -13,6 +13,25 @@ docs/         BACKEND.md, FRONTEND.md, DATA-SOURCES.md, DEPLOYMENT.md
 project/      original Claude Design prototype + handoff notes (reference only)
 ```
 
+## What it does
+
+- **Build in 3D**: an interactive studio (explode, x-ray, camera views, cable routing) with
+  real-world handedness, plus **AR** "view in your room" (AR Quick Look on iOS, WebXR on
+  Android, GLB download elsewhere).
+- **Live compatibility**: socket, memory, form factor, GPU clearance, cooler fit and power
+  headroom, with one-click fixes. Specs a part doesn't state show as *Not listed* instead of a
+  guess.
+- **Hundreds of buildable parts**: the verified catalogue plus retailer listings whose titles pin
+  down one part (tagged *Specs from retailer listing*). The same model at several shops is one
+  part with an offer from each, so prices compare across shops.
+- **Browse like a pro**: spec filters generated per category (ranges, chips with counts), price
+  range, in-stock / compatible / verified-only toggles, and a sortable table view.
+- **Optional slots**: a second drive, monitor and case fans alongside the eight core parts.
+- **Gaming estimate**: what resolution the GPU suits, the CPU's gaming tier and a bottleneck note
+  (bands from review consensus, never invented frame rates).
+- **Price history, alerts, compare, watchlist, nearby stores with Reserve over WhatsApp**,
+  shop-side promo codes, orders with tracking, and a public **build gallery**.
+
 ## Data
 
 There is no mock data. A fresh install has product specs and reference content only. Prices appear once a retailer feed is imported: `rigmy-api import` fetches the full product listing from each retailer in `config/retailers.toml` (robots-checked, rate-limited), matches feed products to the catalogue, and stores every unmatched one as a market listing with its own price and stock. Run the import on a schedule to build up price history. Until then the app shows empty states. See [docs/BACKEND.md](docs/BACKEND.md) and [docs/DATA-SOURCES.md](docs/DATA-SOURCES.md).

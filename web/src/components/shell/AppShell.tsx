@@ -153,8 +153,9 @@ function NavRight({ locOpen, toggleLoc }: { locOpen: boolean; toggleLoc: () => v
   const L = useUserLoc();
   const reg = regionById(d, region);
   const req = requiredCats(d);
-  const count = req.filter((c) => build[c.id]).length;
-  const extras = d.categories.filter((c) => c.optional && build[c.id]).length;
+  const has = (c: { id: keyof typeof build }) => !!build[c.id] && !!d.byId[build[c.id]!];
+  const count = req.filter(has).length;
+  const extras = d.categories.filter((c) => c.optional && has(c)).length;
   const total = useMemo(() => {
     if (!count && !extras) return fmt(0);
     const best = d.engine.plan(build, region, {}).best;
