@@ -5,6 +5,7 @@ import { useRig } from '@/lib/store';
 import { color, tone } from '@/lib/tokens';
 import type { Check } from '@/lib/types';
 import type { ViewName } from '@/studio/types';
+import { ArButton } from './ArButton';
 import { StudioStage, ViewSwitch } from './StudioStage';
 import type { StudioHost } from './useStudioHost';
 import s from './builder.module.css';
@@ -24,6 +25,7 @@ export function BuilderStage({ host, checks }: { host: StudioHost; checks: Check
       <div className={l.tools}>
         <Button variant="glass" size="tool" on={!!explode} onClick={() => set((x) => ({ explode: x.explode ? 0 : 1 }))}>Explode</Button>
         <Button variant="glass" size="tool" on={xray} onClick={() => set((x) => ({ xray: !x.xray }))}>X-ray</Button>
+        <ArButton build={host.studioBuild} />
         <ViewSwitch views={VIEWS} onView={(name) => { set({ sel: null }); host.post({ rig: 'view', name }); }} />
       </div>
       <div className={s.checks} role="group" aria-label="Compatibility checks">

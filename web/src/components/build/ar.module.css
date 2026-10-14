@@ -1,0 +1,6 @@
+/* AR overlay (WebXR dom-overlay) and the status toast under the stage tools. Token-only. */
+.overlay { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; justify-content: space-between; padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px calc(env(safe-area-inset-bottom, 0px) + 20px); pointer-events: none; }
+.overlay[hidden] { display: none; }
+.hint { align-self: center; margin: 0; padding: 8px 14px; font: 500 12px/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg); background: var(--surface-glass-soft); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--line-soft); }
+.bar { display: flex; gap: 8px; justify-content: center; pointer-events: auto; }
+.toast { position: absolute; right: 16px; top: 54px; max-width: 280px; margin: 0; padding: 8px 12px; font: 400 12px/1.45 var(--sans); color: var(--fg-soft); background: var(--bg-raised); border: 1px solid var(--line-soft); }

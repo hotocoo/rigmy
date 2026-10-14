@@ -107,5 +107,5 @@ export function useStudioHost(page: HostPage) {
     if (guideStep !== ps.guideStep && page === 'guide') pushGuide(0);
   }, [build, region, sel, explode, xray, cables, cableHl, guideStep, page, post, studioBuild, issueParts, pushGuide]);
 
-  return { onReady, onPick, post };
+  return { onReady, onPick, post, studioBuild };
 }
