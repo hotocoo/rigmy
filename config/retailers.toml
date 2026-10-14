@@ -28,7 +28,8 @@
 #               checkout). The region still counts as delivered, and totals say the fee is unknown.
 #               Multiplied per category by [delivery] size_multiplier in
 #               content.toml for bulky parts (cases x2 as shipped)
-#       eta     a label from the [[eta]] table in content.toml: "Same day", "Next day", "1–2 days",
+#       free_over  optional  RM order subtotal at which the shop waives the fee (published threshold)
+#       eta     optional; leave out when the shop publishes no delivery time. A label from the [[eta]] table in content.toml: "Same day", "Next day", "1–2 days",
 #               "2–3 days", "3–5 days", "5–7 days"
 #               (note the en dash – in ranges)
 #
@@ -100,6 +101,25 @@ id = "emarque"
 name = "EMARQUE"
 city = "Kuala Lumpur"
 website = "https://emarque.co"
+
+# Delivery fees from EMARQUE's published shipping data (schema.org ShippingService on
+# https://emarque.co/, read 2026-10-14): Peninsular Malaysia (states 01-11, 14, 16) RM 49, free on
+# orders of RM 4,499 or more; Sabah, Sarawak, Labuan (12, 13, 15) RM 100. Delivery times are only
+# published for assembled PCs (3-6 working days), not for parts, so `eta` is left out.
+[retailer.delivery.kv]
+fee = 49
+free_over = 4499
+
+[retailer.delivery.pen]
+fee = 49
+free_over = 4499
+
+[retailer.delivery.jhr]
+fee = 49
+free_over = 4499
+
+[retailer.delivery.east]
+fee = 100
 
 [retailer.import]
 kind = "shopify"

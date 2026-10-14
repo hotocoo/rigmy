@@ -64,7 +64,7 @@ export type CatalogPart = Product & { cat: CatId };
 export const isCatalogPart = (p: Product): p is CatalogPart => !!p.cat;
 
 /** `fee` null: the shop delivers but publishes no fee (quoted at its checkout). */
-export interface Delivery { fee: number | null; eta: Eta }
+export interface Delivery { fee: number | null; eta: Eta | null; /** Order subtotal (RM) at which the shop waives the fee, if published. */ freeOver?: number }
 export interface Retailer {
   id: string;
   name: string;

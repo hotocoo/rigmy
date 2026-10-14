@@ -204,7 +204,17 @@ pub struct Delivery {
     /// RM per order; `None` = the shop delivers there but publishes no fee (quoted at its checkout).
     #[serde(default)]
     pub fee: Option<f64>,
-    pub eta: Eta,
+    /// Delivery time bucket; `None` = the shop publishes no delivery time for this kind of order.
+    #[serde(default)]
+    pub eta: Option<Eta>,
+    /// The fee is waived when the order from this shop reaches this subtotal (RM), if published.
+    #[serde(
+        default,
+        rename = "freeOver",
+        alias = "free_over",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub free_over: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

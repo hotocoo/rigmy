@@ -48,7 +48,8 @@ fn retailer(id: &str, delivery: &[(RegionId, f64, Eta)]) -> Retailer {
                     r,
                     Delivery {
                         fee: Some(fee),
-                        eta,
+                        eta: Some(eta),
+                        free_over: None,
                     },
                 )
             })
@@ -1162,4 +1163,25 @@ fn compat_unlisted_specs_warn_instead_of_false_errors() {
     let p = check(&cs, CheckId::Psu);
     assert_eq!(p.status, Tone::Warn);
     assert_eq!(p.parts, vec![CatId::Gpu]);
+}
+
+#[test]
+fn published_free_delivery_threshold_waives_the_fee_and_missing_eta_is_honest() {
+    let mut b = catalog();
+    let mut r = retailer("a", &[(RegionId::Kv, 49.0, Eta::D2to3)]);
+    let kv = r.delivery.get_mut(&RegionId::Kv).unwrap();
+    kv.free_over = Some(1000.0);
+    kv.eta = None;
+    b.retailers = vec![r];
+    b.offers = vec![offer("cpu-9600x", "a", 999.0, StockState::InStock)];
+    let c = with_offers(b.retailers.clone(), b.offers.clone());
+    let one = build(&[(CatId::Cpu, "cpu-9600x")]);
+    let t = c.plan(&one, RegionId::Kv, &HashMap::new()).best;
+    assert_eq!((t.fee, t.total), (49.0, 1048.0));
+    // Unknown delivery time: buyable, but no ETA is invented.
+    let o = &c.offers("cpu-9600x", RegionId::Kv)[0];
+    assert!(o.avail && o.eta.is_none());
+
+    let c = with_offers(b.retailers.clone(), vec![offer("cpu-9600x", "a", 1000.0, StockState::InStock)]);
+    assert_eq!(c.plan(&one, RegionId::Kv, &HashMap::new()).best.fee, 0.0);
 }

@@ -169,7 +169,7 @@ impl Catalog {
                 let big = self.data.content.size_multiplier_for(p.cat);
                 // Pre-orders ship whenever stock lands: show the slowest bucket in the table.
                 let eta = if raw.stock == StockState::PreOrder {
-                    self.etas.slowest()
+                    Some(self.etas.slowest())
                 } else {
                     d.eta
                 };
@@ -177,7 +177,7 @@ impl Catalog {
                     raw: raw.clone(),
                     avail: raw.stock.available(),
                     fee: d.fee.map(|f| f * big),
-                    eta: Some(eta),
+                    eta,
                     status: raw.stock.as_str().to_string(),
                     warranty,
                 }
@@ -756,16 +756,19 @@ impl Catalog {
             let mut parts = 0.0;
             let mut missing = 0;
             // (retailer id, largest size multiplier among the parts bought there), in first-seen order.
-            let mut shops: Vec<(&str, f64)> = vec![];
+            let mut shops: Vec<(&str, f64, f64)> = vec![];
             for r in &rows {
                 match choice.get(&r.p.id).and_then(|o| o.as_ref()) {
                     None => missing += 1,
                     Some(o) => {
                         parts += o.raw.price;
                         let m = self.data.content.size_multiplier_for(r.p.cat);
-                        match shops.iter_mut().find(|(id, _)| *id == o.raw.retailer_id) {
-                            Some(s) => s.1 = s.1.max(m),
-                            None => shops.push((&o.raw.retailer_id, m)),
+                        match shops.iter_mut().find(|(id, _, _)| *id == o.raw.retailer_id) {
+                            Some(s) => {
+                                s.1 = s.1.max(m);
+                                s.2 += o.raw.price;
+                            }
+                            None => shops.push((&o.raw.retailer_id, m, o.raw.price)),
                         }
                     }
                 }
@@ -774,8 +777,12 @@ impl Catalog {
             // consistent with the per-offer `fee`.
             let mut fee = 0.0;
             let mut unknown_fees = 0;
-            for (rid, m) in &shops {
+            for (rid, m, sub) in &shops {
                 match self.retailer(rid).and_then(|r| r.delivery.get(&region)) {
+                    // A published free-delivery threshold waives the fee for that shop's order.
+                    Some(Delivery {
+                        free_over: Some(t), ..
+                    }) if sub >= t => {}
                     Some(Delivery { fee: Some(f), .. }) => fee += f * m,
                     Some(_) => unknown_fees += 1,
                     None => unknown_fees += 1,

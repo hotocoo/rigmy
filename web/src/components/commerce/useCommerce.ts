@@ -40,11 +40,12 @@ export function groupsOf(d: Data, choice: Choice, region: RegionId, pickup: bool
   }
   return Array.from(g.values(), (x) => {
     const del = x.r.delivery[region];
-    const feeRaw = pickup ? 0 : del ? del.fee ?? null : null;
     const subRaw = x.items.reduce((a, i) => a + i.price, 0);
+    const waived = del?.freeOver != null && subRaw >= del.freeOver;
+    const feeRaw = pickup || waived ? 0 : del ? del.fee ?? null : null;
     return {
       rid: x.r.id, r: x.r, name: x.r.name, city: x.r.city, items: x.items, etaRaw: x.eta,
-      eta: (pickup ? 'Ready for pickup in ' : 'Arrives in ') + etaLower(x.eta),
+      eta: x.eta ? (pickup ? 'Ready for pickup in ' : 'Arrives in ') + etaLower(x.eta) : 'Delivery time not published by the shop',
       feeRaw, fee: feeRaw == null ? 'Ask the shop' : feeRaw ? fmt(feeRaw) : 'Free',
       count: countText(x.items.length), subRaw, sub: fmt(subRaw),
     };
