@@ -38,6 +38,15 @@ export function computeLayout(b: LayoutInput): Layout {
 }
 
 export const gpuDims = (v: PartVis) => ({ L: v.L ?? 0.3, H: v.H || 0.137, T: v.T || 0.066 });
+/** Card roll in the case: the builder models fans facing +x; a horizontal card in a PCIe slot has its fans facing down,
+ *  backplate up and top edge (power connector, lightbar) toward the side window, so the part is rolled -90° about z. */
+export const GPU_ROLL = -Math.PI / 2;
+/** Rolled card's centre (x, y; z = 0) for a card seated in the primary x16 slot: it reaches `H` out from the board
+ *  and hangs its `T`-thick cooler below the slot, never into the PSU shroud. */
+export function gpuMount(L: Layout, H: number, T: number): THREE.Vector3 {
+  const slotY = L.mobo.y + L.sy - 0.122;
+  return new V3(L.mobo.x + 0.009 + H / 2, Math.max(slotY + 0.012 - T / 2, L.ys + 0.006 + T / 2), 0);
+}
 
 
 /** [assembled position, explode offset] per part. */
@@ -52,6 +61,6 @@ export const PLACE: Record<PartId, Place> = {
   cooler: (_v, L) => [L.socket.clone().add(new V3(0.0024, 0, 0)), new V3(0.17, 0.13, 0)],
   ram: (_v, L) => [new V3(L.mobo.x + 0.0008 + 0.0078 + 0.02, L.mobo.y + L.sy - 0.004, L.mobo.z), new V3(0.13, 0.05, 0.02)],
   ssd: (_v, L) => [L.mobo.clone().add(new V3(0.0045, L.sy - 0.088, -L.mW / 2 + 0.11)), new V3(0.19, -0.06, 0)],
-  gpu: (v, L) => { const d = gpuDims(v); return [new V3(L.xi1 - 0.032 - d.T / 2, L.ys + 0.014 + d.H / 2, -L.d / 2 + 0.022 + d.L / 2), new V3(0.27, -0.03, 0.06)]; },
+  gpu: (v, L) => { const d = gpuDims(v); return [gpuMount(L, d.H, d.T).add(new V3(0, 0, -L.d / 2 + 0.022 + d.L / 2)), new V3(0.27, -0.03, 0.06)]; },
   psu: (_v, L) => [new V3(-L.w / 2 + 0.006 + 0.077, L.y0 + 0.006 + 0.045, -L.d / 2 + 0.012 + 0.088), new V3(0.3, -0.03, -0.02)],
 };

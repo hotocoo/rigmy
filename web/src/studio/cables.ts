@@ -50,14 +50,15 @@ export function buildCables(p: Part, kit: Kit, v: CablesVis, L: Layout): void {
   8, 0.0024, 0.0016, Z, wob);
   // 12V-2x6 GPU power
   if (v.gpuVis) {
-    const gv = v.gpuVis, gd = gpuDims(gv), gb = PLACE.gpu(gv, L)[0], gH = gd.H;
-    const g = new V3(gb.x, gb.y + gH / 2 + 0.011, gb.z + gd.L * 0.12);
-    add(p, B(0.012, 0.006, 0.02), plastic, g.x, g.y - 0.003, g.z, 'gpu_plug');
+    // The card is rolled (see GPU_ROLL): its 12V-2x6 socket faces the side window and its backplate faces up.
+    const gv = v.gpuVis, gd = gpuDims(gv), gb = PLACE.gpu(gv, L)[0];
+    const g = new V3(gb.x + gd.H / 2 + 0.011, gb.y, gb.z + gd.L * 0.12), top = gb.y + gd.T / 2 + 0.014, back = gb.z + gd.L / 2;
+    add(p, B(0.006, 0.012, 0.02), plastic, g.x - 0.003, g.y, g.z, 'gpu_plug');
     run('cable_gpu', tidy
-      ? [g, g.clone().add(new V3(0, 0.012, 0)), new V3(g.x, g.y + 0.02, g.z + 0.02), new V3(g.x - 0.012, g.y + 0.022, fz + 0.03), new V3(tray + 0.012, g.y + 0.022, fz + 0.03), new V3(tray + 0.001, g.y + 0.022, fz + 0.03)]
-      : [g, g.clone().add(new V3(0.004, 0.02, 0.01)), new V3(g.x + 0.03, g.y + 0.05, g.z + 0.07), new V3(g.x + 0.035, g.y - 0.01, gb.z + gd.L / 2 + 0.02), new V3(g.x + 0.015, L.ys + 0.03, gb.z + gd.L / 2 + 0.028), new V3(g.x, L.ys - 0.012, gb.z + gd.L / 2 + 0.02)],
+      ? [g, g.clone().add(new V3(0.01, 0, 0)), new V3(g.x + 0.016, top, g.z + 0.01), new V3(g.x + 0.006, top, fz + 0.03), new V3(tray + 0.012, top, fz + 0.03), new V3(tray + 0.001, top, fz + 0.03)]
+      : [g, g.clone().add(new V3(0.02, 0.004, 0.01)), new V3(g.x + 0.03, g.y - 0.02, g.z + 0.07), new V3(g.x + 0.02, g.y - 0.04, back + 0.02), new V3(g.x, L.ys + 0.03, back + 0.028), new V3(g.x - 0.01, L.ys - 0.012, back + 0.02)],
     8, 0.0024, 0.0017, Z, wob);
-    if (tidy) add(p, B(0.004, 0.006, 0.024), plastic, g.x - 0.03, g.y + 0.022, fz + 0.03, 'cable_comb');
+    if (tidy) add(p, B(0.004, 0.006, 0.024), plastic, tray + 0.04, top, fz + 0.03, 'cable_comb');
   }
   // front panel + fan headers
   const f0 = new V3(mb.x + 0.006, mb.y - H / 2 + 0.008, fz - 0.035);

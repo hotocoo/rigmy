@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { Part, V3, type Kit, type PalKey } from './materials';
 import { buildCables, type CablesVis } from './cables';
 import { add, B, makeFan, merge, rbox, screenTex } from './geometry';
-import { DEFAULT_CASE, PLACE, gpuDims, type Layout } from './layout';
+import { DEFAULT_CASE, GPU_ROLL, PLACE, gpuDims, type Layout } from './layout';
 import { PART_COLOR } from './palette';
 import type { BuildItem, PartId, PartVis, PickTarget, StudioCat } from './types';
 
@@ -167,5 +167,6 @@ export function makePart(id: PartId, kit: Kit, vis: PartVis | CablesVis | undefi
   const p = buildPart(id, kit, v as PartVis, L);
   const [base, off] = PLACE[id](v as PartVis, L);
   p.base.copy(base); p.offset.copy(off);
+  if (id === 'gpu') p.group.rotation.z = GPU_ROLL;
   return p.finalize();
 }
