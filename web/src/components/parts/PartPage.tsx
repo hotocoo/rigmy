@@ -1,8 +1,9 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import { useState } from 'react';
 import { ArButton } from '@/components/build/ArButton';
-import { BackLink, Text } from '@/components/ui';
+import { BackLink, Segmented, Text } from '@/components/ui';
 import { regionById } from '@/lib/content';
 import { useGo } from '@/components/shell/useGo';
 import { useData, useStats } from '@/lib/data';
@@ -55,6 +56,7 @@ export function PartPage() {
 
 function PartView({ P }: { P: CatalogPart }) {
   const d = useData();
+  const [pose, setPose] = useState<'showcase' | 'installed'>('showcase');
   const browse = useBrowse();
   const region = useRig((x) => x.region);
   const stats = useStats();
@@ -65,12 +67,13 @@ function PartView({ P }: { P: CatalogPart }) {
 
       <div className={p.hero}>
         <div className={p.stage}>
-          <SoloStudio product={P} />
+          <SoloStudio product={P} installed={pose === 'installed'} />
           <div className={p.stageCaption}>
             <Text v="eyebrow" c={color.blueSoft}>{cd.long} · 3D</Text>
             <span className={p.hint}>Drag to rotate · scroll to zoom</span>
           </div>
           <div className={p.stageTools}>
+            {P.cat === 'gpu' && <Segmented variant="glass" label="Card pose" value={pose} onChange={setPose} items={[{ id: 'showcase', label: 'Showcase' }, { id: 'installed', label: 'Installed' }]} />}
             <ArButton build={() => ({ [P.cat]: { id: P.id, label: P.name, vis: P.vis as PartVis } })} />
           </div>
         </div>

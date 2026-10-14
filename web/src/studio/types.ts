@@ -62,6 +62,8 @@ export interface SoloItem {
   id: string;
   label: string;
   vis: PartVis;
+  /** Show the part as it sits in a build (graphics card seated horizontally, fans down) instead of the showcase pose. */
+  installed?: boolean;
 }
 
 export interface CableOpts {
