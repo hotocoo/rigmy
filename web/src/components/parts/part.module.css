@@ -58,7 +58,7 @@
 .storeBox { display: flex; flex-wrap: wrap; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); }
 .branchList { flex: 1 1 400px; max-height: 480px; overflow: auto; display: flex; flex-direction: column; min-width: 0; margin: 0; padding: 0; list-style: none; }
 .branch {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 14px; padding: 14px 16px; cursor: pointer;
+  display: grid; grid-template-columns: minmax(150px, 1fr) minmax(0, auto); gap: 8px 14px; padding: 14px 16px; cursor: pointer;
   border-bottom: 1px solid var(--line-faint); border-left: 2px solid transparent; transition: background var(--dur-fast), border-color var(--dur-fast);
 }
 .branch:hover { background: var(--fill-faint); }
@@ -67,9 +67,9 @@
 .branchMain:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .branchName { font: 600 14.5px/1.25 var(--sans); color: var(--fg); }
 .branchMeta { font: 400 11px/1.35 var(--mono); color: var(--muted); }
-.stockLine { display: flex; align-items: center; gap: 6px; font: 500 11.5px/1.3 var(--mono); }
+.stockLine { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; font: 500 11.5px/1.3 var(--mono); }
 .stockNote { color: var(--muted); }
-.branchSide { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.branchSide { min-width: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 .branchPrice { font: 600 14px/1 var(--mono); color: var(--fg); }
 .branchActions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
 .noStores { display: flex; flex-direction: column; gap: 8px; padding: 22px 16px; }
