@@ -283,6 +283,14 @@ pub fn snapshots(
     Ok(out)
 }
 
+/// Remove one shop's latest offer for a product (price history is kept). Returns rows removed.
+pub fn delete_offer(conn: &Connection, product_id: &str, retailer_id: &str) -> Result<usize> {
+    Ok(conn.execute(
+        "DELETE FROM offers_latest WHERE product_id = ?1 AND retailer_id = ?2",
+        params![product_id, retailer_id],
+    )?)
+}
+
 pub fn upsert_offer(conn: &Connection, o: &RawOffer) -> Result<()> {
     conn.execute(
         "INSERT INTO offers_latest(product_id, retailer_id, price, stock, url, observed_at)

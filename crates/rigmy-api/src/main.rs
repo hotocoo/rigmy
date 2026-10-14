@@ -131,8 +131,8 @@ async fn main() -> Result<()> {
                 let now = db::now_ms();
                 let s = import::run(&mut conn, &cfg, id, &mut fetcher, now).await?;
                 println!(
-                    "{id}: {} pages, {} listings ({} matched to catalog, {} market), {} skipped",
-                    s.pages, s.products, s.matched, s.market, s.failed
+                    "{id}: {} pages, {} listings ({} matched to catalog, {} market), {} skipped, {} stale catalog offers removed",
+                    s.pages, s.products, s.matched, s.market, s.failed, s.dropped
                 );
                 for m in &s.matches {
                     println!(

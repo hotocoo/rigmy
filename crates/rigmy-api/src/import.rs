@@ -121,8 +121,11 @@ struct FeedProduct {
     variants: Vec<FeedVariant>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub(crate) struct FeedVariant {
+    /// Variant name, e.g. "RM850e" on a listing that sells several models.
+    #[serde(default)]
+    pub(crate) title: String,
     pub(crate) price: String,
     #[serde(default)]
     pub(crate) available: bool,
@@ -142,6 +145,49 @@ struct FeedItem {
     /// Stable id fragment for the market-listing id (`mkt-<retailer>-<slug>`).
     slug: String,
     product_type: String,
+    /// Shopify variants (title, price, available); empty for feeds without variants.
+    variants: Vec<FeedVariant>,
+}
+
+/// Capacity / wattage words of a catalogue name ("2tb", "850w", "32gb").
+fn spec_words(name: &str) -> Vec<String> {
+    words(name)
+        .into_iter()
+        .filter(|t| {
+            t.chars().next().is_some_and(|c| c.is_ascii_digit())
+                && SPEC_UNITS
+                    .iter()
+                    .any(|u| t.ends_with(u) && t.len() > u.len())
+        })
+        .collect()
+}
+
+/// Price and availability of a matched listing for one catalogue part. A listing that lists
+/// alternatives with '/' and prices its variants differently ("RM650e / RM850e", "512GB / 2TB") prices each model
+/// separately, so only variants whose titles name the part's model or capacity count. If no
+/// variant title says which one is the part there is no honest price and the listing is not
+/// attached to it.
+fn part_price(it: &FeedItem, part_name: &str) -> Option<(f64, bool)> {
+    let prices: Vec<&str> = it.variants.iter().map(|v| v.price.trim()).collect();
+    if !it.title.contains('/') || prices.windows(2).all(|w| w[0] == w[1]) {
+        return Some((it.price, it.avail));
+    }
+    let named: Vec<Vec<String>> = it.variants.iter().map(|v| words(&v.title)).collect();
+    let mut need = model_tokens(part_name);
+    need.extend(spec_words(part_name));
+    // Only what the variant titles actually distinguish on.
+    need.retain(|t| named.iter().any(|w| w.contains(t)));
+    if need.is_empty() {
+        return None;
+    }
+    let own: Vec<FeedVariant> = it
+        .variants
+        .iter()
+        .zip(&named)
+        .filter(|(_, w)| need.iter().all(|t| w.contains(t)))
+        .map(|(v, _)| v.clone())
+        .collect();
+    pick_variant(&own).map(|(p, a)| ((p * 100.0).round() / 100.0, a))
 }
 
 /// WooCommerce Store API product (`/wp-json/wc/store/v1/products`). Prices are
@@ -269,8 +315,6 @@ fn norm(s: &str) -> String {
 /// least 4 chars). Pure words ("gaming") and pure numbers ("6000", "2025") are too
 /// ambiguous to match on, and short number-leading runs ("850w", "16gb") are specs, not
 /// model numbers — matching them would attach e.g. an RM850x listing to an RM850e part.
-/// Residual risk: same-brand listings sharing a spec token (e.g. "cl30") can still match;
-/// prefer specific model numbers when curating the seed catalog.
 /// Unit suffixes that mark a token as a spec (frequency/capacity/power), not a model number.
 const SPEC_UNITS: &[&str] = &["mhz", "ghz", "gb", "tb", "w", "v", "mm"];
 
@@ -279,15 +323,47 @@ const SPEC_UNITS: &[&str] = &["mhz", "ghz", "gb", "tb", "w", "v", "mm"];
 /// so they are excluded from the model-number set.
 const GENERIC_TOKENS: &[&str] = &[
     "pcie3", "pcie4", "pcie5", "pcie6", "ddr4", "ddr5", "ddr6", "gddr5", "gddr6", "gddr7", "gen3",
-    "gen4", "gen5", "gen6", "nvme", "sata", "atx", "matx", "itx", "wifi", "wif6", "wif6e", "wif7",
-    "rgb", "am4", "am5", "dx11", "dx12", "256bit", "128bit", "192bit", "384bit", "30gbps",
+    "gen4", "gen5", "gen6", "nvme", "sata", "atx", "matx", "itx", "wifi", "wifi6", "wifi6e",
+    "wifi7", "rgb", "am4", "am5", "dx11", "dx12", "256bit", "128bit", "192bit", "384bit", "30gbps",
     "28gbps", "24gbps", "19gbps", "14gbps",
 ];
 
+/// Alphanumeric words of a product name, lowercased. A hyphen followed by a one- or two-letter
+/// variant suffix is kept as part of the word ("B850-F" -> "b850f", "B850M-A" -> "b850ma") so
+/// variants stay distinct; any other hyphen separates words ("DDR5-6000" -> "ddr5", "6000").
+fn words(name: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    for chunk in name.split(|c: char| !(c.is_ascii_alphanumeric() || c == '-')) {
+        let parts: Vec<&str> = chunk.split('-').filter(|p| !p.is_empty()).collect();
+        let mut cur = String::new();
+        for p in parts {
+            let suffix =
+                !cur.is_empty() && p.len() <= 2 && p.chars().all(|c| c.is_ascii_alphabetic());
+            if suffix {
+                cur.push_str(p);
+            } else {
+                if !cur.is_empty() {
+                    out.push(std::mem::take(&mut cur));
+                }
+                cur.push_str(p);
+            }
+        }
+        if !cur.is_empty() {
+            out.push(cur);
+        }
+    }
+    out.into_iter().map(|w| w.to_ascii_lowercase()).collect()
+}
+
+/// Memory timing tokens ("cl30", "cl36") are specs shared across whole product lines.
+fn is_timing(t: &str) -> bool {
+    t.len() > 2 && t.starts_with("cl") && t[2..].chars().all(|c| c.is_ascii_digit())
+}
+
 pub fn model_tokens(name: &str) -> Vec<String> {
-    name.split(|c: char| !c.is_ascii_alphanumeric())
-        .filter(|raw| {
-            let t = raw.to_ascii_lowercase();
+    words(name)
+        .into_iter()
+        .filter(|t| {
             let has_digit = t.chars().any(|c| c.is_ascii_digit());
             let has_alpha = t.chars().any(|c| c.is_ascii_alphabetic());
             let digit_lead = t.chars().next().is_some_and(|c| c.is_ascii_digit());
@@ -301,37 +377,90 @@ pub fn model_tokens(name: &str) -> Vec<String> {
                 && !spec
                 && !(t.len() <= 5 && digit_lead)
                 && !GENERIC_TOKENS.contains(&t.as_str())
+                && !is_timing(t)
         })
-        .map(|t| t.to_ascii_lowercase())
         .collect()
 }
 
-/// Conservative match of a discovered listing against the verified catalog:
-/// brand must agree AND at least one model-number token of the catalog part must appear
-/// in the listing title. Returns (seed product id, matching token).
+/// Words that say what kind of product it is rather than which one; every other plain word of a
+/// catalogue name (series and trim: "tuf", "aorus", "elite", "mortar", "plus") must appear in a
+/// listing that claims to be that part.
+const GENERIC_WORDS: &[&str] = &[
+    "gaming",
+    "wifi",
+    "motherboard",
+    "desktop",
+    "processor",
+    "cpu",
+    "ryzen",
+    "core",
+    "intel",
+    "amd",
+    "geforce",
+    "radeon",
+    "rtx",
+    "nvme",
+    "ssd",
+    "rgb",
+    "series",
+    "edition",
+    "graphics",
+    "card",
+    "memory",
+    "kit",
+    "power",
+    "supply",
+    "psu",
+    "cooler",
+    "case",
+    "the",
+    "and",
+    "with",
+    "for",
+];
+
+/// Plain words of a catalogue name that pin down the exact model (see GENERIC_WORDS).
+fn series_words(name: &str, brand: &str) -> Vec<String> {
+    let b = norm(brand);
+    words(name)
+        .into_iter()
+        .filter(|w| {
+            w.len() >= 3
+                && w.chars().all(|c| c.is_ascii_alphabetic())
+                && *w != b
+                && !GENERIC_WORDS.contains(&w.as_str())
+        })
+        .collect()
+}
+
+/// Conservative match of a discovered listing against the verified catalog: the brand must
+/// agree AND every model-number token of the catalog part must appear as a whole word in the
+/// listing title (so "b850f" never matches a "B850M-A" board). Ties go to the part with the
+/// most tokens. Returns (seed product id, matched tokens joined by '+').
 pub fn match_seed(seeds: &[Product], title: &str, vendor: &str) -> Option<(String, String)> {
     let nv = norm(vendor);
-    let nt = norm(title);
-    let mut best: Option<(String, String, usize)> = None;
+    let tw: std::collections::HashSet<String> = words(title).into_iter().collect();
+    let mut best: Option<(String, Vec<String>)> = None;
     for s in seeds {
         let sb = norm(&s.brand);
-        if sb.len() < 3 || nv.len() < 3 {
+        if sb.len() < 3 || nv.len() < 3 || !(nv.contains(&sb) || sb.contains(&nv)) {
             continue;
         }
-        if !(nv.contains(&sb) || sb.contains(&nv)) {
+        let toks = model_tokens(&s.name);
+        if toks.is_empty() || !toks.iter().all(|t| tw.contains(t)) {
             continue;
         }
-        for tok in model_tokens(&s.name) {
-            let better = match &best {
-                None => true,
-                Some((_, _, l)) => tok.len() > *l,
-            };
-            if nt.contains(&tok) && better {
-                best = Some((s.id.clone(), tok.clone(), tok.len()));
-            }
+        if !series_words(&s.name, &s.brand)
+            .iter()
+            .all(|w| tw.contains(w))
+        {
+            continue;
+        }
+        if best.as_ref().is_none_or(|(_, b)| toks.len() > b.len()) {
+            best = Some((s.id.clone(), toks));
         }
     }
-    best.map(|(id, tok, _)| (id, tok))
+    best.map(|(id, toks)| (id, toks.join("+")))
 }
 
 #[derive(Debug, Clone)]
@@ -348,6 +477,8 @@ pub struct ImportSummary {
     pub matched: u32,
     pub market: u32,
     pub failed: u32,
+    /// Catalogue offers from this shop the feed no longer backs, removed after the run.
+    pub dropped: u32,
     /// Distinct feed `product_type` codes seen (for extending the label table).
     pub product_types: BTreeMap<String, u32>,
     pub matches: Vec<MatchLog>,
@@ -424,6 +555,7 @@ pub async fn run(
                         let (price, avail) = pick_variant(&fp.variants)?;
                         let page_url = format!("{origin}/products/{}", fp.handle);
                         Some(FeedItem {
+                            variants: fp.variants,
                             slug: fp.handle,
                             title: fp.title,
                             brand: fp.vendor.unwrap_or_default(),
@@ -455,6 +587,7 @@ pub async fn run(
                             avail: wp.is_in_stock,
                             url: wp.permalink,
                             product_type: String::new(),
+                            variants: Vec::new(),
                         })
                     })
                     .collect()
@@ -481,10 +614,22 @@ pub async fn run(
                 url: it.url.clone(),
                 observed_at: iso_from_ms(now),
             };
-            if let Some((seed_id, token)) = match_seed(&seeds, &it.title, &it.brand) {
-                let o = offer(seed_id.clone());
+            let hit = match_seed(&seeds, &it.title, &it.brand).and_then(|(id, token)| {
+                let name = seeds.iter().find(|p| p.id == id).map(|p| p.name.as_str())?;
+                part_price(it, name).map(|pa| (id, token, pa))
+            });
+            if let Some((seed_id, token, (price, avail))) = hit {
+                let o = RawOffer {
+                    price,
+                    stock: if avail {
+                        StockState::InStock
+                    } else {
+                        StockState::OutOfStock
+                    },
+                    ..offer(seed_id.clone())
+                };
                 db::upsert_offer(conn, &o)?;
-                db::upsert_snapshot(conn, &seed_id, &rconf.id, day, it.price, it.avail)?;
+                db::upsert_snapshot(conn, &seed_id, &rconf.id, day, price, avail)?;
                 sum.matched += 1;
                 sum.matches.push(MatchLog {
                     listing: it.title.clone(),
@@ -539,6 +684,17 @@ pub async fn run(
         }
         page += 1;
         tokio::time::sleep(Duration::from_millis(settings.delay_ms)).await;
+    }
+    // 3) The whole feed was read: catalogue offers from this shop that no listing matched (an
+    //    earlier, looser match or a delisted product) are removed so a part never links to the
+    //    wrong page. Shops mapped per product in sources.toml have no feed import, so they are
+    //    never affected.
+    let matched: std::collections::HashSet<&str> =
+        sum.matches.iter().map(|m| m.seed_id.as_str()).collect();
+    for s in &seeds {
+        if !matched.contains(s.id.as_str()) {
+            sum.dropped += db::delete_offer(conn, &s.id, &rconf.id)? as u32;
+        }
     }
     Ok(sum)
 }
@@ -668,25 +824,30 @@ Allow: /
     fn variant_pick_prefers_cheapest_in_stock() {
         let v = vec![
             FeedVariant {
+                title: String::new(),
                 price: "100.00".into(),
                 available: false,
             },
             FeedVariant {
+                title: String::new(),
                 price: "90.00".into(),
                 available: true,
             },
             FeedVariant {
+                title: String::new(),
                 price: "95.00".into(),
                 available: true,
             },
         ];
         assert_eq!(pick_variant(&v), Some((90.0, true)));
         let v = vec![FeedVariant {
+            title: String::new(),
             price: "100.00".into(),
             available: false,
         }];
         assert_eq!(pick_variant(&v), Some((100.0, false)));
         let v = vec![FeedVariant {
+            title: String::new(),
             price: "abc".into(),
             available: true,
         }];
@@ -712,7 +873,7 @@ Allow: /
     #[test]
     fn model_tokens_are_model_numbers() {
         let t = model_tokens("ASUS ROG Strix B850-F Gaming WiFi");
-        assert!(t.contains(&"b850".to_string()));
+        assert_eq!(t, vec!["b850f".to_string()]);
         assert!(!t.contains(&"gaming".to_string()));
         let t = model_tokens("AMD Ryzen 7 9800X3D");
         assert!(t.contains(&"9800x3d".to_string()));
@@ -751,5 +912,46 @@ Allow: /
         assert_eq!(match_seed(&seeds, "AMD Ryzen 7 7800X3D", "AMD"), None);
         // No model token at all.
         assert_eq!(match_seed(&seeds, "AMD Ryzen 9000 series CPU", "AMD"), None);
+        // A sibling variant of the same chipset is a different board.
+        assert_eq!(
+            match_seed(
+                &seeds,
+                "ASUS PRIME B850M-A WIFI CSM mATX AMD Motherboard",
+                "ASUS"
+            ),
+            None
+        );
+        assert_eq!(
+            match_seed(
+                &seeds,
+                "ASUS ROG STRIX B850-F GAMING WIFI ATX Motherboard",
+                "ASUS"
+            ),
+            Some(("mb-b850f".to_string(), "b850f".to_string()))
+        );
+        // Same chipset, different series: a ROG Maximus is not a TUF.
+        let tuf = vec![seed_product(
+            "mb-z890",
+            "ASUS",
+            "ASUS TUF Gaming Z890-Plus WiFi",
+        )];
+        assert_eq!(
+            match_seed(
+                &tuf,
+                "ASUS ROG MAXIMUS Z890 EXTREME WiFi Motherboard",
+                "ASUS"
+            ),
+            None
+        );
+        assert_eq!(
+            match_seed(
+                &tuf,
+                "ASUS TUF GAMING Z890-PLUS WIFI ATX Motherboard",
+                "ASUS"
+            ),
+            Some(("mb-z890".to_string(), "z890".to_string()))
+        );
+        // Timings and capacities are specs: a different kit with the same CL must not match.
+        assert!(model_tokens("G.Skill Trident Z5 Neo RGB 32GB (2x16) DDR5-6000 CL30").is_empty());
     }
 }

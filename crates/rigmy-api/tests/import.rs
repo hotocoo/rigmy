@@ -235,3 +235,104 @@ async fn import_requires_import_block() {
         .unwrap_err();
     assert!(format!("{err:#}").contains("not in retailers.toml"));
 }
+
+#[tokio::test]
+async fn import_drops_catalog_offers_the_feed_no_longer_backs() {
+    let cfg = config();
+    let mut conn = db::open(":memory:").unwrap();
+    seed::seed(&mut conn, &cfg, now()).unwrap();
+    // A wrong offer left behind by an older, looser matcher: a B850M-A page on the B850-F part.
+    db::upsert_offer(
+        &conn,
+        &rigmy_core::RawOffer {
+            product_id: "mb-b850f".into(),
+            retailer_id: "all-it".into(),
+            price: 549.0,
+            stock: StockState::InStock,
+            url: format!("{ORIGIN}/products/asus-prime-b850m-a-wifi"),
+            observed_at: "2026-10-12T09:00:00+08:00".into(),
+        },
+    )
+    .unwrap();
+
+    let sum = import::run(&mut conn, &cfg, "all-it", &mut fetcher(), now())
+        .await
+        .unwrap();
+    assert_eq!(sum.dropped, 1);
+    assert!(offer_of(&conn, "mb-b850f").is_none());
+    // The part the feed does back keeps its offer.
+    assert!(offer_of(&conn, "cpu-9800x3d").is_some());
+}
+
+#[tokio::test]
+async fn multi_model_listing_prices_the_matching_variant_only() {
+    let cfg = config();
+    let mut conn = db::open(":memory:").unwrap();
+    seed::seed(&mut conn, &cfg, now()).unwrap();
+    let page = r#"{"products": [
+      {"handle": "corsair-rme-series", "title": "CORSAIR RMe SERIES RM650e / RM750e / RM850e / RM1000e GOLD PSU", "product_type": "PSU", "vendor": "Corsair",
+       "variants": [{"title": "RM650e", "price": "389.00", "available": true}, {"title": "RM850e", "price": "639.00", "available": true}]},
+      {"handle": "amd-x3d-series", "title": "AMD Ryzen 9800X3D / 9950X3D Processor", "product_type": "CPU", "vendor": "AMD",
+       "variants": [{"title": "Default", "price": "1999.00", "available": true}, {"title": "Other", "price": "2999.00", "available": true}]}
+    ]}"#;
+    let mut r = BTreeMap::new();
+    r.insert(format!("{ORIGIN}/robots.txt"), ROBOTS.to_string());
+    r.insert(
+        format!("{ORIGIN}/products.json?limit=250&page=1"),
+        page.to_string(),
+    );
+    r.insert(
+        format!("{ORIGIN}/products.json?limit=250&page=2"),
+        r#"{"products": []}"#.to_string(),
+    );
+    let sum = import::run(
+        &mut conn,
+        &cfg,
+        "all-it",
+        &mut FixtureFetcher::new(r),
+        now(),
+    )
+    .await
+    .unwrap();
+    // The RM850e variant's own price, not the cheaper RM650e.
+    let (price, _, _) = offer_of(&conn, "psu-rm850e").unwrap();
+    assert!((price - 639.0).abs() < 1e-9, "got {price}");
+    // Variants priced differently but none names the part: no honest price, so it stays a market listing.
+    assert!(offer_of(&conn, "cpu-9800x3d").is_none());
+    assert_eq!((sum.matched, sum.market), (1, 1));
+}
+
+#[tokio::test]
+async fn capacity_variants_price_the_part_capacity() {
+    let cfg = config();
+    let mut conn = db::open(":memory:").unwrap();
+    seed::seed(&mut conn, &cfg, now()).unwrap();
+    let page = r#"{"products": [
+      {"handle": "lexar-nm790", "title": "Lexar NM790 M.2 NVMe SSD 512GB / 1TB / 2TB / 4TB", "product_type": "SSD", "vendor": "Lexar",
+       "variants": [{"title": "512GB", "price": "229.00", "available": true}, {"title": "2TB", "price": "619.00", "available": true}]}
+    ]}"#;
+    let mut r = BTreeMap::new();
+    r.insert(format!("{ORIGIN}/robots.txt"), ROBOTS.to_string());
+    r.insert(
+        format!("{ORIGIN}/products.json?limit=250&page=1"),
+        page.to_string(),
+    );
+    r.insert(
+        format!("{ORIGIN}/products.json?limit=250&page=2"),
+        r#"{"products": []}"#.to_string(),
+    );
+    import::run(
+        &mut conn,
+        &cfg,
+        "all-it",
+        &mut FixtureFetcher::new(r),
+        now(),
+    )
+    .await
+    .unwrap();
+    let (price, _, _) = offer_of(&conn, "ssd-nm790").unwrap();
+    assert!(
+        (price - 619.0).abs() < 1e-9,
+        "2TB part must get the 2TB price, got {price}"
+    );
+}
