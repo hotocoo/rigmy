@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { fmt } from '@/lib/format';
 import { mkData, offer, planTotal } from '@/lib/testdata';
 import type { Check, Power } from '@/lib/types';
 
@@ -18,13 +19,19 @@ describe('partPrice', () => {
     expect(partPrice(d, 'cpu-a', 'kv').text).toBe('No price yet');
   });
 
-  it('says No delivery when every listing refuses to deliver', () => {
-    const d = mkData({ offers: { 'cpu-a': [offer({ status: 'No delivery' }), offer({ status: 'No delivery' })] } });
+  it('shows the listed price, but no buyable price, when in stock where delivery is not listed', () => {
+    const d = mkData({ offers: { 'cpu-a': [offer({ status: 'No delivery', price: 120 }), offer({ status: 'No delivery', price: 100 })] } });
+    const pp = partPrice(d, 'cpu-a', 'kv');
+    expect([pp.text, pp.price, pp.listed]).toEqual([fmt(100), null, 100]);
+  });
+
+  it('says No delivery when nothing is in stock and no shop delivers', () => {
+    const d = mkData({ offers: { 'cpu-a': [offer({ status: 'No delivery', stock: 'Out of stock' })] } });
     expect(partPrice(d, 'cpu-a', 'kv').text).toBe('No delivery');
   });
 
   it('says Sold out when listed but none is buyable', () => {
-    const d = mkData({ offers: { 'cpu-a': [offer({ status: 'Out of stock' })] } });
+    const d = mkData({ offers: { 'cpu-a': [offer({ status: 'Out of stock', stock: 'Out of stock' })] } });
     expect(partPrice(d, 'cpu-a', 'kv').text).toBe('Sold out');
   });
 });
@@ -102,7 +109,8 @@ describe('presetName and errText', () => {
 
 describe('noPriceNote', () => {
   it('says nobody delivers rather than sold out when stock exists elsewhere', () => {
-    expect(noPriceNote([offer({ status: 'No delivery' })], 'Klang Valley')).toBe('Listed at 1 shop, none delivers to Klang Valley yet');
-    expect(noPriceNote([offer({ status: 'Out of stock' })], 'Klang Valley')).toBe('No shop has it in stock for Klang Valley');
+    expect(noPriceNote([offer({ status: 'No delivery' })], 'Klang Valley')).toBe('Listed in stock; delivery to Klang Valley not listed by the shop yet');
+    expect(noPriceNote([offer({ status: 'No delivery', stock: 'Out of stock' })], 'Klang Valley')).toBe('Listed at 1 shop, none delivers to Klang Valley yet');
+    expect(noPriceNote([offer({ status: 'Out of stock', stock: 'Out of stock' })], 'Klang Valley')).toBe('No shop has it in stock for Klang Valley');
   });
 });

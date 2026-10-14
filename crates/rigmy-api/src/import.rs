@@ -479,6 +479,8 @@ pub struct ImportSummary {
     pub failed: u32,
     /// Catalogue offers from this shop the feed no longer backs, removed after the run.
     pub dropped: u32,
+    /// Market listings whose titles pinned down a buildable part (see `promote`).
+    pub promoted: u32,
     /// Distinct feed `product_type` codes seen (for extending the label table).
     pub product_types: BTreeMap<String, u32>,
     pub matches: Vec<MatchLog>,
@@ -526,7 +528,8 @@ pub async fn run(
     // 2) Verified catalog parts, for offer matching.
     let seeds: Vec<Product> = db::products(conn)?
         .into_iter()
-        .filter(|p| p.cat.is_some())
+        // Verified catalogue only: parts promoted from listings are not match targets.
+        .filter(|p| p.cat.is_some() && p.source.is_none())
         .collect();
 
     let settings = &cfg.sources.settings;
@@ -639,6 +642,7 @@ pub async fn run(
             } else {
                 let pid = format!("mkt-{}-{}", rconf.id, it.slug);
                 let label = market_label(Some(&it.product_type), &it.title);
+                let label_for_promote = label.clone();
                 let product = Product {
                     id: pid.clone(),
                     cat: None,
@@ -666,7 +670,21 @@ pub async fn run(
                     tgp: None,
                     watt: None,
                     vis: Default::default(),
+                    source: None,
                 };
+                let mut product = product;
+                if let Some(pr) = crate::promote::promote(&label_for_promote, &it.title) {
+                    // A title naming several models / sizes prices only one of them.
+                    let alternatives = it.title.contains('/')
+                        && it
+                            .variants
+                            .windows(2)
+                            .any(|w| w[0].price.trim() != w[1].price.trim());
+                    if !alternatives {
+                        pr.apply(&mut product);
+                        sum.promoted += 1;
+                    }
+                }
                 conn.execute(
                     "INSERT INTO products(id, cat, sort, json) VALUES(?1, '', ?2, ?3)
                      ON CONFLICT(id) DO UPDATE SET json = excluded.json",
@@ -732,6 +750,7 @@ mod tests {
             tgp: None,
             watt: None,
             vis: Default::default(),
+            source: None,
         }
     }
 

@@ -8,7 +8,7 @@ import { keySpecs } from '@/lib/format';
 import { useRig } from '@/lib/store';
 import { color, tint, tone } from '@/lib/tokens';
 import type { CatalogPart, PartStats } from '@/lib/types';
-import { FitLine, PartPrice } from './bits';
+import { FitLine, PartPrice, SourceTag } from './bits';
 import { fitOf, priceOf } from './derive';
 import { useAddPart, useCompareToggle } from './hooks';
 import { PartStatsGrid } from './PartStatsGrid';
@@ -44,6 +44,7 @@ export function PartSummary({ P, stats }: { P: CatalogPart; stats: Record<string
         <div className={p.keySpecs}>{keySpecs(P)}</div>
       </div>
       <FitLine {...fitOf(d, build, P)} size="md" />
+      <SourceTag source={P.source} />
       <div className={p.priceBlock}>
         <PartPrice value={lo?.price} empty={pr.empty} size="hero" />
         <Text v="meta">{priceNote}</Text>

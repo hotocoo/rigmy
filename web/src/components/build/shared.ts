@@ -11,18 +11,29 @@ import type { CalloutNote, CableOpts } from '@/studio/types';
  *  - listings, none deliver  -> 'No delivery'
  *  - listings, none in stock -> 'Sold out'
  */
-export function partPrice(d: Data, productId: string, region: RegionId): { text: string; price: number | null; offers: Offer[] } {
+export function partPrice(d: Data, productId: string, region: RegionId): { text: string; price: number | null; offers: Offer[]; listed: number | null } {
   const offers = d.engine.offers(productId, region);
   const lo = d.engine.lowest(productId, region);
-  if (lo) return { text: fmt(lo.price), price: lo.price, offers };
-  if (!offers.length) return { text: 'No price yet', price: null, offers };
-  if (offers.every((o) => o.status === 'No delivery')) return { text: 'No delivery', price: null, offers };
-  return { text: 'Sold out', price: null, offers };
+  const listed = listedPrice(offers);
+  if (lo) return { text: fmt(lo.price), price: lo.price, offers, listed };
+  if (!offers.length) return { text: 'No price yet', price: null, offers, listed };
+  // In stock at a shop whose delivery to the region isn't known: show what it is listed at (not a buyable total).
+  if (listed != null) return { text: fmt(listed), price: null, offers, listed };
+  if (offers.every((o) => o.status === 'No delivery')) return { text: 'No delivery', price: null, offers, listed };
+  return { text: 'Sold out', price: null, offers, listed };
+}
+
+/** Cheapest in-stock listing price, whether or not the shop's delivery to the region is known. */
+export function listedPrice(offers: Offer[]): number | null {
+  const ps = offers.filter((o) => o.stock === 'In stock' || o.stock === 'Low stock').map((o) => o.price);
+  return ps.length ? Math.min(...ps) : null;
 }
 
 /** Why a listed part has no price in a region, as a sentence ('' when it has one). */
 export function noPriceNote(offers: Offer[], regionName: string): string {
   if (!offers.length) return '';
+  const listed = listedPrice(offers);
+  if (listed != null && offers.every((o) => o.status === 'No delivery' || !o.avail)) return 'Listed in stock; delivery to ' + regionName + ' not listed by the shop yet';
   if (offers.every((o) => o.status === 'No delivery')) return 'Listed at ' + offers.length + (offers.length === 1 ? ' shop' : ' shops') + ', none delivers to ' + regionName + ' yet';
   return 'No shop has it in stock for ' + regionName;
 }

@@ -60,3 +60,23 @@ them — an unknown field is left out rather than guessed), then either map its 
 - **Market listings** (`mkt-*` ids): products discovered from a feed. RigMY shows their live
   price, stock, history and buy link, but does not parse specifications from titles and never
   lets them enter a build — enforced in the core engine, the API and the UI.
+
+## Buildable parts from retailer listings
+
+Every imported listing that matches no verified catalogue part is stored as a market listing. When
+its title pins down one part in an unambiguous way, `rigmy-api import` also makes it buildable
+(`crates/rigmy-api/src/promote.rs`), tagged `source = "listing"` and shown as **Specs from retailer
+listing**:
+
+- Only what the title states is recorded, plus fixed rules that follow from it: a chipset implies
+  the socket (B850 is AM5), a CPU generation implies the socket (Ryzen 9000 is AM5), an AM5 /
+  LGA1851 board implies DDR5, and a GPU chip carries its vendor reference board power (labelled
+  "reference board power").
+- Titles that list alternatives ("1TB / 2TB", "750W / 850W", several speeds or CL timings, two CPU
+  models) stay market listings: the listing price belongs to only one of them.
+- Bundles, laptops, SO-DIMM memory and accessories are never promoted.
+- Specs a title doesn't state (GPU length, case clearances, cooler height) stay unset. The
+  compatibility engine reports them as **Not listed** with a "check with the shop" note instead of
+  guessing, and the power check says when a part's draw is unknown.
+
+Verified catalogue parts are the only match targets; promoted parts never displace them.

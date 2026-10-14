@@ -154,6 +154,10 @@ pub struct Product {
     pub watt: Option<f64>,
     #[serde(default)]
     pub vis: Map<String, Value>,
+    /// Where the specs came from when not the verified catalogue: `"listing"` = read from a
+    /// retailer listing title (see rigmy-api `promote`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source: Option<String>,
 }
 
 impl Product {

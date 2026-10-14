@@ -6,7 +6,7 @@ import { useData } from '@/lib/data';
 import { keySpecs, plural } from '@/lib/format';
 import { color } from '@/lib/tokens';
 import type { Build, CatalogPart, RegionId } from '@/lib/types';
-import { FitLine, InBuild, PartPrice } from './bits';
+import { FitLine, InBuild, PartPrice, SourceTag } from './bits';
 import { fitOf, priceOf } from './derive';
 import b from './browse.module.css';
 import s from './parts.module.css';
@@ -39,11 +39,12 @@ export function BrowseRow({ p, build, region, selected, comparing, onPreview, on
           <Text v="titleSm" c={color.fg} className={s.pretty}>{p.name}</Text>
           <Text v="meta" c={color.fg4}>{keySpecs(p)}</Text>
           <FitLine {...fit} />
+          <SourceTag source={p.source} />
         </span>
       </button>
       <div className={b.side}>
-        <PartPrice value={pr.lo?.price} empty={pr.empty} size="row" />
-        <span className={b.shops}>{pr.avail + ' of ' + plural(d.retailers.length, 'shop')}</span>
+        <PartPrice value={pr.lo?.price ?? pr.listedAt} empty={pr.empty} size="row" />
+        <span className={b.shops}>{!pr.lo && pr.listedAt != null ? 'Listed · delivery not listed' : pr.avail + ' of ' + plural(d.retailers.length, 'shop')}</span>
         <div className={b.actions}>
           <Button variant="mini" on={comparing} onClick={act(onCompare)}>{comparing ? 'Comparing' : 'Compare'}</Button>
           <Button variant="mini" onClick={act(onDetails)}>Details</Button>

@@ -982,7 +982,8 @@
       "short": "Air 903 Max",
       "ffs": [
         "ATX",
-        "mATX"
+        "mATX",
+        "Mini-ITX"
       ],
       "maxGpu": 400,
       "maxCooler": 180,
@@ -991,7 +992,7 @@
       "warrantyY": 1,
       "specs": {
         "type": "Mid tower · mesh",
-        "ffs": "E-ATX, ATX, mATX",
+        "ffs": "E-ATX, ATX, mATX, Mini-ITX",
         "maxGpu": 400,
         "maxCooler": 180,
         "radTop": "360 mm",
@@ -1014,7 +1015,8 @@
       "short": "O11 Vision C",
       "ffs": [
         "ATX",
-        "mATX"
+        "mATX",
+        "Mini-ITX"
       ],
       "maxGpu": 380,
       "maxCooler": 167,
@@ -1023,7 +1025,7 @@
       "warrantyY": 1,
       "specs": {
         "type": "Mid tower · panoramic glass",
-        "ffs": "ATX, mATX",
+        "ffs": "ATX, mATX, Mini-ITX",
         "maxGpu": 380,
         "maxCooler": 167,
         "radTop": "360 mm",
@@ -1045,7 +1047,8 @@
       "glyph": "POP MINI",
       "short": "Pop Mini Air",
       "ffs": [
-        "mATX"
+        "mATX",
+        "Mini-ITX"
       ],
       "maxGpu": 335,
       "maxCooler": 170,

@@ -1,4 +1,4 @@
-import { partPrice } from '@/components/build/shared';
+import { listedPrice, partPrice } from '@/components/build/shared';
 import type { Data } from '@/lib/data';
 import { specVal } from '@/lib/format';
 import type { Build, Offer, Product, RegionId, Tone } from '@/lib/types';
@@ -32,6 +32,8 @@ export interface PartPricing {
   avail: number;
   /** Honest label when there is no price: listed but unavailable vs never listed. */
   empty: string;
+  /** Cheapest in-stock listing price regardless of delivery (shown when no shop delivers to the region). */
+  listedAt: number | null;
 }
 export function priceOf(d: Data, pid: string, region: RegionId): PartPricing {
   const offers = d.engine.offers(pid, region);
@@ -41,6 +43,7 @@ export function priceOf(d: Data, pid: string, region: RegionId): PartPricing {
     listed: offers.length > 0,
     avail: offers.filter((o) => o.avail).length,
     empty: partPrice(d, pid, region).text,
+    listedAt: listedPrice(offers),
   };
 }
 

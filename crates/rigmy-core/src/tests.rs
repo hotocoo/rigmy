@@ -193,7 +193,7 @@ fn compat_ff_error() {
     let b = build(&[(CatId::Mobo, "mb-b850f"), (CatId::Case, "case-popmini")]);
     let f = check(&c.compat(&b, RegionId::Kv), CheckId::Ff).clone();
     assert_eq!(f.value, "ATX ✕ Pop Mini Air");
-    assert_eq!(f.detail, "The Fractal Design Pop Mini Air White only takes mATX boards. An ATX board is about 61 mm taller than the tray.");
+    assert_eq!(f.detail, "The Fractal Design Pop Mini Air White only takes mATX / Mini-ITX boards. An ATX board is about 61 mm taller than the tray.");
     assert_eq!(f.fix.unwrap().id, "mb-b650m");
 }
 
@@ -1087,4 +1087,67 @@ fn swaps_never_lists_market_products() {
     for s in c.swaps(&bd, RegionId::Kv) {
         assert!(!s.options.iter().any(|o| o.id == "mkt-test"));
     }
+}
+
+/// A part promoted from a retailer listing, carrying only what its title stated.
+fn listed_part(id: &str, cat: CatId, name: &str) -> Product {
+    Product {
+        id: id.into(),
+        cat: Some(cat),
+        market: None,
+        brand: "Shop".into(),
+        name: name.into(),
+        glyph: name.into(),
+        short: None,
+        facet: String::new(),
+        warranty_y: 0,
+        specs: Default::default(),
+        socket: None,
+        tdp: None,
+        ff: None,
+        mem: None,
+        ffs: None,
+        max_gpu: None,
+        max_cooler: None,
+        rad_top: None,
+        ctype: None,
+        rad: None,
+        height: None,
+        max_tdp: None,
+        length: None,
+        tgp: None,
+        watt: None,
+        vis: Default::default(),
+        source: Some("listing".into()),
+    }
+}
+
+#[test]
+fn compat_unlisted_specs_warn_instead_of_false_errors() {
+    let mut boot = catalog();
+    boot.products
+        .push(listed_part("lst-board", CatId::Mobo, "Mystery B850 board"));
+    let mut gpu = listed_part("lst-gpu", CatId::Gpu, "Mystery RTX card");
+    gpu.length = Some(300.0);
+    boot.products.push(gpu);
+    let c = Catalog::new(boot).unwrap();
+    let b = build(&[
+        (CatId::Cpu, "cpu-9800x3d"),
+        (CatId::Mobo, "lst-board"),
+        (CatId::Gpu, "lst-gpu"),
+        (CatId::Case, "case-o11vc"),
+        (CatId::Psu, "psu-rm850e"),
+    ]);
+    let cs = c.compat(&b, RegionId::Kv);
+    let s = check(&cs, CheckId::Socket);
+    assert_eq!((s.status, s.value.as_str()), (Tone::Warn, "Not listed"));
+    assert_eq!(s.parts, vec![CatId::Mobo]);
+    assert!(s.detail.contains("does not state its socket"));
+    assert_eq!(check(&cs, CheckId::Ff).status, Tone::Warn);
+    // Length is listed, so clearance is still checked for real.
+    assert_eq!(check(&cs, CheckId::Gpu).status, Tone::Ok);
+    // The card's power draw is unknown: the PSU check says so rather than passing silently.
+    let p = check(&cs, CheckId::Psu);
+    assert_eq!(p.status, Tone::Warn);
+    assert_eq!(p.parts, vec![CatId::Gpu]);
 }

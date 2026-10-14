@@ -79,18 +79,23 @@ export function spark(vals: number[], w: number, h: number) {
 }
 
 export function keySpecs(p: Product) {
-  const s = p.specs as Record<string, string | number>;
-  switch (p.cat) {
-    case 'cpu': return [s.cores + ' cores', s.boost + ' GHz', s.l3 + ' MB L3', s.tdp + ' W'].join(' · ');
-    case 'cooler': return [s.type, s.fans, s.noise + ' dBA'].join(' · ');
-    case 'mobo': return [s.socket, s.ff, s.chipset, s.wifi].join(' · ');
-    case 'ram': return [s.kit, s.speed + ' MT/s', 'CL' + s.cl].join(' · ');
-    case 'ssd': return [s.cap, s.iface, Number(s.read).toLocaleString(LOCALE) + ' MB/s'].join(' · ');
-    case 'gpu': return [s.vram + ' GB ' + s.mem, s.tgp + ' W', s.length + ' mm'].join(' · ');
-    case 'case': return [s.type, 'GPU up to ' + s.maxGpu + ' mm', s.radTop + ' top'].join(' · ');
-    case 'psu': return [s.watt + ' W', s.eff, s.mod].join(' · ');
-  }
-  return '';
+  const s = p.specs as Record<string, string | number | undefined>;
+  /** `v` + unit, or nothing when the spec is unknown (parts promoted from listings carry only what they state). */
+  const u = (v: string | number | undefined, unit = '', pre = '') => (v == null || v === '' ? null : pre + String(v) + unit);
+  const parts: (string | null)[] = (() => {
+    switch (p.cat) {
+      case 'cpu': return [u(s.cores, ' cores'), u(s.boost, ' GHz'), u(s.l3, ' MB L3'), u(s.tdp, ' W'), p.source ? u(s.socket) : null];
+      case 'cooler': return [u(s.type), u(s.fans), u(s.noise, ' dBA')];
+      case 'mobo': return [u(s.socket), u(s.ff), u(s.chipset), u(s.wifi === 'Yes' ? 'Wi-Fi' : s.wifi), p.source ? u(s.mem) : null];
+      case 'ram': return [u(s.kit) ?? u(s.cap, ' GB'), u(s.speed, ' MT/s'), u(s.cl, '', 'CL'), p.source ? u(s.type) : null];
+      case 'ssd': return [u(s.cap), u(s.iface), s.read == null ? null : Number(s.read).toLocaleString(LOCALE) + ' MB/s'];
+      case 'gpu': return [s.vram == null ? null : s.vram + ' GB' + (s.mem ? ' ' + s.mem : ''), u(s.tgp, ' W'), u(s.length, ' mm')];
+      case 'case': return [u(s.type), u(s.maxGpu, ' mm', 'GPU up to '), u(s.radTop, ' top'), p.source ? u(s.ffs) : null];
+      case 'psu': return [u(s.watt, ' W'), u(s.eff), u(s.mod)];
+    }
+    return [];
+  })();
+  return parts.filter(Boolean).join(' · ');
 }
 
 export function specVal(v: string | number | undefined | null, u?: string) {

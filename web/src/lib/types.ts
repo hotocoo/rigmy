@@ -50,6 +50,8 @@ export interface Product {
   watt?: number;
   /** Hints for the 3D studio (dimensions in metres, colours, fan count…). */
   vis: Record<string, unknown>;
+  /** 'listing' = buildable part whose specs were read from a retailer listing title, not the verified catalogue. */
+  source?: 'listing';
 }
 
 /** A verified, buildable catalogue part (as opposed to a market listing, which has no `cat`). */

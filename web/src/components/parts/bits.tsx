@@ -16,6 +16,12 @@ export function FitLine({ text, tone, size = 'base' }: { text: string; tone: Ton
   );
 }
 
+/** Marks a part whose specs were read from a retailer listing rather than the verified catalogue. */
+export function SourceTag({ source }: { source?: 'listing' }) {
+  if (source !== 'listing') return null;
+  return <span className={s.sourceTag} title="Specs read from the retailer's listing title. Anything the listing doesn't state shows as 'Not listed'.">Specs from retailer listing</span>;
+}
+
 /** Type style of a part's price on each parts page (browse row, compare column, live preview, part hero). */
 const PRICE_TYPE = { row: 'price16', compare: 'priceLg', preview: 'price22', hero: 'figureXl' } as const satisfies Record<string, TypeName>;
 /** A part's lowest price at one of the parts pages' display sizes, or its honest empty label. */

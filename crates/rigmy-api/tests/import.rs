@@ -143,7 +143,18 @@ async fn import_feed_writes_offers_and_market_listings() {
             .into_iter()
             .find(|p| p.id == pid)
             .unwrap_or_else(|| panic!("missing market product {pid}"));
-        assert!(p.cat.is_none(), "market listing must not have a build slot");
+        if handle == "colorful-rtx-5060-ti-ultra-duo-oc" {
+            // Its title pins the card down (one chip, one VRAM size): buildable, specs from the listing.
+            assert_eq!(p.cat, Some(rigmy_core::CatId::Gpu));
+            assert_eq!(p.source.as_deref(), Some("listing"));
+            assert_eq!(p.tgp, Some(180.0));
+        } else if handle == "corsair-rm850x" {
+            assert_eq!(p.cat, Some(rigmy_core::CatId::Psu));
+            assert_eq!(p.watt, Some(850.0));
+        } else {
+            // A keyboard has no build slot.
+            assert!(p.cat.is_none(), "market listing must not have a build slot");
+        }
         let (price, stock, url) = offer_of(&conn, &pid).unwrap();
         assert!((price - expected_price).abs() < 1e-9);
         assert_eq!(stock, expected_stock.as_str());

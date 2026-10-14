@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { digits, fmt, fmtOr, h12, hostOf, plural, promoUrl, startOfDay, stockTone, whatsappHref } from './format';
+import { digits, fmt, fmtOr, h12, hostOf, keySpecs, plural, promoUrl, startOfDay, stockTone, whatsappHref } from './format';
 
 describe('format', () => {
   it('formats ringgit with the locale separator', () => {
@@ -64,5 +64,12 @@ describe('promoUrl', () => {
 describe('whatsappHref', () => {
   it('turns a local Malaysian number into an international wa.me link', () => {
     expect(whatsappHref('03-2142 1234', 'hi there')).toBe('https://wa.me/60321421234?text=hi%20there');
+  });
+});
+
+describe('keySpecs', () => {
+  it('lists only the specs a listing states', () => {
+    const p = { id: 'g', cat: 'gpu', brand: 'B', name: 'N', glyph: 'G', facet: '6 GB', warrantyY: 0, vis: {}, source: 'listing', specs: { vram: 6, mem: 'GDDR6' } } as const;
+    expect(keySpecs(p as never)).toBe('6 GB GDDR6');
   });
 });

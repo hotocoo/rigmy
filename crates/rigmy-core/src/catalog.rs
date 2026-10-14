@@ -287,9 +287,39 @@ impl Catalog {
         let s = |o: &Option<String>| o.clone().unwrap_or_default();
         let ffs = |c: &Product| c.ffs.clone().unwrap_or_default();
         let n = |v: Option<f64>| v.unwrap_or(0.0);
+        // A part promoted from a retailer listing may not state a spec a check needs: say so
+        // instead of comparing against a blank and raising a false error.
+        let unlisted = |id: CheckId, label: &str, p: &Product, what: &str, parts: Vec<CatId>| {
+            Check {
+            id,
+            label: label.into(),
+            value: "Not listed".into(),
+            status: Tone::Warn,
+            parts,
+            detail: format!(
+                "The retailer listing for the {} does not state its {what}. Check it with the shop before you buy.",
+                p.short_name()
+            ),
+            fix: None,
+        }
+        };
 
         // socket
         match (cpu, mobo) {
+            (Some(cpu), Some(_)) if cpu.socket.is_none() => out.push(unlisted(
+                CheckId::Socket,
+                "CPU socket",
+                cpu,
+                "socket",
+                vec![CatId::Cpu],
+            )),
+            (Some(_), Some(mobo)) if mobo.socket.is_none() => out.push(unlisted(
+                CheckId::Socket,
+                "CPU socket",
+                mobo,
+                "socket",
+                vec![CatId::Mobo],
+            )),
             (Some(cpu), Some(mobo)) => {
                 let ok = cpu.socket == mobo.socket;
                 let fx = if ok {
@@ -328,6 +358,20 @@ impl Catalog {
 
         // memory
         match (ram, mobo) {
+            (Some(ram), Some(_)) if ram.mem.is_none() => out.push(unlisted(
+                CheckId::Mem,
+                "Memory type",
+                ram,
+                "memory type",
+                vec![CatId::Ram],
+            )),
+            (Some(_), Some(mobo)) if mobo.mem.is_none() => out.push(unlisted(
+                CheckId::Mem,
+                "Memory type",
+                mobo,
+                "memory type",
+                vec![CatId::Mobo],
+            )),
             (Some(ram), Some(mobo)) => {
                 let (rm, mm) = (s(&ram.mem), s(&mobo.mem));
                 if rm == mm {
@@ -370,6 +414,22 @@ impl Catalog {
 
         // form factor
         match (mobo, cs) {
+            (Some(mobo), Some(_)) if mobo.ff.is_none() => out.push(unlisted(
+                CheckId::Ff,
+                "Board form factor",
+                mobo,
+                "form factor",
+                vec![CatId::Mobo],
+            )),
+            (Some(_), Some(cs)) if cs.ffs.as_ref().is_none_or(|v| v.is_empty()) => {
+                out.push(unlisted(
+                    CheckId::Ff,
+                    "Board form factor",
+                    cs,
+                    "supported board sizes",
+                    vec![CatId::Case],
+                ))
+            }
             (Some(mobo), Some(cs)) => {
                 let mff = s(&mobo.ff);
                 let ok = ffs(cs).contains(&mff);
@@ -434,6 +494,20 @@ impl Catalog {
 
         // GPU clearance
         match (gpu, cs) {
+            (Some(gpu), Some(_)) if gpu.length.is_none() => out.push(unlisted(
+                CheckId::Gpu,
+                "GPU clearance",
+                gpu,
+                "card length",
+                vec![CatId::Gpu],
+            )),
+            (Some(_), Some(cs)) if cs.max_gpu.is_none() => out.push(unlisted(
+                CheckId::Gpu,
+                "GPU clearance",
+                cs,
+                "maximum GPU length",
+                vec![CatId::Case],
+            )),
             (Some(gpu), Some(cs)) => {
                 let (len, max) = (n(gpu.length), n(cs.max_gpu));
                 let spare = max - len;
@@ -487,7 +561,27 @@ impl Catalog {
             Some("aio") => n(p.rad) <= n(cs.rad_top),
             _ => p.height.is_some() && n(p.height) <= n(cs.max_cooler),
         };
+        let cooler_gap = |cool: &Product, cs: &Product| -> Option<(&'static str, bool)> {
+            match cool.ctype.as_deref() {
+                None => Some(("cooler type", true)),
+                Some("aio") if cool.rad.is_none() => Some(("radiator size", true)),
+                Some("aio") if cs.rad_top.is_none() => Some(("top radiator support", false)),
+                Some("aio") => None,
+                _ if cool.height.is_none() => Some(("cooler height", true)),
+                _ if cs.max_cooler.is_none() => Some(("maximum cooler height", false)),
+                _ => None,
+            }
+        };
         match (cool, cs) {
+            (Some(cool), Some(cs)) if cooler_gap(cool, cs).is_some() => {
+                let (what, on_cooler) = cooler_gap(cool, cs).unwrap_or(("size", true));
+                let (p, c) = if on_cooler {
+                    (cool, CatId::Cooler)
+                } else {
+                    (cs, CatId::Case)
+                };
+                out.push(unlisted(CheckId::Cool, "Cooler fit", p, what, vec![c]))
+            }
             (Some(cool), Some(cs)) => {
                 let mut st = Tone::Ok;
                 let (val, det);
@@ -552,7 +646,7 @@ impl Catalog {
         // thermal headroom (only reported when it is a problem)
         if let (Some(cool), Some(cpu)) = (cool, cpu) {
             let (mt, tdp) = (n(cool.max_tdp), n(cpu.tdp));
-            if mt < tdp {
+            if cool.max_tdp.is_some() && cpu.tdp.is_some() && mt < tdp {
                 let fx = self.cheapest(region, |p| {
                     p.cat == Some(CatId::Cooler)
                         && n(p.max_tdp) >= tdp
@@ -576,7 +670,36 @@ impl Catalog {
 
         // power
         let pw = self.power(b);
+        let unpowered: Vec<&Product> = [
+            (cpu, cpu.and_then(|p| p.tdp)),
+            (gpu, gpu.and_then(|p| p.tgp)),
+        ]
+        .into_iter()
+        .filter_map(|(p, w)| p.filter(|_| w.is_none()))
+        .collect();
         match psu {
+            Some(psu) if psu.watt.is_none() => out.push(unlisted(
+                CheckId::Psu,
+                "Power headroom",
+                psu,
+                "wattage",
+                vec![CatId::Psu],
+            )),
+            Some(psu) if !unpowered.is_empty() => {
+                let names: Vec<&str> = unpowered.iter().map(|p| p.short_name()).collect();
+                out.push(Check {
+                    id: CheckId::Psu,
+                    label: "Power headroom".into(),
+                    value: format!("{} W known of {} W", fmt_num(pw.est), fmt_num(n(psu.watt))),
+                    status: Tone::Warn,
+                    parts: unpowered.iter().filter_map(|p| p.cat).collect(),
+                    detail: format!(
+                        "The retailer does not list the power draw of the {}, so the estimate leaves it out. Check it before relying on this PSU.",
+                        names.join(" and ")
+                    ),
+                    fix: None,
+                });
+            }
             Some(psu) => {
                 let w = n(psu.watt);
                 let st = if w < pw.est {

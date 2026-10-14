@@ -17,6 +17,7 @@ import { BrowseRow } from './BrowseRow';
 import { ALL_FACET, SORT_OPTIONS } from './constants';
 import { useAddPart, useCompareToggle } from './hooks';
 import { lastBrowseCat, rememberBrowseCat } from './lastCategory';
+import { listedPrice } from '@/components/build/shared';
 import b from './browse.module.css';
 import s from './parts.module.css';
 
@@ -24,7 +25,7 @@ import s from './parts.module.css';
 function sortParts(d: Data, parts: CatalogPart[], region: RegionId, sort: RigState['sort']) {
   if (sort === 'name') return parts.slice().sort((x, y) => x.name.localeCompare(y.name));
   const dir = sort === 'desc' ? -1 : 1;
-  const low = new Map(parts.map((p) => [p.id, d.engine.lowest(p.id, region)?.price ?? null]));
+  const low = new Map(parts.map((p) => [p.id, d.engine.lowest(p.id, region)?.price ?? listedPrice(d.engine.offers(p.id, region))]));
   return parts.slice().sort((x, y) => {
     const a = low.get(x.id) ?? null, b = low.get(y.id) ?? null;
     if (a == null || b == null) return a == null && b == null ? 0 : a == null ? 1 : -1;

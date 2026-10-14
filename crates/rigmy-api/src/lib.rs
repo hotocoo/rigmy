@@ -8,5 +8,6 @@ pub mod hours;
 pub mod import;
 pub mod ingest;
 pub mod osm;
+pub mod promote;
 pub mod seed;
 pub mod server;
