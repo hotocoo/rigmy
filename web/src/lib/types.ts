@@ -315,3 +315,7 @@ export interface Order {
 export type NewOrder = Omit<Order, 'no' | 'placedAt'>;
 
 export interface SavedBuild { id: string; name: string; build: Build; region: RegionId; createdAt: number }
+
+/** A published build in `GET /api/gallery`; `title` falls back to the build name. */
+export interface GalleryBuild { id: string; title: string; note: string | null; region: RegionId; createdAt: number; parts: Build; partCount: number }
+export interface GalleryPage { builds: GalleryBuild[]; nextCursor: string | null }

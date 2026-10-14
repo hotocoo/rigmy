@@ -32,7 +32,8 @@ export const ROUTES = {
   compare: { path: '/compare', wipe: ['Catalogue', 'Compare'], link: 4, navLabel: 'Compare' },
   watchlist: { path: '/watchlist', wipe: ['Market', 'Watchlist'], link: 5, navLabel: 'Watchlist' },
   guide: { path: '/guide', wipe: ['Build', 'Build guide'], link: 6, navLabel: 'Guide' },
-  orders: { path: '/orders', wipe: ['Orders', 'Tracking'], link: 7, navLabel: 'Orders', needsOrders: true },
+  gallery: { path: '/gallery', wipe: ['Community', 'Completed builds'], link: 7, navLabel: 'Gallery' },
+  orders: { path: '/orders', wipe: ['Orders', 'Tracking'], link: 8, navLabel: 'Orders', needsOrders: true },
   cables: { path: '/cables', wipe: ['Build', 'Cables'] },
   shared: { path: '/b', wipe: ['Shared', 'Build'] },
 } as const satisfies Record<string, RouteDef>;
@@ -49,6 +50,8 @@ export const href = {
 
 /** Paths of the RigMY API (crates/rigmy-api), proxied under the site origin. */
 const API = '/api';
+/** Builds per gallery request (the API allows up to 50). */
+const GALLERY_PAGE = 24;
 const seg = (x: string) => '/' + encodeURIComponent(x);
 export const endpoint = {
   bootstrap: API + '/bootstrap',
@@ -57,6 +60,7 @@ export const endpoint = {
   index: (cat: string) => API + '/index?cat=' + encodeURIComponent(cat),
   builds: API + '/builds',
   build: (id: string) => API + '/builds' + seg(id),
+  gallery: (cursor?: string | null) => API + '/gallery?limit=' + GALLERY_PAGE + (cursor ? '&cursor=' + encodeURIComponent(cursor) : ''),
   orders: API + '/orders',
   order: (no: string) => API + '/orders' + seg(no),
   orderGroup: (no: string, retailerId: string) => API + '/orders' + seg(no) + '/groups' + seg(retailerId),

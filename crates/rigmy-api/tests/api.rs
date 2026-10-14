@@ -282,6 +282,196 @@ async fn builds_roundtrip_and_validation() {
     assert!(e["error"].is_string());
 }
 
+async fn post_build(app: &axum::Router, extra: Value, cpu: &str) -> (StatusCode, Value) {
+    let mut body = json!({"name": "b", "build": {"cpu": cpu}, "region": "kv"});
+    for (k, v) in extra.as_object().unwrap() {
+        body[k] = v.clone();
+    }
+    call(app, "POST", "/api/builds", Some(body)).await
+}
+
+fn ids_of(g: &Value) -> Vec<String> {
+    g["builds"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|x| x["id"].as_str().unwrap().to_string())
+        .collect()
+}
+
+#[tokio::test]
+async fn gallery_lists_only_published_newest_first_with_pagination() {
+    let app = app_with(&config(), |_| {});
+    let (s, e) = call(&app, "GET", "/api/gallery", None).await;
+    assert_eq!(s, StatusCode::OK);
+    assert_eq!(e, json!({"builds": [], "nextCursor": null}));
+
+    // Unpublished (default and explicit) never listed; the share link still works.
+    let (_, hidden) = post_build(&app, json!({}), "cpu-9600x").await;
+    post_build(
+        &app,
+        json!({"publish": false, "title": "secret"}),
+        "cpu-9600x",
+    )
+    .await;
+    let hidden_id = hidden["id"].as_str().unwrap().to_string();
+    let (s, _) = call(&app, "GET", &format!("/api/builds/{hidden_id}"), None).await;
+    assert_eq!(s, StatusCode::OK);
+
+    let mut want = vec![];
+    for i in 0..3 {
+        let (s, b) = post_build(
+            &app,
+            json!({"publish": true, "title": format!("  Rig {i} "), "note": " fast "}),
+            "cpu-9800x3d",
+        )
+        .await;
+        assert_eq!(s, StatusCode::CREATED);
+        want.push(b["id"].as_str().unwrap().to_string());
+    }
+    let first_id = want[0].clone();
+    // Published without a title falls back to the build name; a blank note is absent.
+    let (_, b) = post_build(&app, json!({"publish": true, "note": "  "}), "cpu-9600x").await;
+    let last = b["id"].as_str().unwrap().to_string();
+    want.push(last.clone());
+    // One clock tick for all of them: ties break by id, descending.
+    want.sort_by(|a, b| b.cmp(a));
+
+    let (_, g) = call(&app, "GET", "/api/gallery", None).await;
+    assert_eq!(ids_of(&g), want);
+    assert!(!ids_of(&g).contains(&hidden_id));
+    let find = |id: &str| {
+        g["builds"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|x| x["id"] == id)
+            .unwrap()
+            .clone()
+    };
+    let it = find(&last);
+    assert_eq!(
+        (it["title"].as_str(), it["note"].is_null()),
+        (Some("b"), true)
+    );
+    assert_eq!(
+        (
+            it["partCount"].clone(),
+            it["region"].clone(),
+            it["createdAt"].clone()
+        ),
+        (json!(1), json!("kv"), json!(now()))
+    );
+    let it = find(&first_id);
+    assert_eq!(
+        (it["title"].as_str(), it["note"].as_str()),
+        (Some("Rig 0"), Some("fast"))
+    );
+    assert_eq!(it["parts"], json!({"cpu": "cpu-9800x3d"}));
+
+    // Pagination walks every build exactly once.
+    let mut seen = vec![];
+    let mut cursor = String::new();
+    loop {
+        let (s, p) = call(
+            &app,
+            "GET",
+            &format!("/api/gallery?limit=3&cursor={cursor}"),
+            None,
+        )
+        .await;
+        assert_eq!(s, StatusCode::OK);
+        assert!(p["builds"].as_array().unwrap().len() <= 3);
+        seen.extend(ids_of(&p));
+        match p["nextCursor"].as_str() {
+            Some(c) => cursor = c.to_string(),
+            None => break,
+        }
+    }
+    assert_eq!(seen, want);
+
+    // Category filter; a limit above the cap is clamped, not an error.
+    let (_, g) = call(&app, "GET", "/api/gallery?cat=gpu", None).await;
+    assert_eq!(g["builds"], json!([]));
+    let (s, g) = call(&app, "GET", "/api/gallery?cat=cpu&sort=new&limit=500", None).await;
+    assert_eq!((s, ids_of(&g).len()), (StatusCode::OK, 4));
+}
+
+#[tokio::test]
+async fn gallery_newest_first_across_time_and_query_validation() {
+    let app = app_with(&config(), |c| {
+        for (id, t) in [
+            ("old00000", 1_000),
+            ("new00000", 3_000),
+            ("mid00000", 2_000),
+        ] {
+            c.execute(
+                "INSERT INTO saved_builds(id, name, region, build, created_at, published) VALUES(?1, 'n', 'kv', '{\"cpu\":\"cpu-9600x\"}', ?2, 1)",
+                rusqlite::params![id, t],
+            )
+            .unwrap();
+        }
+    });
+    let (_, g) = call(&app, "GET", "/api/gallery", None).await;
+    assert_eq!(ids_of(&g), ["new00000", "mid00000", "old00000"]);
+    for bad in [
+        "sort=price",
+        "sort=zzz",
+        "limit=0",
+        "cat=toaster",
+        "cursor=nope",
+    ] {
+        let (s, e) = call(&app, "GET", &format!("/api/gallery?{bad}"), None).await;
+        assert_eq!(s, StatusCode::BAD_REQUEST, "{bad}");
+        assert!(e["error"].is_string());
+    }
+}
+
+#[tokio::test]
+async fn gallery_fields_are_validated() {
+    let app = app_with(&config(), |_| {});
+    for bad in [
+        json!({"publish": true, "title": "x".repeat(81)}),
+        json!({"publish": true, "note": "x".repeat(501)}),
+        json!({"publish": true, "title": "a\u{7}b"}),
+        json!({"publish": true, "note": "line\nbreak"}),
+    ] {
+        let (s, e) = post_build(&app, bad.clone(), "cpu-9600x").await;
+        assert_eq!(s, StatusCode::BAD_REQUEST, "{bad}");
+        assert!(e["error"].is_string());
+    }
+    let (s, _) = post_build(&app, json!({"publish": "yes"}), "cpu-9600x").await;
+    assert!(s.is_client_error());
+    // Limits are inclusive, and the rejected requests stored nothing.
+    let ok = json!({"publish": true, "title": "x".repeat(80), "note": "y".repeat(500)});
+    let (s, _) = post_build(&app, ok, "cpu-9600x").await;
+    assert_eq!(s, StatusCode::CREATED);
+    let (_, g) = call(&app, "GET", "/api/gallery", None).await;
+    assert_eq!(ids_of(&g).len(), 1);
+}
+
+#[test]
+fn gallery_migration_is_additive_on_an_existing_db() {
+    let conn = rusqlite::Connection::open_in_memory().unwrap();
+    // A v1 database with a saved build, as shipped before the gallery.
+    conn.execute_batch(
+        "CREATE TABLE saved_builds (id TEXT PRIMARY KEY, name TEXT NOT NULL, region TEXT NOT NULL, build TEXT NOT NULL, created_at INTEGER NOT NULL);
+         INSERT INTO saved_builds VALUES('old', 'n', 'kv', '{}', 1);
+         PRAGMA user_version = 1;",
+    )
+    .unwrap();
+    db::migrate(&conn).unwrap();
+    db::migrate(&conn).unwrap();
+    let p: i64 = conn
+        .query_row(
+            "SELECT published FROM saved_builds WHERE id = 'old'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(p, 0);
+}
+
 fn new_order() -> Value {
     json!({
         "region": "kv",
