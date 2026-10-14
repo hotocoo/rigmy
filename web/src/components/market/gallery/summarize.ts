@@ -1,3 +1,4 @@
+import { listedPrice } from '@/components/build/shared';
 import type { Data } from '@/lib/data';
 import type { Build, GalleryBuild, Product } from '@/lib/types';
 
@@ -11,6 +12,8 @@ export interface CardSummary {
   /** Lowest total from current prices; null when none of the parts has an in-stock price. */
   total: number | null;
   priced: number;
+  /** Sum of in-stock listing prices (delivery to the build's region not required), and how many parts it covers. */
+  listed: { total: number; count: number };
 }
 
 export function summarize(d: Pick<Data, 'byId' | 'categories' | 'engine'>, gb: GalleryBuild): CardSummary {
@@ -22,8 +25,10 @@ export function summarize(d: Pick<Data, 'byId' | 'categories' | 'engine'>, gb: G
   }
   const best = parts.length ? d.engine.plan(build, gb.region, {}).best : null;
   const priced = best ? parts.length - best.missing : 0;
+  const lp = parts.map((p) => listedPrice(d.engine.offers(p.id, gb.region))).filter((x): x is number => x != null);
   return {
     gb, parts, priced,
+    listed: { total: lp.reduce((a, b) => a + b, 0), count: lp.length },
     cpu: parts.find((p) => p.cat === 'cpu') ?? null,
     gpu: parts.find((p) => p.cat === 'gpu') ?? null,
     total: best && priced > 0 ? best.total : null,

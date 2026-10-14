@@ -10,7 +10,7 @@ import g from './gallery.module.css';
 /** One published build: title, key parts, a mini parts list and today's lowest total (or an honest "no price"). */
 export function GalleryCard({ s, open }: { s: CardSummary; open: (id: string) => void }) {
   const d = useData();
-  const { gb, parts, cpu, gpu, total, priced } = s;
+  const { gb, parts, cpu, gpu, total, priced, listed } = s;
   const rest = parts.filter((p) => p !== cpu && p !== gpu);
   const gone = gb.partCount - parts.length;
   return (
@@ -37,8 +37,11 @@ export function GalleryCard({ s, open }: { s: CardSummary; open: (id: string) =>
         )}
         {gone > 0 && <Meta>{plural(gone, 'part') + ' no longer in the catalogue'}</Meta>}
         <span className={g.foot}>
-          <Price value={total} empty="No price yet" v="price22" emptyV="meta" />
-          <Meta>{total == null ? 'No shop lists these parts in stock' : priced < parts.length ? priced + ' of ' + parts.length + ' parts priced' : 'Lowest in-stock total'}</Meta>
+          <Price value={total ?? (listed.count ? listed.total : null)} empty="No price yet" v="price22" emptyV="meta" />
+          <Meta>{total != null
+            ? (priced < parts.length ? priced + ' of ' + parts.length + ' parts priced' : 'Lowest in-stock total')
+            : listed.count ? 'Listed prices for ' + listed.count + ' of ' + parts.length + ' parts · delivery not listed by the shops'
+              : 'No shop lists these parts in stock'}</Meta>
         </span>
       </button>
     </li>

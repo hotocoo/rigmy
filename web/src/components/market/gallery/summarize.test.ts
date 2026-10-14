@@ -27,7 +27,7 @@ describe('summarize', () => {
 
 describe('sorting and brands', () => {
   const mk = (total: number | null, priced: number, n: number) =>
-    ({ gb: gb('x', {}), parts: Array(n).fill(byId.c1), cpu: byId.c1, gpu: null, total, priced });
+    ({ gb: gb('x', {}), parts: Array(n).fill(byId.c1), cpu: byId.c1, gpu: null, total, priced, listed: { total: 0, count: 0 } });
   it('orders full, partial, unpriced', () => {
     const list = [mk(null, 0, 2), mk(100, 1, 2), mk(500, 2, 2), mk(300, 2, 2)];
     expect([...list].sort(byLowestTotal).map((s) => s.total)).toEqual([300, 500, 100, null]);
