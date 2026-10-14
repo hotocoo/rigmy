@@ -59,3 +59,40 @@ test('AR exports the assembled build as a true-scale GLB on desktop', async ({ p
   expect((await download).suggestedFilename()).toBe('rigmy-build.glb');
   await expect(page.getByText(/Downloaded rigmy-build\.glb/)).toBeVisible();
 });
+
+/** Minimal WebXR runtime for an immersive-ar session with hit-test, strict about reference spaces like the spec:
+ *  only 'viewer' and 'local' are granted without being requested as features. */
+const MOCK_XR = () => {
+  const I = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -1, -1.5, 1]);
+  class Session extends EventTarget {
+    renderState: Record<string, unknown> = {}; inputSources = []; environmentBlendMode = 'alpha-blend'; enabledFeatures = ['hit-test'];
+    updateRenderState(s: Record<string, unknown>) { Object.assign(this.renderState, s); }
+    async requestReferenceSpace(t: string) { if (t !== 'viewer' && t !== 'local') throw new DOMException(t + ' not granted', 'NotSupportedError'); return { getOffsetReferenceSpace() { return this; } }; }
+    async requestHitTestSource() { return { cancel() {} }; }
+    requestAnimationFrame(cb: (t: number, f: unknown) => void) { return window.setTimeout(() => cb(performance.now(), { session: this, getViewerPose: () => null, getHitTestResults: () => [{ getPose: () => ({ transform: { matrix: I } }) }] }), 16); }
+    cancelAnimationFrame(id: number) { clearTimeout(id); }
+    async end() { this.dispatchEvent(new Event('end')); }
+  }
+  const w = window as unknown as Record<string, unknown>;
+  delete w.XRWebGLBinding; // desktop Chromium ships one that only accepts real sessions
+  w.XRWebGLLayer = class { framebuffer = null; framebufferWidth = 2; framebufferHeight = 2; ignoreDepthValues = true; getViewport() { return { x: 0, y: 0, width: 2, height: 2 }; } };
+  (WebGL2RenderingContext.prototype as unknown as Record<string, unknown>).makeXRCompatible = async () => {};
+  const s = new Session(); w.__xrSession = s;
+  Object.defineProperty(navigator, 'xr', { value: { isSessionSupported: async (m: string) => m === 'immersive-ar', requestSession: async () => s } });
+};
+
+test('AR on a WebXR phone: place, rotate and exit a true-scale build', async ({ page }) => {
+  await page.addInitScript(MOCK_XR);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Load the Helang build' }).click();
+  await expect(page).toHaveURL(/\/build/, { timeout: 15_000 });
+  await page.getByRole('button', { name: 'AR', exact: true }).click();
+  await expect(page.getByText('Point at the floor, then tap to place')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Rotate' })).toBeDisabled();
+  await page.evaluate(() => (window as unknown as { __xrSession: EventTarget }).__xrSession.dispatchEvent(new Event('select')));
+  await expect(page.getByText('Tap the floor to move it')).toBeVisible();
+  await page.getByRole('button', { name: 'Rotate' }).click();
+  await page.getByRole('button', { name: 'Exit AR' }).click();
+  await expect(page.getByText('Tap the floor to move it')).toBeHidden();
+  await expect(page.getByText('AR could not start on this device.')).toHaveCount(0);
+});

@@ -127,6 +127,9 @@ export async function runWebXr(model: THREE.Object3D, overlay: HTMLElement, hook
   reticle.matrixAutoUpdate = false; reticle.visible = false; scene.add(reticle);
   model.visible = false; scene.add(model);
 
+  // 'local' is granted to every immersive session; three's default 'local-floor' must be requested as a feature, and
+  // hit-test poses already give the floor height.
+  renderer.xr.setReferenceSpaceType('local');
   await renderer.xr.setSession(session);
   const viewer = await session.requestReferenceSpace('viewer');
   const hitSource = await session.requestHitTestSource?.({ space: viewer });
