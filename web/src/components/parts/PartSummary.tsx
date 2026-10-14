@@ -1,5 +1,6 @@
 'use client';
 
+import { noPriceNote } from '@/components/build/shared';
 import { Button, Dot, Text } from '@/components/ui';
 import { useRegion } from '@/lib/content';
 import { useData } from '@/lib/data';
@@ -30,7 +31,7 @@ export function PartSummary({ P, stats }: { P: CatalogPart; stats: Record<string
 
   const priceNote = lo
     ? 'Lowest at ' + (d.retailerById[lo.retailerId]?.name || lo.retailerId) + (lo.eta ? ' · ' + lo.eta.toLowerCase() + ' to ' + reg.name : '')
-    : pr.listed ? 'No shop has stock for ' + reg.name : 'No retailer listings tracked for this part yet';
+    : pr.listed ? noPriceNote(pr.offers, reg.name) : 'No retailer listings tracked for this part yet';
   const verdict = st?.verdict
     || (!stats ? 'Loading price stats…' : pr.listed ? 'Not enough price history yet for a verdict.' : 'No retailer lists this part yet, so there is no price to judge.');
   const vc = st ? tone[st.tone] : color.blueSoft;

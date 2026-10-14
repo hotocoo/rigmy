@@ -1,3 +1,4 @@
+import { partPrice } from '@/components/build/shared';
 import type { Data } from '@/lib/data';
 import { specVal } from '@/lib/format';
 import type { Build, Offer, Product, RegionId, Tone } from '@/lib/types';
@@ -39,7 +40,7 @@ export function priceOf(d: Data, pid: string, region: RegionId): PartPricing {
     offers,
     listed: offers.length > 0,
     avail: offers.filter((o) => o.avail).length,
-    empty: offers.length ? 'Sold out' : 'No price yet',
+    empty: partPrice(d, pid, region).text,
   };
 }
 

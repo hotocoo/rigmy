@@ -81,7 +81,7 @@
 .lower { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 24px; }
 .offers { flex: 999 1 640px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .sectionHead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px; }
-.tableWrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+.tableWrap { position: relative; overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
 .offerTable { width: 100%; min-width: 820px; border-collapse: collapse; table-layout: fixed; font: 400 12px/1.35 var(--mono); }
 .cRetailer { width: 26%; }
 .cStock, .cWarranty { width: 19%; }

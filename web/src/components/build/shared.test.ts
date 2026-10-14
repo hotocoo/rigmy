@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { mkData, offer, planTotal } from '@/lib/testdata';
 import type { Check, Power } from '@/lib/types';
 
-import { errText, partPrice, powerView, presetName, totalView } from './shared';
+import { errText, noPriceNote, partPrice, powerView, presetName, totalView } from './shared';
 
 describe('partPrice', () => {
   it('shows the lowest offer when one is available', () => {
@@ -97,5 +97,12 @@ describe('presetName and errText', () => {
     // (0 is never rendered — the gate only shows when issues exist.)
     expect(errText(mk(1))).toBe('1 issue needs fixing before checkout: issue 0.');
     expect(errText(mk(2))).toBe('2 issues need fixing before checkout: issue 0, issue 1.');
+  });
+});
+
+describe('noPriceNote', () => {
+  it('says nobody delivers rather than sold out when stock exists elsewhere', () => {
+    expect(noPriceNote([offer({ status: 'No delivery' })], 'Klang Valley')).toBe('Listed at 1 shop, none delivers to Klang Valley yet');
+    expect(noPriceNote([offer({ status: 'Out of stock' })], 'Klang Valley')).toBe('No shop has it in stock for Klang Valley');
   });
 });

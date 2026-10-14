@@ -1,7 +1,7 @@
 /* Compare (/compare): side-by-side spec table. Token-only. */
 .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
 
-.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+.scroll { position: relative; overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
 .table { width: 100%; min-width: 640px; border-collapse: collapse; table-layout: fixed; }
 .labelCol { width: 200px; }
 

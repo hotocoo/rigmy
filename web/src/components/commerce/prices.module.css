@@ -19,7 +19,7 @@
 .section { display: flex; flex-direction: column; gap: 10px; }
 .none { display: flex; flex-direction: column; gap: 6px; padding: 22px 18px; border: 1px solid var(--line); border-radius: var(--radius); }
 
-.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+.scroll { position: relative; overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
 .table { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0; }
 .colHead { padding: 12px 10px; border-bottom: 1px solid var(--line); border-left: 1px solid var(--line-faint); text-align: left; font-weight: inherit; vertical-align: top; }
 .h2 { margin: 0; display: flex; } /* flex: no line-box strut from the heading font around the eyebrow */

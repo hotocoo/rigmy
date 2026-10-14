@@ -1,5 +1,6 @@
 'use client';
 
+import { noPriceNote } from '@/components/build/shared';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { ArButton } from '@/components/build/ArButton';
@@ -133,7 +134,7 @@ function MarketSummary({ P, stats }: { P: Product; stats: Record<string, PartSta
   const st = stats?.[P.id] ?? null;
   const priceNote = lo
     ? 'Lowest at ' + (d.retailerById[lo.retailerId]?.name || lo.retailerId) + (lo.eta ? ' · ' + lo.eta.toLowerCase() + ' to ' + regionById(d, region).name : '')
-    : pr.listed ? 'No shop has stock in your region' : 'No retailer listings tracked for this product yet';
+    : pr.listed ? noPriceNote(pr.offers, regionById(d, region).name) : 'No retailer listings tracked for this product yet';
   const verdict = st?.verdict
     || (!stats ? 'Loading price stats…' : pr.listed ? 'Not enough price history yet for a verdict.' : 'No retailer lists this product yet, so there is no price to judge.');
   return (

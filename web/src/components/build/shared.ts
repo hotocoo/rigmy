@@ -20,6 +20,13 @@ export function partPrice(d: Data, productId: string, region: RegionId): { text:
   return { text: 'Sold out', price: null, offers };
 }
 
+/** Why a listed part has no price in a region, as a sentence ('' when it has one). */
+export function noPriceNote(offers: Offer[], regionName: string): string {
+  if (!offers.length) return '';
+  if (offers.every((o) => o.status === 'No delivery')) return 'Listed at ' + offers.length + (offers.length === 1 ? ' shop' : ' shops') + ', none delivers to ' + regionName + ' yet';
+  return 'No shop has it in stock for ' + regionName;
+}
+
 /** Text for an offer chosen by a plan, falling back to the reason it has none. */
 export function choiceText(d: Data, productId: string, region: RegionId, o: Offer | null | undefined) {
   if (o) return fmt(o.price);
