@@ -77,7 +77,7 @@ export function NearbyStores({ P }: { P: CatalogPart }) {
       <div data-rv="1" className={p.storeBox}>
         <ul className={p.branchList} aria-label="Nearby stores">
           {near.map((x) => (
-            <BranchItem key={x.b.id} x={x} on={pBranch === x.b.id} onSelect={() => set({ pBranch: pBranch === x.b.id ? null : x.b.id })} onPickUp={() => pickUp(x.b.id, x.b.retailerId, x.b.name)} />
+            <BranchItem key={x.b.id} x={x} product={P.name} on={pBranch === x.b.id} onSelect={() => set({ pBranch: pBranch === x.b.id ? null : x.b.id })} onPickUp={() => pickUp(x.b.id, x.b.retailerId, x.b.name)} />
           ))}
           {!near.length && (
             <li className={p.noStores}>
