@@ -46,6 +46,7 @@ fn retailer(id: &str, delivery: &[(RegionId, f64, Eta)]) -> Retailer {
             .map(|&(r, fee, eta)| (r, Delivery { fee, eta }))
             .collect(),
         courier: None,
+        platform: None,
     }
 }
 

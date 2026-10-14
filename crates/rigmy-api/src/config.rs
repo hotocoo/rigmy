@@ -87,6 +87,13 @@ impl RetailerConf {
             pickup: self.pickup.clone(),
             delivery: self.delivery.clone(),
             courier: self.courier.clone(),
+            platform: self.import.as_ref().map(|i| {
+                match i.kind {
+                    ImportKind::Shopify => "shopify",
+                    ImportKind::Woocommerce => "woocommerce",
+                }
+                .to_string()
+            }),
         }
     }
 }

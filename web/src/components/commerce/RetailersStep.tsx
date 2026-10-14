@@ -1,8 +1,9 @@
 'use client';
 
-import { Notice, Text } from '@/components/ui';
+import { Field, Notice, Text } from '@/components/ui';
 import { cx } from '@/lib/cx';
-import { fmt, hostOf } from '@/lib/format';
+import { fmt, hostOf, promoUrl } from '@/lib/format';
+import { useRig } from '@/lib/store';
 import { CardHead } from './parts';
 import type { CartGroup } from './useCommerce';
 import s from './checkout.module.css';
@@ -21,7 +22,13 @@ export function RetailersStep({ groups, pickup, branchOf }: { groups: CartGroup[
   );
 }
 
+/** Longest promo code the field accepts. */
+const PROMO_MAX = 40;
+
 function HandoffCard({ g, pickup, branch }: { g: CartGroup; pickup: boolean; branch: string | null }) {
+  const code = useRig((x) => x.promo[g.rid] || ''), set = useRig((x) => x.set);
+  const setCode = (v: string) => set((x) => ({ promo: { ...x.promo, [g.rid]: v.replace(/\s+/g, '').toUpperCase().slice(0, PROMO_MAX) } }));
+  const shopify = g.r.platform === 'shopify';
   return (
     <section data-rv="1" className={cs.card} aria-label={g.name}>
       <CardHead title={g.name} meta={g.city + ' · ' + g.count + ' · ' + g.sub} eta={g.eta}
@@ -32,7 +39,7 @@ function HandoffCard({ g, pickup, branch }: { g: CartGroup; pickup: boolean; bra
           <span className={cs.stack}>
             <Text v="label">{i.name}</Text>
             {i.url
-              ? <a href={i.url} target="_blank" rel="noopener noreferrer" className={s.itemLink}>{'Open at ' + g.name}<span aria-hidden> ↗</span><span className="sr-only"> (opens in a new tab)</span></a>
+              ? <a href={promoUrl(i.url, code, g.r.platform)} target="_blank" rel="noopener noreferrer" className={s.itemLink}>{'Open at ' + g.name}<span aria-hidden> ↗</span><span className="sr-only"> (opens in a new tab)</span></a>
               : <span className={s.noLink}>No product link</span>}
           </span>
           <Text v="dataLg">{fmt(i.price)}</Text>
@@ -44,6 +51,16 @@ function HandoffCard({ g, pickup, branch }: { g: CartGroup; pickup: boolean; bra
           <span>{g.r.pay || 'Check payment options on the shop’s site'}</span>
           {g.r.website && <a href={g.r.website} target="_blank" rel="noopener noreferrer" className={s.site}>{hostOf(g.r.website)}<span aria-hidden> ↗</span></a>}
         </span>
+      </div>
+      <div className={cx(cs.item, cs.itemPlain)}>
+        <Text v="tagLoose">Promo code</Text>
+        {shopify ? (
+          <span className={s.promo}>
+            <Field label={'Promo code for ' + g.name} size="inline" name={'promo-' + g.rid} autoComplete="off" autoCapitalize="characters" spellCheck={false}
+              maxLength={PROMO_MAX} value={code} onValue={setCode} placeholder="Code you hold for this shop" />
+            <span className={s.promoNote}>{code ? 'Applied at ' + g.name + '’s checkout when you open a part above. The shop decides whether it is valid.' : 'Optional. RigMY never invents codes; use one the shop gave you.'}</span>
+          </span>
+        ) : <span className={s.promoNote}>Enter any promo code at {g.name}’s own checkout.</span>}
       </div>
     </section>
   );

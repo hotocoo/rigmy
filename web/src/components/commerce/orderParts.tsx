@@ -3,6 +3,8 @@
 import { useCallback } from 'react';
 import { Button } from '@/components/ui';
 import { useData } from '@/lib/data';
+import { promoUrl } from '@/lib/format';
+import { useRig } from '@/lib/store';
 import type { Order, OrderGroup } from '@/lib/types';
 import { etaLower, groupUrls, openAll } from './util';
 import s from './orders.module.css';
@@ -19,7 +21,8 @@ export function useOrderAddr() {
 
 /** Opens every product link of one shop in new tabs. */
 export function BuyButton({ g }: { g: OrderGroup }) {
-  const urls = groupUrls(g);
+  const d = useData(), code = useRig((x) => x.promo[g.retailerId]);
+  const urls = groupUrls(g).map((u) => promoUrl(u, code, d.retailerById[g.retailerId]?.platform));
   if (!urls.length) return <span className={s.noLinks}>No product links</span>;
   return (
     <Button variant="accent" size="compact" onClick={() => openAll(urls)} aria-label={'Buy at ' + g.name + ' (opens ' + urls.length + (urls.length === 1 ? ' tab)' : ' tabs)')}>

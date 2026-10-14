@@ -190,6 +190,10 @@ pub struct Retailer {
     pub delivery: BTreeMap<RegionId, Delivery>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub courier: Option<String>,
+    /// Storefront platform when known (`"shopify"` / `"woocommerce"`), so the app can use
+    /// platform features such as Shopify's `/discount/<code>` links for promo codes.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub platform: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

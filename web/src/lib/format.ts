@@ -45,6 +45,25 @@ export const stockColor = (s: string | null | undefined) => {
 /** tel: link from a display phone number. */
 export const telHref = (phone: string) => 'tel:' + phone.replace(/[^\d+]/g, '');
 
+/** WhatsApp chat link for a Malaysian number (local 0… becomes 60…), with a prefilled message. */
+export const whatsappHref = (phone: string, text: string) => {
+  const d = phone.replace(/\D/g, '');
+  return 'https://wa.me/' + (d.startsWith('0') ? '6' + d : d) + '?text=' + encodeURIComponent(text);
+};
+
+/** Product link that applies `code` at the shop's checkout: Shopify's `/discount/<code>?redirect=<path>`. Other
+ *  platforms (or no code) get the link unchanged; the buyer enters the code at the shop's checkout. */
+export function promoUrl(url: string, code: string | undefined, platform: string | undefined): string {
+  const c = (code || '').trim();
+  if (!c || platform !== 'shopify') return url;
+  try {
+    const u = new URL(url);
+    return u.origin + '/discount/' + encodeURIComponent(c) + '?redirect=' + encodeURIComponent(u.pathname + u.search);
+  } catch {
+    return url;
+  }
+}
+
 /** Colour of a branch's open state: open (ok), closing soon (warn), closed or hours unknown (muted). */
 export const openColor = (o: OpenState) => (o.unknown || !o.open ? color.muted : o.closing ? tone.warn : tone.ok);
 

@@ -72,6 +72,8 @@ export interface Retailer {
   delivery: Partial<Record<RegionId, Delivery>>;
   /** Default courier name used for tracking links. */
   courier?: string;
+  /** Storefront platform when known; Shopify shops accept promo codes through `/discount/<code>` links. */
+  platform?: 'shopify' | 'woocommerce';
 }
 
 export type StockState = 'In stock' | 'Low stock' | 'Pre-order' | 'Out of stock' | 'Unknown';

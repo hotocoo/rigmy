@@ -55,6 +55,8 @@ export interface RigState {
   pBranch: string | null;
   /** Order numbers placed from this browser (orders themselves live in the API). */
   orders: string[];
+  /** retailerId -> promo code the user holds for that shop (applied through the shop's own checkout). */
+  promo: Record<string, string>;
   trackNo: string | null;
   /** Last placed order, kept for the confirmation page. */
   order: Order | null;
@@ -78,7 +80,7 @@ export const DEF: RigState = {
   build: {}, region: 'kv', facet: 'All', sort: 'price', previewId: null, compare: [], cables: { route: 'tidy', sleeve: 'black' }, cableHl: null,
   guideStep: 0, planMode: 'best', picks: {}, co: DEF_CO, explode: 0, sel: null, xray: false, loc: null, hRange: 90, watch: [], wDraft: {},
   notify: { email: true, whatsapp: true, push: false }, trCat: 'all', stRet: 'all', stOpen: false, stBuild: false, stSel: null, pBranch: null,
-  orders: [], trackNo: null, order: null,
+  orders: [], promo: {}, trackNo: null, order: null,
 };
 
 export const useRig = create<RigState & RigActions>()(

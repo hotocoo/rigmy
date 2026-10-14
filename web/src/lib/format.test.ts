@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { digits, fmt, fmtOr, h12, hostOf, plural, startOfDay, stockTone } from './format';
+import { digits, fmt, fmtOr, h12, hostOf, plural, promoUrl, startOfDay, stockTone, whatsappHref } from './format';
 
 describe('format', () => {
   it('formats ringgit with the locale separator', () => {
@@ -48,5 +48,21 @@ describe('format', () => {
     expect(stockTone('Unknown')).toBe('none');
     expect(stockTone('Out of stock')).toBe('error');
     expect(stockTone('No delivery')).toBe('error');
+  });
+});
+
+describe('promoUrl', () => {
+  it('routes Shopify product links through /discount so the code applies at checkout', () => {
+    expect(promoUrl('https://shop.my/products/rtx-5070?variant=1', ' SAVE10 ', 'shopify')).toBe('https://shop.my/discount/SAVE10?redirect=%2Fproducts%2Frtx-5070%3Fvariant%3D1');
+  });
+  it('leaves links alone without a code or off Shopify', () => {
+    expect(promoUrl('https://shop.my/p/1', '', 'shopify')).toBe('https://shop.my/p/1');
+    expect(promoUrl('https://shop.my/p/1', 'X', 'woocommerce')).toBe('https://shop.my/p/1');
+  });
+});
+
+describe('whatsappHref', () => {
+  it('turns a local Malaysian number into an international wa.me link', () => {
+    expect(whatsappHref('03-2142 1234', 'hi there')).toBe('https://wa.me/60321421234?text=hi%20there');
   });
 });

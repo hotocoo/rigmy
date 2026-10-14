@@ -65,3 +65,5 @@
 .procActive .procDot { border-color: var(--blue); background: var(--blue); box-shadow: 0 0 0 4px color-mix(in srgb, var(--blue) 22%, transparent); }
 .dialogFoot { display: flex; justify-content: space-between; padding-top: 14px; border-top: 1px solid var(--line-soft); font: 500 12px/1 var(--mono); color: var(--fg-3); }
 .dialogFoot > :last-child { color: var(--fg); }
+.promo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.promoNote { font: 400 12px/1.45 var(--sans); color: var(--fg-soft); }
