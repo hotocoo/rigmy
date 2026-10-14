@@ -6,3 +6,6 @@ export const metadata: Metadata = { title: 'Checkout · RigMY' };
 export default function CheckoutPage() {
   return <CheckoutView />;
 }
+
+/** Client-rendered after catalogue data loads (see app/layout.tsx). */
+export const instant = false;

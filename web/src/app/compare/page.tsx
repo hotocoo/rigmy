@@ -4,3 +4,6 @@ import { ComparePage } from '@/components/parts/ComparePage';
 export default function Page() {
   return <ComparePage />;
 }
+
+/** Client-rendered after catalogue data loads (see app/layout.tsx). */
+export const instant = false;

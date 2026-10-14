@@ -6,3 +6,6 @@ export const metadata: Metadata = { title: 'Trending · RigMY', description: 'Pr
 export default function Page() {
   return <Trending />;
 }
+
+/** Client-rendered after catalogue data loads (see app/layout.tsx). */
+export const instant = false;

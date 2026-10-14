@@ -12,3 +12,6 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
     </Suspense>
   );
 }
+
+/** Client-rendered after catalogue data loads (see app/layout.tsx). */
+export const instant = false;

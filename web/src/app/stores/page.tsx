@@ -6,3 +6,6 @@ export const metadata: Metadata = { title: 'Stores · RigMY', description: 'PC s
 export default function Page() {
   return <Stores />;
 }
+
+/** Client-rendered after catalogue data loads (see app/layout.tsx). */
+export const instant = false;

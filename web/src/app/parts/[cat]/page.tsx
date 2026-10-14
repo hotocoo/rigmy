@@ -11,3 +11,6 @@ export default function Page() {
     </Suspense>
   );
 }
+
+/** Client-rendered after catalogue data loads (see app/layout.tsx). */
+export const instant = false;

@@ -4,3 +4,6 @@ import { PartsIndex } from '@/components/parts/PartsIndex';
 export default function Page() {
   return <PartsIndex />;
 }
+
+/** Client-rendered after catalogue data loads (see app/layout.tsx). */
+export const instant = false;

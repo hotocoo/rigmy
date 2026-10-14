@@ -26,3 +26,6 @@ function safeDecode(s: string) {
     return s;
   }
 }
+
+/** Client-rendered after catalogue data loads (see app/layout.tsx). */
+export const instant = false;
