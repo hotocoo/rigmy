@@ -89,8 +89,11 @@ test('AR on a WebXR phone: place, rotate and exit a true-scale build', async ({ 
   await page.getByRole('button', { name: 'AR', exact: true }).click();
   await expect(page.getByText('Point at the floor, then tap to place')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Rotate' })).toBeDisabled();
-  await page.evaluate(() => (window as unknown as { __xrSession: EventTarget }).__xrSession.dispatchEvent(new Event('select')));
-  await expect(page.getByText('Tap the floor to move it')).toBeVisible();
+  // A tap only places once a hit-test frame has shown the reticle, as on a phone: keep tapping until it lands.
+  await expect(async () => {
+    await page.evaluate(() => (window as unknown as { __xrSession: EventTarget }).__xrSession.dispatchEvent(new Event('select')));
+    await expect(page.getByText('Tap the floor to move it')).toBeVisible({ timeout: 500 });
+  }).toPass({ timeout: 10_000 });
   await page.getByRole('button', { name: 'Rotate' }).click();
   await page.getByRole('button', { name: 'Exit AR' }).click();
   await expect(page.getByText('Tap the floor to move it')).toBeHidden();
