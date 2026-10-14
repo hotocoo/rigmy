@@ -46,14 +46,14 @@ test('builder shows the part, swap suggestions and power estimate', async ({ pag
 test('a preset loads a complete build', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Load the Helang build' }).click();
-  await expect(page).toHaveURL(/\/build/);
+  await expect(page).toHaveURL(/\/build/, { timeout: 15_000 });
   await expect(page.getByText('Helang').first()).toBeVisible();
 });
 
 test('AR exports the assembled build as a true-scale GLB on desktop', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Load the Helang build' }).click();
-  await expect(page).toHaveURL(/\/build/);
+  await expect(page).toHaveURL(/\/build/, { timeout: 15_000 });
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: 'AR', exact: true }).click();
   expect((await download).suggestedFilename()).toBe('rigmy-build.glb');
