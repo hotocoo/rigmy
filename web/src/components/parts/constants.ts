@@ -12,6 +12,15 @@ export const SORT_OPTIONS: { id: RigState['sort']; label: string }[] = [
   { id: 'name', label: 'Name' },
 ];
 
+/** Browse layouts, in control order. Keys are the store's `view` values. */
+export const VIEW_OPTIONS: { id: RigState['view']; label: string }[] = [
+  { id: 'list', label: 'List' },
+  { id: 'table', label: 'Table' },
+];
+
+/** Parts rendered per page on browse; "Show more" adds another page so 160 rows stay fast. */
+export const PAGE_SIZE = 40;
+
 /** How many of the nearest branches (of retailers listing the part) the part page lists and pins on the map. */
 export const NEAREST_BRANCH_LIMIT = 12;
 
