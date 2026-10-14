@@ -59,3 +59,41 @@
 @media (max-width: 900px) {
   .preview { position: static; max-width: none; }
 }
+
+/* ---------- spec filters ---------- */
+.filterPanel { display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.filterToggle { display: none; align-self: flex-start; }
+.filterBody { display: flex; flex-direction: column; gap: 14px; }
+.toggles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.hiddenNote { margin: 0; font: 400 12px/1.3 var(--mono); color: var(--muted); }
+.facetGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px 20px; }
+.group { display: flex; flex-direction: column; gap: 8px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.group legend { padding: 0; margin-bottom: 8px; }
+.range { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.hint { font: 400 11px/1 var(--mono); color: var(--muted); }
+.more { align-self: center; }
+
+@media (max-width: 700px) {
+  .filterToggle { display: inline-flex; }
+  .filterBody { display: none; }
+  .filterOpen { display: flex; }
+}
+
+/* ---------- table ---------- */
+.tableWrap { position: relative; overflow-x: auto; max-width: 100%; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.table { width: 100%; border-collapse: collapse; font: 400 13px/1.3 var(--sans); color: var(--fg-bright); }
+.table th, .table td { padding: 10px 12px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
+.table thead th { font: 500 10px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.table tbody tr:last-child th, .table tbody tr:last-child td { border-bottom: 0; }
+.table tbody tr:hover { background: var(--bg); }
+.table .num { text-align: right; font-family: var(--mono); }
+.sortBtn { display: inline-flex; align-items: center; gap: 6px; padding: 0; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+.sortBtn:hover { color: var(--fg-bright); }
+.sortBtn:focus-visible, .nameBtn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.arrow { display: inline-block; min-width: 1em; font-size: 9px; }
+.nameCell { min-width: 200px; white-space: normal !important; }
+.nameStack { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.nameBtn { padding: 0; text-align: left; font: 500 13px/1.3 var(--sans); color: var(--fg-bright); background: none; border: 0; cursor: pointer; }
+.nameBtn:hover { text-decoration: underline; }
+.tableActions { text-align: right; }
+.tableActions > * + * { margin-left: 6px; }

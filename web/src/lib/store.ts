@@ -30,6 +30,10 @@ export interface RigState {
   region: RegionId;
   facet: string;
   sort: 'price' | 'desc' | 'name';
+  /** Browse layout: card rows or sortable table. */
+  view: 'list' | 'table';
+  /** Browse table sort: 'name', 'price' or a spec key. */
+  tsort: { key: string; dir: 'asc' | 'desc' };
   previewId: string | null;
   compare: string[];
   cables: { route: 'tidy' | 'stock'; sleeve: 'black' | 'white' | 'blue' };
@@ -77,7 +81,7 @@ export const DEF_CO: Checkout = {
 };
 
 export const DEF: RigState = {
-  build: {}, region: 'kv', facet: 'All', sort: 'price', previewId: null, compare: [], cables: { route: 'tidy', sleeve: 'black' }, cableHl: null,
+  build: {}, region: 'kv', facet: 'All', sort: 'price', view: 'list', tsort: { key: 'price', dir: 'asc' }, previewId: null, compare: [], cables: { route: 'tidy', sleeve: 'black' }, cableHl: null,
   guideStep: 0, planMode: 'best', picks: {}, co: DEF_CO, explode: 0, sel: null, xray: false, loc: null, hRange: 90, watch: [], wDraft: {},
   notify: { email: true, whatsapp: true, push: false }, trCat: 'all', stRet: 'all', stOpen: false, stBuild: false, stSel: null, pBranch: null,
   orders: [], promo: {}, trackNo: null, order: null,
@@ -112,7 +116,7 @@ export const useRig = create<RigState & RigActions>()(
       },
       merge: (persisted, current) => {
         const p = (persisted || {}) as Partial<RigState>;
-        return { ...current, ...p, co: { ...DEF_CO, ...(p.co || {}), err: '' }, cables: { ...DEF.cables, ...(p.cables || {}) }, notify: { ...DEF.notify, ...(p.notify || {}) } };
+        return { ...current, ...p, co: { ...DEF_CO, ...(p.co || {}), err: '' }, cables: { ...DEF.cables, ...(p.cables || {}) }, tsort: { ...DEF.tsort, ...(p.tsort || {}) }, notify: { ...DEF.notify, ...(p.notify || {}) } };
       },
       skipHydration: true,
     },
