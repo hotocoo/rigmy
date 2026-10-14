@@ -3,7 +3,7 @@
 /**
  * SaveShare — "Save & share" button + popover for the builder toolbar.
  *
- * POSTs { name, build, region } to endpoint.builds (the API answers with the SavedBuild, at least { id }),
+ * POSTs { name, build, region } (plus publish, title, note when "Publish to the gallery" is on) to endpoint.builds (the API answers with the SavedBuild, at least { id }),
  * then shows the share URL (`href.shared(id)` on this origin) with a Copy button and an Open link.
  *
  * Props (all optional):
@@ -23,7 +23,7 @@
 
 import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
 import { toast } from '@/components/shell/motion';
-import { Button, Eyebrow, Field, IconButton, LinkButton, Notice, type ButtonVariant } from '@/components/ui';
+import { Button, Eyebrow, Field, IconButton, LinkButton, Notice, Toggle, type ButtonVariant } from '@/components/ui';
 import { api } from '@/lib/data';
 import { dFmt } from '@/lib/format';
 import { endpoint, href } from '@/lib/routes';
@@ -35,6 +35,8 @@ import s from './saveShare.module.css';
 
 /** Longest build name the API stores. */
 const NAME_MAX = 80;
+/** Longest gallery note the API stores. */
+const NOTE_MAX = 500;
 
 export interface SaveShareProps {
   build?: Build;
@@ -56,6 +58,7 @@ export function SaveShare({ build: b0, region: r0, defaultName, label = 'Save & 
   const count = Object.values(build).filter(Boolean).length;
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
+  const [publish, setPublish] = useState(false), [title, setTitle] = useState(''), [note, setNote] = useState('');
   const [ph, setPh] = useState<Phase>({ k: 'edit' });
   const btnRef = useRef<HTMLButtonElement>(null);
   const popId = useId(), urlId = useId();
@@ -74,6 +77,7 @@ export function SaveShare({ build: b0, region: r0, defaultName, label = 'Save & 
   const toggle = () => {
     if (open) { close(); return; }
     setName(defaultName || 'My build · ' + dFmt(Date.now()));
+    setPublish(false); setTitle(''); setNote('');
     setPh({ k: 'edit' });
     setOpen(true);
   };
@@ -81,7 +85,7 @@ export function SaveShare({ build: b0, region: r0, defaultName, label = 'Save & 
   const save = async () => {
     setPh({ k: 'saving' });
     try {
-      const sb = await api<SavedBuild>(endpoint.builds, { method: 'POST', json: { name: name.trim() || 'Untitled build', build, region } });
+      const sb = await api<SavedBuild>(endpoint.builds, { method: 'POST', json: { name: name.trim() || 'Untitled build', build, region, ...(publish ? { publish, title, note } : null) } });
       const url = window.location.origin + href.shared(sb.id);
       setPh({ k: 'done', url });
       onSaved?.(sb, url);
@@ -113,6 +117,14 @@ export function SaveShare({ build: b0, region: r0, defaultName, label = 'Save & 
                 <span className={s.text}>{'Saves these ' + count + ' parts and gives you a link anyone can open. Prices on the link stay live.'}</span>
                 <Field autoFocus label="Name" value={name} maxLength={NAME_MAX} onValue={setName}
                   onKeyDown={(e) => { if (e.key === 'Enter' && ph.k !== 'saving') void save(); }} />
+                <Toggle on={publish} onClick={() => setPublish(!publish)} label="Publish to the gallery" />
+                {publish && (
+                  <>
+                    <span className={s.text}>Anyone can see this build, its title and note in the public gallery. Unpublished builds stay link-only.</span>
+                    <Field label="Gallery title" value={title} maxLength={NAME_MAX} onValue={setTitle} hint="Optional. Defaults to the name." />
+                    <Field label="Gallery note" value={note} maxLength={NOTE_MAX} onValue={setNote} hint="Optional, up to 500 characters." />
+                  </>
+                )}
                 {ph.k === 'error' && <Notice tone="warn" bare role="alert">{'Could not save: ' + ph.msg}</Notice>}
                 <Button onClick={() => void save()} disabled={ph.k === 'saving'}>{ph.k === 'saving' ? 'Saving…' : 'Save and get link'}</Button>
               </>

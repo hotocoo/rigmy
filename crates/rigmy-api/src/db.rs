@@ -74,6 +74,13 @@ const MIGRATIONS: &[&str] = &[
         log         TEXT NOT NULL DEFAULT ''
     );
     "#,
+    // v2: opt-in public gallery. Additive: existing rows stay unpublished.
+    r#"
+    ALTER TABLE saved_builds ADD COLUMN published INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE saved_builds ADD COLUMN title TEXT;
+    ALTER TABLE saved_builds ADD COLUMN note TEXT;
+    CREATE INDEX saved_builds_gallery ON saved_builds(created_at DESC, id DESC) WHERE published = 1;
+    "#,
 ];
 
 /// How long a writer waits for a lock held by another connection (e.g. `serve` during `ingest`).
@@ -351,12 +358,86 @@ pub fn finish_run(
 
 // ---------- builds ----------
 
-pub fn insert_build(conn: &Connection, b: &SavedBuild) -> Result<bool> {
+/// Gallery details saved alongside a build; `publish` is the opt-in to list it.
+#[derive(Debug, Default, Clone)]
+pub struct GalleryMeta {
+    pub publish: bool,
+    pub title: Option<String>,
+    pub note: Option<String>,
+}
+
+pub fn insert_build(conn: &Connection, b: &SavedBuild, g: &GalleryMeta) -> Result<bool> {
     let n = conn.execute(
-        "INSERT OR IGNORE INTO saved_builds(id, name, region, build, created_at) VALUES(?1, ?2, ?3, ?4, ?5)",
-        params![b.id, b.name, b.region.as_str(), serde_json::to_string(&b.build)?, b.created_at],
+        "INSERT OR IGNORE INTO saved_builds(id, name, region, build, created_at, published, title, note)
+         VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+        params![
+            b.id,
+            b.name,
+            b.region.as_str(),
+            serde_json::to_string(&b.build)?,
+            b.created_at,
+            g.publish as i64,
+            g.title,
+            g.note
+        ],
     )?;
     Ok(n == 1)
+}
+
+/// One published build as listed in the gallery.
+#[derive(Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GalleryBuild {
+    pub id: String,
+    pub title: String,
+    pub note: Option<String>,
+    pub region: RegionId,
+    pub created_at: i64,
+    pub parts: Build,
+    pub part_count: usize,
+}
+
+/// Published builds, newest first, strictly after `cursor` = (created_at, id). Fetches `limit`
+/// rows; `cat` keeps only builds with a part in that slot.
+pub fn gallery(
+    conn: &Connection,
+    cat: Option<CatId>,
+    cursor: Option<(i64, &str)>,
+    limit: usize,
+) -> Result<Vec<GalleryBuild>> {
+    let (cur_t, cur_id) = cursor.unwrap_or((i64::MAX, "\u{10ffff}"));
+    let path = cat.map(|c| format!("$.{}", c.as_str()));
+    let mut st = conn.prepare(
+        "SELECT id, COALESCE(title, name), note, region, build, created_at FROM saved_builds
+         WHERE published = 1 AND (created_at, id) < (?1, ?2)
+           AND (?3 IS NULL OR json_extract(build, ?3) IS NOT NULL)
+         ORDER BY created_at DESC, id DESC LIMIT ?4",
+    )?;
+    let rows = st.query_map(params![cur_t, cur_id, path, limit as i64], |r| {
+        Ok((
+            r.get::<_, String>(0)?,
+            r.get::<_, String>(1)?,
+            r.get::<_, Option<String>>(2)?,
+            r.get::<_, String>(3)?,
+            r.get::<_, String>(4)?,
+            r.get::<_, i64>(5)?,
+        ))
+    })?;
+    let mut out = vec![];
+    for row in rows {
+        let (id, title, note, region, build, created_at) = row?;
+        let parts: Build = serde_json::from_str(&build)?;
+        out.push(GalleryBuild {
+            id,
+            title,
+            note,
+            region: RegionId::from_str(&region).context("bad region in db")?,
+            created_at,
+            part_count: parts.len(),
+            parts,
+        });
+    }
+    Ok(out)
 }
 
 pub fn get_build(conn: &Connection, id: &str) -> Result<Option<SavedBuild>> {

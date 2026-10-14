@@ -3,7 +3,7 @@
 .scrim { position: fixed; inset: 0; z-index: 38; }
 .pop {
   position: absolute; top: calc(100% + 8px); z-index: 39; width: min(380px, calc(100vw - 32px));
-  display: flex; flex-direction: column; gap: 14px; padding: 18px; text-align: left;
+  display: flex; flex-direction: column; gap: 14px; padding: 18px; text-align: left; max-height: calc(100dvh - 96px); overflow-y: auto;
   background: var(--surface-overlay); border: 1px solid var(--line-mid); border-radius: var(--radius); box-shadow: var(--shadow-pop);
 }
 .left { left: 0; }

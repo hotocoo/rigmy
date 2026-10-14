@@ -86,6 +86,7 @@ pub fn router(state: Arc<AppState>, cors_origins: &[String]) -> Router {
         .route("/api/index", get(index))
         .route("/api/builds", post(create_build))
         .route("/api/builds/{id}", get(get_build))
+        .route("/api/gallery", get(gallery))
         .route("/api/orders", post(create_order))
         .route("/api/orders/{no}", get(get_order))
         .route("/api/orders/{no}/groups/{retailer_id}", patch(patch_group))
@@ -205,6 +206,11 @@ struct NewBuild {
     name: String,
     build: BTreeMap<String, Option<String>>,
     region: RegionId,
+    /// Opt in to the public gallery.
+    #[serde(default)]
+    publish: bool,
+    title: Option<String>,
+    note: Option<String>,
 }
 
 fn short_id() -> String {
@@ -219,6 +225,9 @@ fn short_id() -> String {
 /// business rules, so they live here rather than in config.
 mod limits {
     pub const BUILD_NAME: usize = 80;
+    pub const BUILD_NOTE: usize = 500;
+    pub const GALLERY_DEFAULT: usize = 24;
+    pub const GALLERY_MAX: usize = 50;
     pub const CONTACT_FIELD: usize = 120;
     pub const ADDR_LINE: usize = 300;
     pub const ADDR_CITY: usize = 120;
@@ -240,6 +249,18 @@ fn check_len(field: &str, s: &str, max: usize) -> Result<(), ApiError> {
     Ok(())
 }
 
+/// Trimmed optional text: blank becomes None; control characters and over-long text are rejected.
+fn clean_text(field: &str, v: &Option<String>, max: usize) -> Result<Option<String>, ApiError> {
+    let t = v.as_deref().map(str::trim).unwrap_or("");
+    if t.chars().any(char::is_control) {
+        return Err(ApiError::bad(format!(
+            "{field} must not contain control characters"
+        )));
+    }
+    check_len(field, t, max)?;
+    Ok((!t.is_empty()).then(|| t.to_string()))
+}
+
 async fn create_build(
     State(st): S,
     body: Result<Json<NewBuild>, JsonRejection>,
@@ -250,6 +271,11 @@ async fn create_build(
         return Err(ApiError::bad("name is required"));
     }
     check_len("name", &name, limits::BUILD_NAME)?;
+    let gm = db::GalleryMeta {
+        publish: nb.publish,
+        title: clean_text("title", &nb.title, limits::BUILD_NAME)?,
+        note: clean_text("note", &nb.note, limits::BUILD_NOTE)?,
+    };
     for k in nb.build.keys() {
         if CatId::from_str(k).is_none() {
             return Err(ApiError::bad(format!("unknown category '{k}' in build")));
@@ -276,7 +302,7 @@ async fn create_build(
             region: nb.region,
             created_at: (st.clock)(),
         };
-        if db::insert_build(&c, &sb)? {
+        if db::insert_build(&c, &sb, &gm)? {
             return Ok((StatusCode::CREATED, Json(sb)));
         }
     }
@@ -287,6 +313,55 @@ async fn get_build(State(st): S, Path(id): Path<String>) -> Res<SavedBuild> {
     db::get_build(&st.conn(), &id)?
         .map(Json)
         .ok_or_else(|| ApiError::not_found(format!("no build '{id}'")))
+}
+
+#[derive(Deserialize)]
+struct GalleryQuery {
+    cat: Option<String>,
+    sort: Option<String>,
+    limit: Option<usize>,
+    cursor: Option<String>,
+}
+
+/// Published builds, newest first. Prices are live engine data, so there is no server-side
+/// price order: `sort=price` is refused and the web app orders the loaded builds itself.
+async fn gallery(State(st): S, Query(q): Query<GalleryQuery>) -> Res<serde_json::Value> {
+    match q.sort.as_deref() {
+        None | Some("new") => {}
+        Some("price") => {
+            return Err(ApiError::bad(
+                "sort=price is not available: totals use live prices, so clients sort the builds they load",
+            ))
+        }
+        Some(s) => return Err(ApiError::bad(format!("unknown sort '{s}'"))),
+    }
+    let cat = match q.cat.as_deref().filter(|c| !c.is_empty()) {
+        None => None,
+        Some(c) => Some(
+            CatId::from_str(c).ok_or_else(|| ApiError::bad(format!("unknown category '{c}'")))?,
+        ),
+    };
+    let limit = match q.limit {
+        None => limits::GALLERY_DEFAULT,
+        Some(0) => return Err(ApiError::bad("limit must be at least 1")),
+        Some(n) => n.min(limits::GALLERY_MAX),
+    };
+    let cursor = match q.cursor.as_deref().filter(|c| !c.is_empty()) {
+        None => None,
+        Some(c) => Some(
+            c.split_once('.')
+                .and_then(|(t, id)| Some((t.parse::<i64>().ok()?, id)))
+                .ok_or_else(|| ApiError::bad("bad cursor"))?,
+        ),
+    };
+    let mut builds = db::gallery(&st.conn(), cat, cursor, limit + 1)?;
+    let next = if builds.len() > limit {
+        builds.truncate(limit);
+        builds.last().map(|b| format!("{}.{}", b.created_at, b.id))
+    } else {
+        None
+    };
+    Ok(Json(json!({ "builds": builds, "nextCursor": next })))
 }
 
 // ---------- orders ----------
