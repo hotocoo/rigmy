@@ -52,6 +52,13 @@ export function buildArModel(build: StudioBuild, cables: CableOpts): { model: TH
 function bake(root: THREE.Object3D): THREE.Group {
   root.updateMatrixWorld(true);
   const out = new THREE.Group(); out.name = root.name;
+  const glass = new Map<THREE.Material, THREE.Material>();
+  const exportMat = (m: THREE.Material): THREE.Material => {
+    if (!m.userData.isGlass || !(m instanceof THREE.MeshPhysicalMaterial)) return m;
+    let g = glass.get(m);
+    if (!g) { const c = m.clone(); c.transmission = 0; c.transparent = true; c.opacity = AR_GLASS_OPACITY; c.depthWrite = false; glass.set(m, (g = c)); }
+    return g;
+  };
   root.traverse((o) => {
     if (!(o instanceof THREE.Mesh)) return;
     const g = (o.geometry as THREE.BufferGeometry).clone().applyMatrix4(o.matrixWorld);
@@ -60,7 +67,7 @@ function bake(root: THREE.Object3D): THREE.Group {
       const ix = g.index!;
       for (let i = 0; i < ix.count; i += 3) { const b = ix.getX(i + 1); ix.setX(i + 1, ix.getX(i + 2)); ix.setX(i + 2, b); }
     }
-    const m = new THREE.Mesh(g, o.material); m.name = o.name; out.add(m);
+    const m = new THREE.Mesh(g, exportMat(o.material as THREE.Material)); m.name = o.name; out.add(m);
   });
   root.traverse((o) => { if (o instanceof THREE.Mesh) (o.geometry as THREE.BufferGeometry).dispose(); });
   return out;
@@ -87,6 +94,9 @@ export function openBlob(blob: Blob, name: string, quickLook: boolean): void {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
+
+/** Exported glass: AR viewers (USDZ in particular) drop transmission, so glass becomes a plain transparent tint. */
+const AR_GLASS_OPACITY = 0.15;
 
 /** Reticle ring size (m) and how far one "rotate" press turns the model. */
 const RETICLE = { inner: 0.09, outer: 0.11 }, TURN = Math.PI / 4;
