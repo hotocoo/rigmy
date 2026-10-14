@@ -78,7 +78,13 @@ const MOCK_XR = () => {
   w.XRWebGLLayer = class { framebuffer = null; framebufferWidth = 2; framebufferHeight = 2; ignoreDepthValues = true; getViewport() { return { x: 0, y: 0, width: 2, height: 2 }; } };
   (WebGL2RenderingContext.prototype as unknown as Record<string, unknown>).makeXRCompatible = async () => {};
   const s = new Session(); w.__xrSession = s;
-  Object.defineProperty(navigator, 'xr', { value: { isSessionSupported: async (m: string) => m === 'immersive-ar', requestSession: async () => s } });
+  Object.defineProperty(navigator, 'xr', { value: { isSessionSupported: async (m: string) => m === 'immersive-ar', requestSession: async (_m: string, init: { domOverlay?: { root?: HTMLElement } }) => {
+    // Like Chrome on Android: needs a live tap, and the DOM overlay must be on screen.
+    if (!navigator.userActivation?.isActive) throw new DOMException('no user activation', 'SecurityError');
+    const root = init.domOverlay?.root;
+    if (root && (root.hidden || getComputedStyle(root).display === 'none')) throw new DOMException('overlay hidden', 'InvalidStateError');
+    return s;
+  } } });
 };
 
 test('AR on a WebXR phone: place, rotate and exit a true-scale build', async ({ page }) => {

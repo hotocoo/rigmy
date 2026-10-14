@@ -103,13 +103,16 @@ const RETICLE = { inner: 0.09, outer: 0.11 }, TURN = Math.PI / 4;
 
 /**
  * Immersive WebXR AR: a reticle follows the detected floor, tapping places (or moves) the build there at real size.
- * `overlay` is shown as the DOM overlay (exit / rotate buttons live there). Resolves when the session ends.
+ * `overlay` is shown as the DOM overlay (exit / rotate buttons live there) and must already be visible. Call straight
+ * from the tap handler: the session request is the first await, because browsers only allow it while the tap's user
+ * activation is still live. The model is built once the session is granted. Resolves when the session ends.
  */
-export async function runWebXr(model: THREE.Object3D, overlay: HTMLElement, hooks: { onPlaced(placed: boolean): void; bindRotate(fn: () => void): void; bindExit(fn: () => void): void }): Promise<void> {
+export async function runWebXr(makeModel: () => THREE.Object3D, overlay: HTMLElement, hooks: { onPlaced(placed: boolean): void; bindRotate(fn: () => void): void; bindExit(fn: () => void): void }): Promise<void> {
   const xr = (navigator as XrNavigator).xr;
   if (!xr) throw new Error('WebXR unavailable');
-  const { RoomEnvironment } = await import('three/examples/jsm/environments/RoomEnvironment.js');
   const session = await xr.requestSession('immersive-ar', { requiredFeatures: ['hit-test'], optionalFeatures: ['dom-overlay'], domOverlay: { root: overlay } });
+  const { RoomEnvironment } = await import('three/examples/jsm/environments/RoomEnvironment.js');
+  const model = makeModel();
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(window.devicePixelRatio); renderer.xr.enabled = true;
