@@ -3,7 +3,10 @@
 import { Button, Meta, Notice, Progress, Text } from '@/components/ui';
 import { featuredPreset } from '@/lib/content';
 import { useData } from '@/lib/data';
+import { perfOf } from '@/lib/perf';
 import { useRig } from '@/lib/store';
+import { tone } from '@/lib/tokens';
+import type { Build } from '@/lib/types';
 import type { PowerView } from './shared';
 import s from './layout.module.css';
 
@@ -32,5 +35,24 @@ export function PowerMeter({ pw }: { pw: PowerView }) {
       <Progress value={pw.ratio} c={pw.color} height={4} />
       <Meta>{pw.rec}</Meta>
     </>
+  );
+}
+
+/** Gaming performance class of the build's GPU and CPU, with a balance note. Estimates in bands, never frame rates. */
+export function PerformanceCard({ build }: { build: Build }) {
+  const d = useData();
+  const cpu = build.cpu ? d.byId[build.cpu] ?? null : null, gpu = build.gpu ? d.byId[build.gpu] ?? null : null;
+  if (!cpu && !gpu) return null;
+  const v = perfOf(cpu, gpu);
+  return (
+    <div className={s.perf} aria-label="Estimated gaming performance">
+      <Text v="capsWide" as="div" className={s.capsLabel}><span>Gaming estimate</span></Text>
+      <dl className={s.perfList}>
+        {gpu && <><dt>Graphics</dt><dd>{v.gpu ? v.gpu.band : 'No estimate for this card yet'}</dd></>}
+        {cpu && <><dt>Processor</dt><dd>{v.cpu ? v.cpu.label[0].toUpperCase() + v.cpu.label.slice(1) + ' for gaming' : 'No estimate for this CPU yet'}</dd></>}
+      </dl>
+      {v.balance && <Meta style={{ color: tone[v.balance.tone] }}>{v.balance.text}</Meta>}
+      <Meta>Estimated from typical review results, not measured frame rates.</Meta>
+    </div>
   );
 }

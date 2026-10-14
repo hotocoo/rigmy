@@ -10,7 +10,7 @@ import { href, ROUTES } from '@/lib/routes';
 import { useRig } from '@/lib/store';
 import { color, tone } from '@/lib/tokens';
 import type { Check } from '@/lib/types';
-import { PowerMeter } from './Notices';
+import { PerformanceCard, PowerMeter } from './Notices';
 import { ReviewChecks } from './ReviewChecks';
 import { choiceText, idx2, powerView, totalView } from './shared';
 import { StageCaption, StudioStage } from './StudioStage';
@@ -56,7 +56,7 @@ export function ReviewPage() {
 
         <ReviewChecks checks={checks} onFix={applyFix} onFocus={(c) => { if (c.parts[0]) host.post({ rig: 'select', part: c.parts[0] }); }} />
 
-        <div className={r.power}><PowerMeter pw={pw} /></div>
+        <div className={r.power}><PowerMeter pw={pw} /><PerformanceCard build={build} /></div>
 
         <ul className={r.parts} aria-label="Parts in your build">
           {d.categories.map((c) => {

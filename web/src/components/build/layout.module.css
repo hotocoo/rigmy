@@ -25,3 +25,7 @@
 .caption { position: absolute; left: 20px; top: 18px; pointer-events: none; }
 .tools { position: absolute; right: 16px; top: 14px; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; max-width: 70%; }
 
+.perf { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+.perfList { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font: 400 13px/1.45 var(--sans); }
+.perfList dt { color: var(--muted); }
+.perfList dd { margin: 0; color: var(--fg-2); }

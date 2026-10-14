@@ -13,7 +13,7 @@ import { BuilderStage } from './BuilderStage';
 import { BuildRow } from './BuildRow';
 import { downloadCsv } from './csv';
 import { SwapList } from './swaps';
-import { PowerMeter } from './Notices';
+import { PerformanceCard, PowerMeter } from './Notices';
 import { errText, partPrice, powerView, presetName, totalView } from './shared';
 import { useStudioHost } from './useStudioHost';
 import s from './builder.module.css';
@@ -67,7 +67,7 @@ export function BuilderPage() {
 
         <SwapList d={d} build={build} region={region} />
 
-        <div className={s.power}><PowerMeter pw={pw} /></div>
+        <div className={s.power}><PowerMeter pw={pw} /><PerformanceCard build={build} /></div>
 
         <footer className={s.foot}>
           <div className={s.totals}>
