@@ -74,3 +74,53 @@ website = "https://www.allithypermarket.com.my"
 kind = "shopify"
 base_url = "https://www.allithypermarket.com.my"
 max_pages = 60
+
+# EMARQUE — PC-specialist Shopify store; open products.json feed (robots.txt allows
+# crawlers). Stocks the catalogue's AMD / NVIDIA parts. Delivery terms not yet confirmed.
+[[retailer]]
+id = "emarque"
+name = "EMARQUE"
+city = "Kuala Lumpur"
+website = "https://emarque.co"
+
+[retailer.import]
+kind = "shopify"
+base_url = "https://emarque.co"
+max_pages = 40
+
+# DOTATECH — PC / NUC specialist Shopify store; open products.json feed.
+[[retailer]]
+id = "dotatech"
+name = "DOTATECH"
+city = "Kuala Lumpur"
+website = "https://www.dotatech.com.my"
+
+[retailer.import]
+kind = "shopify"
+base_url = "https://www.dotatech.com.my"
+max_pages = 40
+
+# Sen Heng — general electronics retailer (WooCommerce). The Store API is open in
+# robots.txt but a WAF returns 403 to non-browser clients, so its parts are mapped
+# per product in sources.toml (jsonld) rather than bulk-imported.
+[[retailer]]
+id = "senheng"
+name = "Sen Heng"
+city = "Kuala Lumpur"
+website = "https://www.senheng.com.my"
+
+# Courts — general electronics retailer (Magento 2). No open feed; parts mapped per
+# product in sources.toml.
+[[retailer]]
+id = "courts"
+name = "Courts"
+city = "Kuala Lumpur"
+website = "https://www.courts.com.my"
+
+# Aeon — general electronics / hypermarket retailer. robots.txt sets Crawl-delay: 10;
+# raise [settings] delay_ms to at least 10000 before mapping its sources.
+[[retailer]]
+id = "aeon"
+name = "Aeon"
+city = "Kuala Lumpur"
+website = "https://www.aeon.com.my"

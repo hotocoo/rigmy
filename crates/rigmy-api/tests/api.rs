@@ -87,10 +87,18 @@ async fn empty_install_bootstrap_and_stats() {
     let (s, b) = call(&app, "GET", "/api/bootstrap", None).await;
     assert_eq!(s, StatusCode::OK);
     assert_eq!(b["products"].as_array().unwrap().len(), 35);
-    // The shipped config carries exactly one verified real retailer (ALL IT Hypermarket);
-    // no offers exist until an import or ingest run has recorded prices.
-    assert_eq!(b["retailers"].as_array().unwrap().len(), 1);
-    assert_eq!(b["retailers"][0]["id"], "all-it");
+    // The shipped config carries the six verified real retailers (three feed shops, three
+    // mapped per product); no offers exist until an import or ingest run has recorded prices.
+    let ids: Vec<&str> = b["retailers"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|r| r["id"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        ids,
+        ["all-it", "emarque", "dotatech", "senheng", "courts", "aeon"]
+    );
     assert_eq!(b["offers"], json!([]));
     assert_eq!(b["branches"], json!([]));
     assert!(b["lastIngest"].is_null());

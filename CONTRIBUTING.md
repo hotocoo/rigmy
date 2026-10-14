@@ -23,7 +23,7 @@ config/             catalog.json, retailers.toml, content, postcodes, stores, ev
 data/               rigmy.db (gitignored) — the live database
 docs/               BACKEND.md, DATA-SOURCES.md, DEPLOYMENT.md
 scripts/            build-wasm.sh
-docker/, .github/   Dockerfiles, compose file, CI/CD workflows
+.github/            CI/CD workflows
 ```
 
 ## Run it locally
@@ -68,12 +68,6 @@ live feed prices, because CI's database has no offers.
 cargo fmt --all -- --check
 cargo clippy --workspace --all-targets -- -D warnings
 cd web && npm run lint && npx tsc --noEmit
-```
-
-## Docker
-
-```sh
-docker compose up --build    # api :8787, web :3000, shared ./data volume
 ```
 
 ## The honesty contract

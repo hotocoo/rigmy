@@ -128,6 +128,39 @@ pub(crate) struct FeedVariant {
     pub(crate) available: bool,
 }
 
+/// One discovered listing in a feed-independent shape, so the matching and
+/// upsert logic is shared by every feed adapter.
+#[derive(Debug)]
+struct FeedItem {
+    title: String,
+    /// Brand used for seed matching. Shopify sends a `vendor`; WooCommerce has no
+    /// vendor field, so the full title is used (the title always contains the brand).
+    brand: String,
+    price: f64,
+    avail: bool,
+    url: String,
+    /// Stable id fragment for the market-listing id (`mkt-<retailer>-<slug>`).
+    slug: String,
+    product_type: String,
+}
+
+/// WooCommerce Store API product (`/wp-json/wc/store/v1/products`). Prices are
+/// integer minor units (cents): "123400" is RM 1234.00.
+#[derive(Debug, Deserialize)]
+struct WooProduct {
+    id: u64,
+    name: String,
+    permalink: String,
+    prices: WooPrices,
+    #[serde(default)]
+    is_in_stock: bool,
+}
+
+#[derive(Debug, Deserialize)]
+struct WooPrices {
+    price: String,
+}
+
 /// Cheapest variant, preferring in-stock; falls back to the cheapest overall (out of stock).
 pub(crate) fn pick_variant(v: &[FeedVariant]) -> Option<(f64, bool)> {
     let mut best_any: Option<(f64, bool)> = None;
@@ -241,6 +274,16 @@ fn norm(s: &str) -> String {
 /// Unit suffixes that mark a token as a spec (frequency/capacity/power), not a model number.
 const SPEC_UNITS: &[&str] = &["mhz", "ghz", "gb", "tb", "w", "v", "mm"];
 
+/// Generic interface / standard tokens that appear across many products of the same brand
+/// (a GPU, an SSD and a PSU can all say "pcie5"). Matching on them attaches the wrong part,
+/// so they are excluded from the model-number set.
+const GENERIC_TOKENS: &[&str] = &[
+    "pcie3", "pcie4", "pcie5", "pcie6", "ddr4", "ddr5", "ddr6", "gddr5", "gddr6", "gddr7", "gen3",
+    "gen4", "gen5", "gen6", "nvme", "sata", "atx", "matx", "itx", "wifi", "wif6", "wif6e", "wif7",
+    "rgb", "am4", "am5", "dx11", "dx12", "256bit", "128bit", "192bit", "384bit", "30gbps",
+    "28gbps", "24gbps", "19gbps", "14gbps",
+];
+
 pub fn model_tokens(name: &str) -> Vec<String> {
     name.split(|c: char| !c.is_ascii_alphanumeric())
         .filter(|raw| {
@@ -252,7 +295,12 @@ pub fn model_tokens(name: &str) -> Vec<String> {
                 && SPEC_UNITS
                     .iter()
                     .any(|u| t.ends_with(u) && t.len() > u.len());
-            has_digit && has_alpha && t.len() >= 4 && !spec && !(t.len() <= 5 && digit_lead)
+            has_digit
+                && has_alpha
+                && t.len() >= 4
+                && !spec
+                && !(t.len() <= 5 && digit_lead)
+                && !GENERIC_TOKENS.contains(&t.as_str())
         })
         .map(|t| t.to_ascii_lowercase())
         .collect()
@@ -323,10 +371,11 @@ pub async fn run(
         .import
         .as_ref()
         .with_context(|| format!("retailer '{retailer_id}' has no [retailer.import] block"))?;
-    match import.kind {
-        ImportKind::Shopify => {}
-    }
     let origin = import.base_url.trim_end_matches('/');
+    let feed_path = match import.kind {
+        ImportKind::Shopify => "/products.json",
+        ImportKind::Woocommerce => "/wp-json/wc/store/v1/products",
+    };
 
     // 1) robots.txt — verify crawl permission before touching the feed.
     let robots_url = format!("{origin}/robots.txt");
@@ -337,10 +386,9 @@ pub async fn run(
             bail!("fetch {robots_url} failed: {e} (cannot verify crawl permission; aborting)")
         }
     };
-    const FEED_PATH: &str = "/products.json";
     if let Some(txt) = &robots {
-        if !robots_allowed(Some(txt), FEED_PATH) {
-            bail!("{retailer_id}: robots.txt disallows {FEED_PATH}; import refused");
+        if !robots_allowed(Some(txt), feed_path) {
+            bail!("{retailer_id}: robots.txt disallows {feed_path}; import refused");
         }
     }
 
@@ -355,59 +403,103 @@ pub async fn run(
     let mut sum = ImportSummary::default();
     let mut page = 1u32;
     loop {
-        let url = format!("{origin}/products.json?limit=250&page={page}");
+        let url = match import.kind {
+            ImportKind::Shopify => format!("{origin}/products.json?limit=250&page={page}"),
+            ImportKind::Woocommerce => {
+                format!("{origin}/wp-json/wc/store/v1/products?per_page=100&page={page}")
+            }
+        };
         let body = fetcher
             .get(&url)
             .await
             .map_err(|e| anyhow::anyhow!("fetch {url}: {e}"))?;
-        let feed: FeedFile = serde_json::from_str(&body).with_context(|| format!("parse {url}"))?;
-        if feed.products.is_empty() {
+        // Parse the page into the feed-independent shape.
+        let items: Vec<FeedItem> = match import.kind {
+            ImportKind::Shopify => {
+                let feed: FeedFile =
+                    serde_json::from_str(&body).with_context(|| format!("parse {url}"))?;
+                feed.products
+                    .into_iter()
+                    .filter_map(|fp| {
+                        let (price, avail) = pick_variant(&fp.variants)?;
+                        let page_url = format!("{origin}/products/{}", fp.handle);
+                        Some(FeedItem {
+                            slug: fp.handle,
+                            title: fp.title,
+                            brand: fp.vendor.unwrap_or_default(),
+                            price: (price * 100.0).round() / 100.0,
+                            avail,
+                            url: page_url,
+                            product_type: fp.product_type.unwrap_or_default(),
+                        })
+                    })
+                    .collect()
+            }
+            ImportKind::Woocommerce => {
+                let prods: Vec<WooProduct> =
+                    serde_json::from_str(&body).with_context(|| format!("parse {url}"))?;
+                prods
+                    .into_iter()
+                    .filter_map(|wp| {
+                        let cents: f64 = wp.prices.price.trim().parse().ok()?;
+                        if cents <= 0.0 {
+                            return None;
+                        }
+                        // The title always contains the brand, so it doubles as the
+                        // match brand (the Store API has no vendor field).
+                        Some(FeedItem {
+                            slug: wp.id.to_string(),
+                            title: wp.name.clone(),
+                            brand: wp.name,
+                            price: (cents / 100.0 * 100.0).round() / 100.0,
+                            avail: wp.is_in_stock,
+                            url: wp.permalink,
+                            product_type: String::new(),
+                        })
+                    })
+                    .collect()
+            }
+        };
+        if items.is_empty() {
             break;
         }
         sum.pages += 1;
-        for fp in &feed.products {
-            let code = fp.product_type.clone().unwrap_or_default();
-            *sum.product_types.entry(code).or_insert(0) += 1;
-            let Some((price, avail)) = pick_variant(&fp.variants) else {
-                sum.failed += 1;
-                continue;
-            };
-            let price = (price * 100.0).round() / 100.0;
-            let stock = if avail {
+        for it in &items {
+            *sum.product_types
+                .entry(it.product_type.clone())
+                .or_insert(0) += 1;
+            let stock = if it.avail {
                 StockState::InStock
             } else {
                 StockState::OutOfStock
             };
-            let page_url = format!("{origin}/products/{}", fp.handle);
             let offer = |product_id: String| RawOffer {
                 product_id,
                 retailer_id: rconf.id.clone(),
-                price,
+                price: it.price,
                 stock,
-                url: page_url.clone(),
+                url: it.url.clone(),
                 observed_at: iso_from_ms(now),
             };
-            if let Some((seed_id, token)) =
-                match_seed(&seeds, &fp.title, fp.vendor.as_deref().unwrap_or(""))
-            {
+            if let Some((seed_id, token)) = match_seed(&seeds, &it.title, &it.brand) {
                 let o = offer(seed_id.clone());
                 db::upsert_offer(conn, &o)?;
-                db::upsert_snapshot(conn, &seed_id, &rconf.id, day, price, avail)?;
+                db::upsert_snapshot(conn, &seed_id, &rconf.id, day, it.price, it.avail)?;
                 sum.matched += 1;
                 sum.matches.push(MatchLog {
-                    listing: fp.title.clone(),
+                    listing: it.title.clone(),
                     seed_id,
                     token,
                 });
             } else {
-                let pid = format!("mkt-{}-{}", rconf.id, fp.handle);
-                let label = market_label(fp.product_type.as_deref(), &fp.title);
+                let pid = format!("mkt-{}-{}", rconf.id, it.slug);
+                let label = market_label(Some(&it.product_type), &it.title);
                 let product = Product {
                     id: pid.clone(),
                     cat: None,
                     market: Some(label.clone()),
-                    brand: fp.vendor.clone().unwrap_or_default(),
-                    name: fp.title.clone(),
+                    brand: it.brand.clone(),
+                    name: it.title.clone(),
                     glyph: "box".to_string(),
                     short: None,
                     facet: label,
@@ -437,7 +529,7 @@ pub async fn run(
                 )?;
                 let o = offer(pid);
                 db::upsert_offer(conn, &o)?;
-                db::upsert_snapshot(conn, &o.product_id, &rconf.id, day, price, avail)?;
+                db::upsert_snapshot(conn, &o.product_id, &rconf.id, day, it.price, it.avail)?;
                 sum.market += 1;
             }
             sum.products += 1;

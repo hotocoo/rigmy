@@ -18,12 +18,20 @@ Probed on 2026-10-13 from this machine. "Configured" means present in `config/re
 
 | Retailer | id | How RigMY can read it | Status |
 |---|---|---|---|
-| ALL IT Hypermarket | `all-it` | Shopify store; `products.json` feed open, robots.txt allows crawlers. Bulk feed via `import` (shipped with an `[import]` block). Delivery terms not published in the feed, so the retailer ships with no delivery table — its offers show "No delivery" until terms are confirmed. | **Configured + imported** (first live import: 1,562 market listings, 7 catalogue matches) |
-| Sen Heng | — | WooCommerce; the Store API (`/wp-json/wc/store/v1/products`) is open, but there is no sitemap, so pages must be mapped per product in `sources.toml` (`adapter = "woocommerce"`) | Probed; not yet configured |
-| Courts | — | Magento 2; robots.txt allows AI crawlers; no `/sitemap.xml`, so per-product mapping is required | Probed; not yet configured |
-| Aeon | — | robots.txt sets `Crawl-delay: 10`; raise `[settings] delay_ms` to at least 10000 before configuring any source | Probed; not yet configured |
+| ALL IT Hypermarket | `all-it` | Shopify store; `products.json` feed open, robots.txt allows crawlers. Bulk feed via `import`. Delivery terms not published in the feed, so it ships with no delivery table — offers show "No delivery" until terms are confirmed. | **Configured + imported** |
+| EMARQUE | `emarque` | PC-specialist Shopify store; open `products.json` feed (robots.txt allows crawlers). Stocks the catalogue's AMD / NVIDIA parts. | **Configured + imported** |
+| DOTATECH | `dotatech` | PC / NUC specialist Shopify store; open `products.json` feed. | **Configured + imported** |
+| Sen Heng | `senheng` | General electronics retailer (WooCommerce). The Store API is open in robots.txt but a WAF returns 403 to non-browser clients, so its parts are mapped per product in `sources.toml` (`adapter = "jsonld"`) rather than bulk-imported. | **Configured** (parts mapped on demand) |
+| Courts | `courts` | General electronics retailer (Magento 2). No open feed; parts mapped per product in `sources.toml`. | **Configured** (parts mapped on demand) |
+| Aeon | `aeon` | General electronics / hypermarket retailer. robots.txt sets `Crawl-delay: 10`; raise `[settings] delay_ms` to at least 10000 before mapping its sources. | **Configured** (parts mapped on demand) |
 | Harvey Norman | — | Sits behind an Incapsula WAF that blocks non-browser clients | Excluded until a compliant access path exists |
 | MST | — | `mst.com.my` no longer resolves | Excluded |
+
+The three feed shops (ALL IT, EMARQUE, DOTATECH) are PC specialists whose open Shopify feeds are
+bulk-imported with `rigmy-api import` — every listing either matches a verified catalogue part
+(becoming a real offer for price comparison) or becomes a market listing. The three general
+electronics retailers (Sen Heng, Courts, Aeon) carry a wider, different range; their catalogue
+parts are mapped per product in `sources.toml` and read with `rigmy-api ingest`.
 
 Adding a retailer: create the `[[retailer]]` block (with real delivery terms only when you know
 them — an unknown field is left out rather than guessed), then either map its pages in

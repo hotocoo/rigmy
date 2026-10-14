@@ -53,6 +53,8 @@ pub struct RetailerConf {
 pub enum ImportKind {
     /// Shopify storefront: paginates the public `products.json` feed.
     Shopify,
+    /// WooCommerce storefront: paginates the public Store API (`/wp-json/wc/store/v1/products`).
+    Woocommerce,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -61,7 +63,7 @@ pub struct ImportConf {
     pub kind: ImportKind,
     /// Storefront origin, e.g. `https://www.example.my` (no trailing slash).
     pub base_url: String,
-    /// Safety cap on feed pages (Shopify pages hold at most 250 products).
+    /// Safety cap on feed pages (Shopify pages hold at most 250, WooCommerce at most 100).
     #[serde(default = "default_max_pages")]
     pub max_pages: u32,
 }
